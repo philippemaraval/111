@@ -59,10 +59,25 @@ Puis ouvrir `http://localhost:3000`.
 
 ## Déploiement
 
-### Cloudflare
+### Cloudflare Workers
 
-- Déployer l’app Next côté front SSR
-- Utiliser [`wrangler.jsonc`](/Users/philippemaraval/Documents/Marseille/111/wrangler.jsonc) comme base d’adaptation pour le worker/build OpenNext
+L’application est SSR. Il faut la déployer sur **Cloudflare Workers** avec OpenNext.
+
+Scripts utiles :
+
+```bash
+npm run build:cf
+npm run preview
+npm run deploy
+```
+
+Dans Cloudflare Workers Builds :
+
+- `Build command`: `npm run build:cf`
+- `Deploy command`: `npx wrangler deploy`
+- `Root directory`: vide
+
+Le build génère `.open-next/worker.js`, ensuite utilisé par [`wrangler.jsonc`](/Users/philippemaraval/Documents/Marseille/111/wrangler.jsonc).
 
 ### Render
 
