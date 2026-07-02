@@ -73,7 +73,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
                 <img
                   src={image.url}
                   alt={`${neighborhood.name} - ${image.label}`}
-                  className={`aspect-[4/5] h-full w-full object-cover ${neighborhood.isAvailable ? "" : "grayscale"}`}
+                  className="aspect-[4/5] h-full w-full object-cover"
                 />
                 <div className="border-t border-navy/10 px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.22em] text-sea">{image.label}</p>

@@ -1,5 +1,8 @@
 import { slugify } from "@/lib/utils";
-import { laJolietteGallery } from "@/lib/product-illustrations";
+import {
+  hasPublishedProductImages,
+  laJolietteGallery
+} from "@/lib/product-illustrations";
 import type {
   Neighborhood,
   ProductGalleryImage,
@@ -78,12 +81,14 @@ function galleryFor(label: string): ProductGalleryImage[] {
 export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) => {
   const slug = slugify(item.name);
   const baseCoordinates = arrondissementCoordinates[item.arrondissement];
-  const gallery = item.name === "La Joliette"
+  const hasProductImages = hasPublishedProductImages(item.name);
+  const isAvailable = item.available || hasProductImages;
+  const gallery = hasProductImages
     ? laJolietteGallery
     : galleryFor(item.name);
-  const voteCount = item.available ? 28 + index * 2 : 44 + index * 3;
-  const salesCount = item.available ? 9 + (index % 5) * 3 : 0;
-  const stockSeed = item.available ? 4 + (index % 3) * 2 : 0;
+  const voteCount = isAvailable ? 28 + index * 2 : 44 + index * 3;
+  const salesCount = isAvailable ? 9 + (index % 5) * 3 : 0;
+  const stockSeed = isAvailable ? 4 + (index % 3) * 2 : 0;
 
   return {
     id: `mock-${slug}`,
@@ -103,8 +108,8 @@ export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) =
       lat: Number((baseCoordinates.lat + (index % 3) * 0.0021).toFixed(4)),
       lng: Number((baseCoordinates.lng - (index % 2) * 0.0024).toFixed(4))
     },
-    isAvailable: item.available,
-    releaseDate: item.available ? "2026-05-15" : "2026-06-20",
+    isAvailable,
+    releaseDate: isAvailable ? "2026-05-15" : "2026-06-20",
     seo: {
       slug,
       title: `T-shirt ${item.name} | 111 Quartiers Marseille`,

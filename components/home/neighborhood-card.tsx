@@ -16,7 +16,7 @@ export function NeighborhoodCard({ neighborhood }: NeighborhoodCardProps) {
         <img
           src={neighborhood.imageUrl}
           alt={neighborhood.name}
-          className={`h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] ${neighborhood.isAvailable ? "" : "grayscale"}`}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
         />
         <div className="absolute inset-x-4 top-4 flex items-center justify-between">
           <span className="rounded-full bg-white/85 px-3 py-2 text-[11px] uppercase tracking-[0.2em] text-sea backdrop-blur-sm">

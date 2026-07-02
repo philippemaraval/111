@@ -1,7 +1,10 @@
 import { cache } from "react";
 
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
-import { laJolietteGallery } from "@/lib/product-illustrations";
+import {
+  hasPublishedProductImages,
+  laJolietteGallery
+} from "@/lib/product-illustrations";
 import { createAdminSupabaseClient, createServerSupabaseClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { parseCoordinates, parseSeoMetadata, parseStock, slugify } from "@/lib/utils";
 import type {
@@ -26,7 +29,8 @@ function enrichNeighborhood(
 ): Neighborhood {
   const seo = parseSeoMetadata(row.seo_metadata);
   const slug = seo.slug ?? slugify(row.name);
-  const gallery = row.name === "La Joliette"
+  const hasProductImages = hasPublishedProductImages(row.name);
+  const gallery = hasProductImages
     ? laJolietteGallery
     : seo.gallery ?? [
         { label: "Photo à plat", url: row.image_url },
@@ -40,10 +44,10 @@ function enrichNeighborhood(
     arrondissement: row.arrondissement,
     price: row.price,
     stockBySize: parseStock(row.stock_by_size),
-    imageUrl: row.name === "La Joliette" ? laJolietteGallery[0].url : row.image_url,
+    imageUrl: hasProductImages ? laJolietteGallery[0].url : row.image_url,
     descriptionHistory: row.description_history,
     coordinates: parseCoordinates(row.coordinates),
-    isAvailable: row.is_available,
+    isAvailable: row.is_available || hasProductImages,
     releaseDate: row.release_date,
     seo,
     voteCount: metrics?.vote_count ?? 0,
@@ -203,28 +207,14 @@ export const getNeighborhoodSearchIndex = cache(async (): Promise<SearchIndexIte
       name: row.name,
       slug: seo.slug ?? slugify(row.name),
       arrondissement: row.arrondissement,
-      isAvailable: row.is_available
+      isAvailable: row.is_available || hasPublishedProductImages(row.name)
     };
   });
 });
 
 export const getAvailabilityCount = cache(async () => {
-  if (!hasSupabaseEnv()) {
-    return mockNeighborhoods.filter((item) => item.isAvailable).length;
-  }
-
-  const supabase = createServerSupabaseClient();
-
-  if (!supabase) {
-    return mockNeighborhoods.filter((item) => item.isAvailable).length;
-  }
-
-  const { count } = await supabase
-    .from("neighborhoods")
-    .select("id", { count: "exact", head: true })
-    .eq("is_available", true);
-
-  return count ?? 0;
+  const neighborhoods = await listNeighborhoods({});
+  return neighborhoods.filter((item) => item.isAvailable).length;
 });
 
 export const getNeighborhoodGroups = cache(async () => {

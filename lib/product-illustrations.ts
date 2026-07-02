@@ -18,3 +18,7 @@ export const laJolietteGallery: ProductGalleryImage[] = [
     url: "/illustrations/la-joliette-porte-dos.png"
   }
 ];
+
+export function hasPublishedProductImages(name: string) {
+  return name === "La Joliette";
+}
