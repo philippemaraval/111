@@ -1,4 +1,5 @@
 import { slugify } from "@/lib/utils";
+import { laJolietteGallery } from "@/lib/product-illustrations";
 import type {
   Neighborhood,
   ProductGalleryImage,
@@ -77,7 +78,9 @@ function galleryFor(label: string): ProductGalleryImage[] {
 export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) => {
   const slug = slugify(item.name);
   const baseCoordinates = arrondissementCoordinates[item.arrondissement];
-  const gallery = galleryFor(item.name);
+  const gallery = item.name === "La Joliette"
+    ? laJolietteGallery
+    : galleryFor(item.name);
   const voteCount = item.available ? 28 + index * 2 : 44 + index * 3;
   const salesCount = item.available ? 9 + (index % 5) * 3 : 0;
   const stockSeed = item.available ? 4 + (index % 3) * 2 : 0;

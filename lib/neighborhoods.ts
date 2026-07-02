@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
+import { laJolietteGallery } from "@/lib/product-illustrations";
 import { createAdminSupabaseClient, createServerSupabaseClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { parseCoordinates, parseSeoMetadata, parseStock, slugify } from "@/lib/utils";
 import type {
@@ -25,10 +26,12 @@ function enrichNeighborhood(
 ): Neighborhood {
   const seo = parseSeoMetadata(row.seo_metadata);
   const slug = seo.slug ?? slugify(row.name);
-  const gallery = seo.gallery ?? [
-    { label: "Photo à plat", url: row.image_url },
-    { label: "Porté mannequin", url: row.image_url }
-  ];
+  const gallery = row.name === "La Joliette"
+    ? laJolietteGallery
+    : seo.gallery ?? [
+        { label: "Photo à plat", url: row.image_url },
+        { label: "Porté mannequin", url: row.image_url }
+      ];
 
   return {
     id: row.id,
@@ -37,7 +40,7 @@ function enrichNeighborhood(
     arrondissement: row.arrondissement,
     price: row.price,
     stockBySize: parseStock(row.stock_by_size),
-    imageUrl: row.image_url,
+    imageUrl: row.name === "La Joliette" ? laJolietteGallery[0].url : row.image_url,
     descriptionHistory: row.description_history,
     coordinates: parseCoordinates(row.coordinates),
     isAvailable: row.is_available,
