@@ -9,8 +9,8 @@ import { Providers } from "@/components/providers";
 import { getAvailabilityCount, getNeighborhoodSearchIndex } from "@/lib/neighborhoods";
 
 export const metadata: Metadata = {
-  title: "111 Quartiers Marseille",
-  description: "E-commerce SSR dédié à des t-shirts inspirés des 111 quartiers de Marseille.",
+  title: "111 — Marseille, quartier par quartier",
+  description: "Des t-shirts dessinés à Marseille pour porter haut les couleurs de chaque quartier.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000")
 };
 
@@ -30,7 +30,7 @@ export default async function RootLayout({
         <Providers>
           <div className="app-shell">
             <Header availableCount={availableCount} searchIndex={searchIndex} />
-            <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">{children}</main>
+            <main>{children}</main>
             <Footer />
             <CartDrawer />
             <MobileTabBar />

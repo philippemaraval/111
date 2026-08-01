@@ -11,12 +11,12 @@ export default function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
   const demoMode = !hasSupabaseEnv() || searchParams?.mode === "demo";
 
   return (
-    <div className="grid min-h-[70vh] gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <div className="rounded-[32px] bg-navy p-8 text-white shadow-card">
-        <p className="text-xs uppercase tracking-[0.26em] text-sun">Back-office</p>
-        <h1 className="mt-4 font-display text-6xl">Gérer les drops, les stocks et les votes.</h1>
+    <div className="mx-auto grid min-h-[70vh] max-w-[1200px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-12">
+      <div className="rounded-[24px] bg-sea p-8 text-white shadow-card lg:p-10">
+        <p className="text-xs font-bold uppercase tracking-[0.26em] text-sun">Espace 111</p>
+        <h1 className="mt-4 text-5xl font-black uppercase leading-[0.95] tracking-[-0.04em]">Gérer la collection et les votes.</h1>
         <p className="mt-4 max-w-xl text-sm leading-7 text-white/72">
-          Cette interface sécurise l’activation des quartiers et donne une lecture directe de la traction email par arrondissement.
+          L’espace de gestion des quartiers, des stocks et des envies de la communauté.
         </p>
         {demoMode && (
           <Link
@@ -29,9 +29,9 @@ export default function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
       </div>
 
       {demoMode ? (
-        <div className="rounded-[32px] border border-navy/10 bg-white/75 p-6 shadow-card backdrop-blur-xl">
-          <p className="text-xs uppercase tracking-[0.26em] text-sea">Mode démo</p>
-          <h2 className="mt-2 font-display text-4xl text-navy">Supabase non configuré</h2>
+        <div className="rounded-[24px] border border-navy/10 bg-white p-6 shadow-soft">
+          <p className="section-kicker">Mode démo</p>
+          <h2 className="mt-2 text-3xl font-black text-navy">Données de démonstration</h2>
           <p className="mt-4 text-sm text-navy/70">
             Configurez `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_ROLE_KEY` pour activer l’auth admin réelle.
           </p>

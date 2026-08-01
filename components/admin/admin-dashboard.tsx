@@ -94,25 +94,25 @@ export function AdminDashboard({
   }
 
   return (
-    <div className="space-y-6 pb-24 md:pb-8">
+    <div className="space-y-8 pb-24 md:pb-8">
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-[30px] border border-navy/10 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-sea">Admin</p>
-          <h1 className="mt-3 font-display text-4xl text-navy">
-            {demoMode ? "Dashboard démo" : "Dashboard sécurisé"}
+        <div className="rounded-[24px] bg-navy p-6 text-white shadow-soft">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-sea">Espace 111</p>
+          <h1 className="mt-3 text-3xl font-black">
+            {demoMode ? "Vue de démonstration" : "Tableau de bord"}
           </h1>
-          <p className="mt-3 text-sm text-navy/70">
+          <p className="mt-3 text-sm text-white/60">
             {demoMode
               ? "Supabase n’est pas encore configuré. Les données affichées utilisent le mode démo."
               : `Session active pour ${adminEmail}.`}
           </p>
         </div>
-        <div className="rounded-[30px] border border-navy/10 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
+        <div className="rounded-[24px] border border-navy/10 bg-white p-6 shadow-soft">
           <p className="text-xs uppercase tracking-[0.24em] text-sea">Disponibles</p>
           <p className="mt-3 font-display text-5xl text-navy">{availableCount}</p>
           <p className="mt-2 text-sm text-navy/65">Quartiers activés sur 111.</p>
         </div>
-        <div className="rounded-[30px] border border-navy/10 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
+        <div className="rounded-[24px] border border-navy/10 bg-white p-6 shadow-soft">
           <p className="text-xs uppercase tracking-[0.24em] text-sea">Votes</p>
           <p className="mt-3 font-display text-5xl text-navy">{totalVotes}</p>
           <a
@@ -125,11 +125,11 @@ export function AdminDashboard({
         </div>
       </section>
 
-      <section className="rounded-[32px] border border-navy/10 bg-white/75 p-5 shadow-card backdrop-blur-xl">
+      <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-sea">Stocks & activations</p>
-            <h2 className="font-display text-4xl text-navy">Gestion catalogue</h2>
+            <h2 className="text-3xl font-black tracking-tight text-navy">Gestion du catalogue</h2>
           </div>
           <p className="max-w-xl text-sm text-navy/60">
             Mise à jour des stocks par taille, prix, date de sortie et activation publique d’un quartier.
@@ -173,7 +173,7 @@ export function AdminDashboard({
                     </label>
 
                     <label className="space-y-2">
-                      <span className="text-xs uppercase tracking-[0.18em] text-sea">Release</span>
+                      <span className="text-xs uppercase tracking-[0.18em] text-sea">Date de sortie</span>
                       <input
                         type="date"
                         value={state.releaseDate}
@@ -238,7 +238,7 @@ export function AdminDashboard({
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-navy px-5 py-3 text-sm font-semibold text-white"
                     >
                       <Save className="h-4 w-4" />
-                      Sauver
+                      Enregistrer
                     </button>
                     <p className="text-xs uppercase tracking-[0.18em] text-sea">
                       {state.status === "saving" && "Sauvegarde..."}
@@ -253,11 +253,11 @@ export function AdminDashboard({
         </div>
       </section>
 
-      <section className="rounded-[32px] border border-navy/10 bg-white/75 p-5 shadow-card backdrop-blur-xl">
+      <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-sea">Votes email</p>
-            <h2 className="font-display text-4xl text-navy">Demandes communauté</h2>
+            <h2 className="text-3xl font-black tracking-tight text-navy">Demandes de la communauté</h2>
           </div>
         </div>
 

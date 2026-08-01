@@ -10,14 +10,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        sand: "#f8ead2",
-        ochre: "#d98943",
-        terracotta: "#bf5f3c",
-        sea: "#2f7b84",
-        navy: "#183247",
-        sun: "#f8b84e",
-        olive: "#5d6543",
-        foam: "#f9f4eb"
+        sand: "#f5f2eb",
+        ochre: "#ff8a34",
+        terracotta: "#ff5c52",
+        sea: "#129fd4",
+        navy: "#12202f",
+        sun: "#ffd43b",
+        olive: "#39875a",
+        foam: "#ffffff"
       },
       fontFamily: {
         display: [
@@ -28,12 +28,12 @@ const config: Config = {
         ]
       },
       boxShadow: {
-        card: "0 20px 45px rgba(24, 50, 71, 0.14)",
-        soft: "0 12px 24px rgba(24, 50, 71, 0.12)"
+        card: "0 24px 70px rgba(18, 32, 47, 0.12)",
+        soft: "0 10px 30px rgba(18, 32, 47, 0.08)"
       },
       backgroundImage: {
         grain: "radial-gradient(circle at 1px 1px, rgba(24, 50, 71, 0.08) 1px, transparent 0)",
-        sunburst: "linear-gradient(135deg, rgba(248, 184, 78, 0.14), rgba(217, 137, 67, 0.08) 45%, rgba(47, 123, 132, 0.12))"
+        sunburst: "linear-gradient(135deg, #11a7df 0%, #28b9ec 58%, #8edfff 100%)"
       }
     }
   },

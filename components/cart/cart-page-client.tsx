@@ -2,174 +2,55 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, Minus, Plus, Trash2 } from "lucide-react";
-
+import { ArrowLeft, ArrowRight, Check, Minus, Plus, ShieldCheck, Trash2, Truck } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
 import { clampQuantity, formatCurrency } from "@/lib/utils";
 
 export function CartPageClient() {
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-
-  const shipping = useMemo(() => (subtotal > 90 ? 0 : 6), [subtotal]);
+  const shipping = useMemo(() => (subtotal >= 90 ? 0 : 6), [subtotal]);
   const total = subtotal + shipping;
 
   async function handleCheckout() {
     setIsCheckingOut(true);
-
     try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ items })
-      });
-
+      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) });
       const payload = (await response.json()) as { url?: string; demoMode?: boolean };
-
-      if (!response.ok || !payload.url) {
-        throw new Error("checkout_failed");
-      }
-
-      if (payload.demoMode) {
-        clearCart();
-      }
-
+      if (!response.ok || !payload.url) throw new Error("checkout_failed");
+      if (payload.demoMode) clearCart();
       window.location.assign(payload.url);
-    } finally {
-      setIsCheckingOut(false);
-    }
+    } finally { setIsCheckingOut(false); }
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="grid min-h-[55vh] place-items-center">
-        <div className="max-w-lg rounded-[32px] border border-navy/10 bg-white/75 p-8 text-center shadow-card backdrop-blur-xl">
-          <h1 className="font-display text-5xl text-navy">Panier vide</h1>
-          <p className="mt-4 text-navy/70">
-            Retournez sur la carte pour ajouter vos quartiers favoris.
-          </p>
-          <Link
-            href="/"
-            className="mt-6 inline-flex rounded-full bg-navy px-6 py-3 text-sm font-medium text-white"
-          >
-            Revenir au catalogue
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  if (items.length === 0) return (
+    <div className="mx-auto grid min-h-[65vh] max-w-2xl place-items-center px-4 text-center"><div><p className="section-kicker">Ton panier</p><h1 className="mt-4 text-5xl font-black uppercase tracking-[-0.05em] sm:text-7xl">Un peu vide, non ?</h1><p className="mx-auto mt-5 max-w-md leading-7 text-navy/55">La carte de Marseille n’attend plus que toi. Trouve ton quartier et porte ses couleurs.</p><Link href="/#carte" className="focus-ring mt-7 inline-flex items-center gap-2 rounded-full bg-sea px-6 py-4 text-sm font-bold text-white hover:bg-navy">Explorer les quartiers <ArrowRight className="h-4 w-4" /></Link></div></div>
+  );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="space-y-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-sea">Tunnel d’achat</p>
-          <h1 className="font-display text-5xl text-navy">Panier quartier</h1>
-        </div>
-
-        <div className="space-y-4">
+    <div className="mx-auto max-w-[1280px] px-4 py-8 pb-24 sm:px-6 lg:px-10 lg:py-16">
+      <Link href="/#collection" className="focus-ring inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-navy/50 hover:text-sea"><ArrowLeft className="h-4 w-4" /> Continuer mes achats</Link>
+      <h1 className="mt-8 text-5xl font-black uppercase tracking-[-0.05em] sm:text-7xl">Ton panier.</h1>
+      <div className="mt-10 grid gap-12 lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="divide-y divide-navy/10 border-y border-navy/10">
           {items.map((item) => (
-            <article key={`${item.neighborhoodId}-${item.size}`} className="rounded-[30px] border border-navy/10 bg-white p-5 shadow-soft">
-              <div className="flex flex-col gap-4 sm:flex-row">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="h-32 w-28 rounded-[22px] object-cover"
-                />
-                <div className="flex flex-1 flex-col">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-xl font-semibold text-navy">{item.name}</h2>
-                      <p className="text-xs uppercase tracking-[0.2em] text-sea">
-                        Taille {item.size}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.neighborhoodId, item.size)}
-                      className="rounded-full border border-navy/10 p-2 text-navy/60"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
-                    <div className="flex items-center rounded-full border border-navy/10">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateQuantity(
-                            item.neighborhoodId,
-                            item.size,
-                            clampQuantity(item.quantity - 1)
-                          )
-                        }
-                        className="px-3 py-2 text-navy"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <span className="min-w-10 text-center text-sm font-medium text-navy">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateQuantity(
-                            item.neighborhoodId,
-                            item.size,
-                            clampQuantity(item.quantity + 1)
-                          )
-                        }
-                        className="px-3 py-2 text-navy"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <p className="font-semibold text-navy">
-                      {formatCurrency(item.unitPrice * item.quantity)}
-                    </p>
-                  </div>
-                </div>
+            <article key={`${item.neighborhoodId}-${item.size}`} className="flex gap-4 py-6 sm:gap-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={item.imageUrl} alt={item.name} className="h-40 w-28 rounded-xl bg-sand object-cover sm:h-48 sm:w-36" />
+              <div className="flex min-w-0 flex-1 flex-col"><div className="flex items-start justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sea">T-shirt 111</p><h2 className="mt-1 text-2xl font-black">{item.name}</h2><p className="mt-1 text-sm text-navy/50">Taille {item.size}</p></div><button type="button" onClick={() => removeItem(item.neighborhoodId, item.size)} className="focus-ring rounded-full p-2 text-navy/35 hover:text-terracotta" aria-label={`Retirer ${item.name}`}><Trash2 className="h-4 w-4" /></button></div>
+                <div className="mt-auto flex items-center justify-between"><div className="flex items-center rounded-full border border-navy/10"><button type="button" onClick={() => updateQuantity(item.neighborhoodId, item.size, clampQuantity(item.quantity - 1))} className="focus-ring p-3" aria-label="Diminuer"><Minus className="h-4 w-4" /></button><span className="min-w-8 text-center text-sm font-bold">{item.quantity}</span><button type="button" onClick={() => updateQuantity(item.neighborhoodId, item.size, clampQuantity(item.quantity + 1))} className="focus-ring p-3" aria-label="Augmenter"><Plus className="h-4 w-4" /></button></div><p className="text-lg font-black">{formatCurrency(item.unitPrice * item.quantity)}</p></div>
               </div>
             </article>
           ))}
-        </div>
-      </section>
-
-      <aside className="space-y-4 rounded-[32px] border border-navy/10 bg-white/75 p-6 shadow-card backdrop-blur-xl">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-sea">Résumé</p>
-          <h2 className="font-display text-4xl text-navy">Paiement Stripe</h2>
-        </div>
-        <div className="space-y-3 text-sm text-navy/70">
-          <div className="flex items-center justify-between">
-            <span>Sous-total</span>
-            <span>{formatCurrency(subtotal)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Livraison</span>
-            <span>{shipping === 0 ? "Offerte" : formatCurrency(shipping)}</span>
-          </div>
-          <div className="flex items-center justify-between border-t border-navy/10 pt-3 text-base font-semibold text-navy">
-            <span>Total</span>
-            <span>{formatCurrency(total)}</span>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleCheckout}
-          disabled={isCheckingOut}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-navy px-5 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-white"
-        >
-          {isCheckingOut ? "Redirection..." : "Checkout sécurisé"}
-          <ArrowRight className="h-4 w-4" />
-        </button>
-        <p className="text-sm text-navy/55">
-          Le paiement s’effectue sur Stripe. Les ventes mettent ensuite à jour les compteurs communautaires côté Supabase.
-        </p>
-      </aside>
+        </section>
+        <aside className="h-fit rounded-[24px] bg-sand p-6 sm:p-8 lg:sticky lg:top-32">
+          <p className="section-kicker">Récapitulatif</p><h2 className="mt-2 text-3xl font-black">Prêt à rayonner ?</h2>
+          <div className="mt-7 space-y-4 border-b border-navy/10 pb-6 text-sm"><div className="flex justify-between"><span className="text-navy/55">Sous-total</span><strong>{formatCurrency(subtotal)}</strong></div><div className="flex justify-between"><span className="text-navy/55">Livraison</span><strong>{shipping === 0 ? "Offerte" : formatCurrency(shipping)}</strong></div></div>
+          <div className="flex items-center justify-between py-6"><span className="font-bold">Total</span><span className="text-2xl font-black">{formatCurrency(total)}</span></div>
+          <button type="button" onClick={handleCheckout} disabled={isCheckingOut} className="focus-ring flex w-full items-center justify-between rounded-full bg-sea px-6 py-4 text-sm font-bold text-white hover:bg-navy disabled:opacity-50">{isCheckingOut ? "Redirection…" : "Passer au paiement"}<ArrowRight className="h-4 w-4" /></button>
+          <div className="mt-6 space-y-3 text-xs font-semibold text-navy/55"><p className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-olive" /> Paiement sécurisé</p><p className="flex items-center gap-2"><Truck className="h-4 w-4 text-sea" /> Livraison offerte dès 90 €</p><p className="flex items-center gap-2"><Check className="h-4 w-4 text-sea" /> Expédition suivie</p></div>
+        </aside>
+      </div>
     </div>
   );
 }

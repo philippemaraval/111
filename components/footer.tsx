@@ -1,43 +1,46 @@
+import Link from "next/link";
+import { MapPin, Sparkles, Users } from "lucide-react";
+import { LogoMark } from "@/components/logo-mark";
+
 export function Footer() {
   return (
-    <footer className="border-t border-navy/10 bg-navy text-foam">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-3 md:px-6">
-        <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.28em] text-sun">Guide des tailles</p>
-          <h2 className="font-display text-3xl">Coupe unisexe, tombé droit, esprit vintage.</h2>
-          <p className="text-sm text-foam/70">
-            S pour une coupe nette, M et L pour le porté classique, XL pour la silhouette ample.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.28em] text-sun">Newsletter</p>
-          <div className="rounded-[28px] border border-white/10 bg-white/5 p-4">
-            <p className="text-sm text-foam/75">
-              Recevoir les prochains drops, les alertes de stock et les nouvelles histoires de quartiers.
-            </p>
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <input
-                type="email"
-                placeholder="votre@email.fr"
-                className="rounded-full border border-white/15 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-foam/40"
-              />
-              <button className="rounded-full bg-sun px-5 py-3 text-sm font-semibold text-navy">
-                S’inscrire
-              </button>
+    <footer className="mt-20 bg-navy text-white">
+      <div className="overflow-hidden border-b border-white/10 py-4">
+        <div className="marquee-track flex w-max gap-10 whitespace-nowrap text-xs font-bold uppercase tracking-[0.22em] text-sun">
+          {[0, 1].map((group) => (
+            <div key={group} className="flex gap-10" aria-hidden={group === 1}>
+              <span>111 quartiers</span><span>Une seule ville</span><span>Créé à Marseille</span><span>Séries courtes</span><span>Marseille rayonne</span>
             </div>
+          ))}
+        </div>
+      </div>
+      <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr] lg:px-10">
+        <div className="max-w-md">
+          <LogoMark className="h-16 w-16 text-sea" />
+          <h2 className="mt-6 text-3xl font-black leading-tight">Marseille se porte fièrement.</h2>
+          <p className="mt-3 text-sm leading-6 text-white/60">Une collection locale qui met les histoires, les accents et les couleurs de nos quartiers au premier plan.</p>
+        </div>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-sun">Explorer</p>
+          <div className="mt-5 flex flex-col gap-3 text-sm text-white/75">
+            <Link href="/#collection" className="hover:text-white">La collection</Link>
+            <Link href="/#carte" className="hover:text-white">La carte des quartiers</Link>
+            <Link href="/#histoire" className="hover:text-white">Notre démarche</Link>
+            <Link href="/cart" className="hover:text-white">Mon panier</Link>
           </div>
         </div>
-        <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.28em] text-sun">Flux social</p>
-          <div className="space-y-3 rounded-[28px] border border-white/10 bg-white/5 p-4">
-            <p className="text-sm text-foam/75">
-              #111quartiersmarseille #lepanier #estaque #belsunce
-            </p>
-            <p className="text-sm text-foam/55">
-              Des visuels rétro, des récits de quartier et la prochaine série activée par la communauté.
-            </p>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-sun">Restons voisins</p>
+          <div className="mt-5 space-y-4 text-sm text-white/75">
+            <p className="flex gap-3"><MapPin className="h-5 w-5 shrink-0 text-sea" /> Imaginé à Marseille</p>
+            <p className="flex gap-3"><Sparkles className="h-5 w-5 shrink-0 text-sea" /> Collections en séries courtes</p>
+            <p className="flex gap-3"><Users className="h-5 w-5 shrink-0 text-sea" /> Les habitants choisissent la suite</p>
           </div>
         </div>
+      </div>
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-3 border-t border-white/10 px-5 py-5 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between lg:px-10">
+        <p>© 2026 — 111 Marseille</p>
+        <p>Fièrement local, résolument marseillais.</p>
       </div>
     </footer>
   );

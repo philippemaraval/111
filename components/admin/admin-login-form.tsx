@@ -32,12 +32,12 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-[32px] border border-navy/10 bg-white/75 p-6 shadow-card backdrop-blur-xl">
+    <form onSubmit={handleSubmit} className="space-y-5 rounded-[24px] border border-navy/10 bg-white p-7 shadow-soft lg:p-10">
       <div>
-        <p className="text-xs uppercase tracking-[0.26em] text-sea">Admin sécurisé</p>
-        <h1 className="mt-2 font-display text-5xl text-navy">Connexion</h1>
+        <p className="section-kicker">Accès sécurisé</p>
+        <h1 className="mt-2 text-4xl font-black tracking-tight text-navy">Connexion</h1>
         <p className="mt-3 text-sm text-navy/70">
-          Authentification Supabase par magic link. Seuls les emails autorisés dans `ADMIN_EMAILS` accèdent au dashboard.
+          Recevez un lien de connexion à usage unique sur votre adresse autorisée.
         </p>
       </div>
       <input
@@ -46,12 +46,12 @@ export function AdminLoginForm() {
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         placeholder="admin@marseille111.fr"
-        className="w-full rounded-2xl border border-navy/10 bg-foam px-4 py-3 text-sm text-navy outline-none"
+        className="focus-ring w-full rounded-xl border border-navy/15 bg-white px-4 py-3.5 text-sm text-navy"
       />
       <button
         type="submit"
         disabled={state === "loading"}
-        className="w-full rounded-full bg-navy px-5 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+        className="focus-ring w-full rounded-full bg-sea px-5 py-4 text-sm font-bold text-white hover:bg-navy"
       >
         {state === "loading" ? "Envoi..." : "Recevoir le lien"}
       </button>
