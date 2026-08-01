@@ -43,9 +43,8 @@ export function Header({ availableCount, searchIndex }: HeaderProps) {
           {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
 
-        <Link href="/" className="focus-ring flex items-center gap-2.5 rounded-md text-sea" aria-label="111, accueil">
+        <Link href="/" className="focus-ring rounded-md text-sea" aria-label="111, accueil">
           <LogoMark className="h-12 w-12" />
-          <span className="hidden text-xs font-bold uppercase tracking-[0.22em] text-navy sm:block">Marseille</span>
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Navigation principale">
