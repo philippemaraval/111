@@ -10,10 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const neighborhoods = await listNeighborhoods({ sort: "popular" });
-  const photographed = neighborhoods.filter((item) =>
-    item.gallery.some((image) => image.url.startsWith("/illustrations/"))
-  );
-  const featured = (photographed.length ? photographed : neighborhoods.filter((item) => item.isAvailable)).slice(0, 3);
+  const featured = neighborhoods.filter((item) => item.isAvailable).slice(0, 5);
 
   return (
     <div className="pb-16">

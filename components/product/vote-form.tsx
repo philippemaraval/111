@@ -3,7 +3,15 @@
 import { useState, type FormEvent } from "react";
 import { Heart } from "lucide-react";
 
-export function VoteForm({ neighborhoodId, neighborhoodName }: { neighborhoodId: string; neighborhoodName: string }) {
+export function VoteForm({
+  neighborhoodId,
+  neighborhoodName,
+  voteCount
+}: {
+  neighborhoodId: string;
+  neighborhoodName: string;
+  voteCount: number;
+}) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "success" | "duplicate" | "error">("idle");
 
@@ -19,7 +27,12 @@ export function VoteForm({ neighborhoodId, neighborhoodName }: { neighborhoodId:
 
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl bg-sand p-5 sm:p-6">
-      <Heart className="h-6 w-6 text-terracotta" />
+      <div className="flex items-center justify-between gap-4">
+        <Heart className="h-6 w-6 text-terracotta" />
+        <p className="rounded-full bg-white px-3 py-2 text-xs font-bold text-navy">
+          {voteCount} {voteCount > 1 ? "votes" : "vote"}
+        </p>
+      </div>
       <h2 className="mt-5 text-2xl font-black tracking-tight">Fais entrer {neighborhoodName} dans la collection.</h2>
       <p className="mt-2 text-sm leading-6 text-navy/60">Ton vote nous aide à choisir le prochain quartier. Tu seras prévenu en premier s’il est lancé.</p>
       <label className="mt-5 block text-xs font-bold uppercase tracking-[0.15em]" htmlFor="vote-email">Ton adresse e-mail</label>

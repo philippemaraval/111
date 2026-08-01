@@ -52,7 +52,7 @@ export function ProductFilters() {
         >
           <option value="all">Tout voir</option>
           <option value="available">Disponible</option>
-          <option value="coming-soon">Coming soon</option>
+          <option value="coming-soon">En projet</option>
         </select>
       </label>
 

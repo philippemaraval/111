@@ -1,7 +1,13 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
-const [, , sourcePath, outputPath = "public/data/marseille-quartiers.geojson"] = process.argv;
+const [
+  ,
+  ,
+  sourcePath,
+  outputPath = "public/data/marseille-quartiers.geojson",
+  catalogOutputPath = "lib/marseille-neighborhoods.json"
+] = process.argv;
 
 if (!sourcePath) {
   throw new Error("Usage: node scripts/prepare-neighborhood-map.mjs <source.geojson> [output.geojson]");
@@ -91,6 +97,38 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+const nameOverrides = {
+  "chateau-gombert": "Château-Gombert",
+  eoures: "Éoures",
+  "hotel-de-ville": "Hôtel de Ville",
+  "l-estaque": "L’Estaque",
+  "les-iles": "Les Îles",
+  malpasse: "Malpassé",
+  "notre-dame-du-mont": "Notre-Dame-du-Mont",
+  opera: "Opéra",
+  perier: "Périer",
+  prefecture: "Préfecture",
+  "sainte-anne": "Sainte-Anne",
+  "sainte-marguerite": "Sainte-Marguerite",
+  "sainte-marthe": "Sainte-Marthe"
+};
+
+function formatName(value) {
+  const slug = slugify(value);
+  if (nameOverrides[slug]) return nameOverrides[slug];
+
+  const smallWords = new Set(["de", "des", "du", "la", "le", "les"]);
+  return value
+    .toLocaleLowerCase("fr")
+    .split(/([ -])/)
+    .map((part, index) => {
+      if (part === " " || part === "-") return part;
+      if (index > 0 && smallWords.has(part)) return part;
+      return `${part.charAt(0).toLocaleUpperCase("fr")}${part.slice(1)}`;
+    })
+    .join("");
+}
+
 const result = {
   type: "FeatureCollection",
   source: "Camino / limites des 111 quartiers de Marseille",
@@ -113,4 +151,20 @@ const result = {
 await mkdir(path.dirname(outputPath), { recursive: true });
 await writeFile(outputPath, JSON.stringify(result));
 
+const catalog = result.features
+  .map((feature) => ({
+    name: formatName(feature.properties.name),
+    slug: feature.properties.slug,
+    arrondissement: feature.properties.arrondissement,
+    coordinates: {
+      lng: feature.properties.center[0],
+      lat: feature.properties.center[1]
+    }
+  }))
+  .sort((a, b) => a.arrondissement - b.arrondissement || a.name.localeCompare(b.name, "fr"));
+
+await mkdir(path.dirname(catalogOutputPath), { recursive: true });
+await writeFile(catalogOutputPath, `${JSON.stringify(catalog, null, 2)}\n`);
+
 console.log(`Carte générée : ${result.features.length} quartiers → ${outputPath}`);
+console.log(`Catalogue généré : ${catalog.length} quartiers → ${catalogOutputPath}`);

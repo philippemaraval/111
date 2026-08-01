@@ -12,6 +12,7 @@ import {
   Search
 } from "lucide-react";
 
+import { getNeighborhoodCatalogStatus } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Neighborhood } from "@/lib/types";
 
@@ -136,7 +137,7 @@ function mapSlugForProduct(product: Neighborhood) {
 export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[] }) {
   const [mapData, setMapData] = useState<MapCollection | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [selectedSlug, setSelectedSlug] = useState("la-joliette");
+  const [selectedSlug, setSelectedSlug] = useState("");
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const [activeArrondissement, setActiveArrondissement] = useState<number | null>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -171,7 +172,10 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   );
 
   const selectedFeature = features.find((feature) => feature.properties.slug === selectedSlug) ?? features[0];
-  const selectedProduct = selectedFeature ? productsByMapSlug.get(selectedFeature.properties.slug) : undefined;
+  const selectedStatus = selectedFeature ? getNeighborhoodCatalogStatus(selectedFeature.properties.slug) : "idea";
+  const selectedProduct = selectedFeature
+    ? productsByMapSlug.get(selectedFeature.properties.slug)
+    : undefined;
   const hoveredFeature = features.find((feature) => feature.properties.slug === hoveredSlug);
   const viewBox = isFocused && selectedFeature ? focusedViewBox(selectedFeature) : `0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`;
 
@@ -232,17 +236,17 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
           <svg viewBox={viewBox} preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full p-5 sm:p-8" role="img" aria-label="Carte interactive des 111 quartiers de Marseille">
             <g>
               {features.map((feature) => {
-                const product = productsByMapSlug.get(feature.properties.slug);
+                const status = getNeighborhoodCatalogStatus(feature.properties.slug);
                 const selected = selectedFeature?.properties.slug === feature.properties.slug;
                 const hovered = hoveredSlug === feature.properties.slug;
                 const inActiveArrondissement = activeArrondissement === null || activeArrondissement === feature.properties.arrondissement;
-                const fill = selected ? "#ffd43b" : product?.isAvailable ? "#129fd4" : product ? "#ff8a34" : "#ffffff";
+                const fill = selected ? "#ffd43b" : status === "available" ? "#129fd4" : status === "project" ? "#ff8a34" : "#ffffff";
                 return (
                   <path
                     key={feature.properties.slug}
                     d={geometryToPath(feature.geometry)}
                     fill={fill}
-                    fillOpacity={inActiveArrondissement ? (selected ? 1 : product ? 0.82 : 0.72) : 0.16}
+                    fillOpacity={inActiveArrondissement ? (selected ? 1 : status !== "idea" ? 0.82 : 0.72) : 0.16}
                     stroke={selected || hovered ? "#12202f" : "#487387"}
                     strokeOpacity={inActiveArrondissement ? 1 : 0.3}
                     strokeWidth={selected ? 3 : hovered ? 2.4 : 1.1}
@@ -285,12 +289,14 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                   <MapPin className="h-6 w-6 text-sun" />
                 </div>
                 <h3 className="mt-5 text-4xl font-black uppercase leading-none tracking-[-0.05em] sm:text-6xl">
-                  {selectedFeature.properties.slug === "hotel-de-ville" && selectedProduct ? "Le Panier" : formatOfficialName(selectedFeature)}
+                  {selectedProduct?.slug === "le-panier" ? "Le Panier" : formatOfficialName(selectedFeature)}
                 </h3>
-                {selectedFeature.properties.slug === "hotel-de-ville" && selectedProduct && <p className="mt-2 text-sm font-semibold text-white/45">Quartier officiel Hôtel de Ville</p>}
+                {selectedProduct?.slug === "le-panier" && <p className="mt-2 text-sm font-semibold text-white/45">Quartier officiel Hôtel de Ville</p>}
                 <p className="mt-7 max-w-lg text-base leading-8 text-white/65">
                   {selectedProduct
                     ? selectedProduct.descriptionHistory
+                    : selectedStatus === "project"
+                      ? `${formatOfficialName(selectedFeature)} fait partie des prochaines éditions 111. Le projet est identifié et sa fiche rejoindra bientôt les votes de la communauté.`
                     : `${formatOfficialName(selectedFeature)} fait partie des 111 quartiers officiels de Marseille. Son histoire et son premier t-shirt restent encore à imaginer avec les habitants.`}
                 </p>
               </div>
@@ -300,12 +306,30 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                   <>
                     <div className="mb-5 flex items-center justify-between gap-3 text-sm text-white/70">
                       <span className="flex items-center gap-2"><Heart className="h-4 w-4 text-terracotta" /> <strong className="text-white">{selectedProduct.voteCount}</strong> soutiens</span>
-                      <span className={cn("rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]", selectedProduct.isAvailable ? "bg-olive/25 text-[#a5efbe]" : "bg-terracotta/20 text-[#ffaaa3]")}>{selectedProduct.isAvailable ? "T-shirt disponible" : "À soutenir"}</span>
+                      <span className={cn(
+                        "rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]",
+                        selectedStatus === "available"
+                          ? "bg-olive/25 text-[#a5efbe]"
+                          : selectedStatus === "project"
+                            ? "bg-terracotta/20 text-[#ffaaa3]"
+                            : "bg-white/10 text-white/70"
+                      )}>
+                        {selectedStatus === "available"
+                          ? "T-shirt disponible"
+                          : selectedStatus === "project"
+                            ? "En projet"
+                            : "Votes ouverts"}
+                      </span>
                     </div>
                     <Link href={`/quartier/${selectedProduct.slug}`} className="focus-ring flex w-full items-center justify-between rounded-full bg-white px-6 py-4 text-sm font-bold text-navy hover:bg-sun">
-                      {selectedProduct.isAvailable ? "Découvrir le t-shirt" : "Découvrir et voter"}<ArrowUpRight className="h-5 w-5" />
+                      {selectedStatus === "available" ? "Découvrir le t-shirt" : "Découvrir et voter"}<ArrowUpRight className="h-5 w-5" />
                     </Link>
                   </>
+                ) : selectedStatus === "project" ? (
+                  <div className="rounded-2xl border border-ochre/25 bg-ochre/10 p-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-sun">En projet</p>
+                    <p className="mt-2 text-sm leading-6 text-white/65">Ce quartier fait bien partie des prochaines éditions 111. Sa fiche de vote sera disponible dès son ajout au catalogue.</p>
+                  </div>
                 ) : (
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-sun">À imaginer</p>

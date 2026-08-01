@@ -29,13 +29,12 @@ export function HeroSection() {
         <div className="relative min-h-[520px] overflow-hidden bg-[#f3f3f3] lg:min-h-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/illustrations/la-joliette-porte-dos.png" alt="T-shirt 111 La Joliette porté" className="h-full w-full object-contain object-center transition duration-700 hover:scale-[1.02]" />
-          <div className="absolute right-5 top-5 rounded-full bg-sun px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-navy sm:right-8 sm:top-8">Première édition</div>
           <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between rounded-2xl bg-white/90 p-4 backdrop-blur-md sm:bottom-8 sm:left-8 sm:right-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-sea">Le 2<sup>e</sup> arrondissement</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-navy">La Joliette</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-sea">La collection 111</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-navy">5 quartiers disponibles</p>
             </div>
-            <Link href="/quartier/la-joliette" className="focus-ring rounded-full bg-navy px-4 py-2 text-xs font-bold text-white hover:bg-sea">Découvrir</Link>
+            <Link href="#collection" className="focus-ring rounded-full bg-navy px-4 py-2 text-xs font-bold text-white hover:bg-sea">Les découvrir</Link>
           </div>
         </div>
       </div>

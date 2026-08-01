@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import { AVAILABLE_NEIGHBORHOOD_SLUGS, isNeighborhoodAvailable } from "@/lib/constants";
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
 import {
   hasPublishedProductImages,
@@ -47,7 +48,7 @@ function enrichNeighborhood(
     imageUrl: hasProductImages ? laJolietteGallery[0].url : row.image_url,
     descriptionHistory: row.description_history,
     coordinates: parseCoordinates(row.coordinates),
-    isAvailable: row.is_available || hasProductImages,
+    isAvailable: isNeighborhoodAvailable(slug),
     releaseDate: row.release_date,
     seo,
     voteCount: metrics?.vote_count ?? 0,
@@ -120,14 +121,6 @@ export const listNeighborhoods = cache(async (filters: NeighborhoodFilters = {})
     query = query.eq("arrondissement", filters.arrondissement);
   }
 
-  if (filters.availability === "available") {
-    query = query.eq("is_available", true);
-  }
-
-  if (filters.availability === "coming-soon") {
-    query = query.eq("is_available", false);
-  }
-
   if (filters.q) {
     query = query.ilike("name", `%${filters.q.trim()}%`);
   }
@@ -159,10 +152,14 @@ export const listNeighborhoods = cache(async (filters: NeighborhoodFilters = {})
     (metricsRows ?? []).map((item) => [item.neighborhood_id, item])
   );
 
-  return sortNeighborhoods(
-    rows.map((row) => enrichNeighborhood(row, metricsMap.get(row.id))),
-    filters.sort
-  );
+  const enriched = rows.map((row) => enrichNeighborhood(row, metricsMap.get(row.id)));
+  const filtered = enriched.filter((item) => {
+    if (filters.availability === "available") return item.isAvailable;
+    if (filters.availability === "coming-soon") return !item.isAvailable;
+    return true;
+  });
+
+  return sortNeighborhoods(filtered, filters.sort);
 });
 
 export const getNeighborhoodBySlug = cache(async (slug: string) => {
@@ -207,14 +204,13 @@ export const getNeighborhoodSearchIndex = cache(async (): Promise<SearchIndexIte
       name: row.name,
       slug: seo.slug ?? slugify(row.name),
       arrondissement: row.arrondissement,
-      isAvailable: row.is_available || hasPublishedProductImages(row.name)
+      isAvailable: isNeighborhoodAvailable(seo.slug ?? slugify(row.name))
     };
   });
 });
 
 export const getAvailabilityCount = cache(async () => {
-  const neighborhoods = await listNeighborhoods({});
-  return neighborhoods.filter((item) => item.isAvailable).length;
+  return AVAILABLE_NEIGHBORHOOD_SLUGS.length;
 });
 
 export const getNeighborhoodGroups = cache(async () => {

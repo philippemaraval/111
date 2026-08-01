@@ -49,7 +49,13 @@ export function ProductPurchasePanel({ neighborhood }: { neighborhood: Neighborh
           <details className="border-y border-navy/10 py-4"><summary className="flex cursor-pointer list-none items-center justify-between text-sm font-bold">Fabrication & démarche <ChevronDown className="h-4 w-4" /></summary><p className="pt-3 text-sm leading-6 text-navy/55">Un visuel imaginé à Marseille et produit en série courte. Les informations de fabrication accompagnent chaque édition.</p></details>
         </div>
       ) : (
-        <div className="mt-8"><VoteForm neighborhoodId={neighborhood.id} neighborhoodName={neighborhood.name} /></div>
+        <div className="mt-8">
+          <VoteForm
+            neighborhoodId={neighborhood.id}
+            neighborhoodName={neighborhood.name}
+            voteCount={neighborhood.voteCount}
+          />
+        </div>
       )}
     </aside>
   );

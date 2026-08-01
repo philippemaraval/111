@@ -1,0 +1,1001 @@
+[
+  {
+    "name": "Belsunce",
+    "slug": "belsunce",
+    "arrondissement": 1,
+    "coordinates": {
+      "lng": 5.377013,
+      "lat": 43.29912
+    }
+  },
+  {
+    "name": "Le Chapitre",
+    "slug": "le-chapitre",
+    "arrondissement": 1,
+    "coordinates": {
+      "lng": 5.384185,
+      "lat": 43.300545
+    }
+  },
+  {
+    "name": "Noailles",
+    "slug": "noailles",
+    "arrondissement": 1,
+    "coordinates": {
+      "lng": 5.379759,
+      "lat": 43.295003
+    }
+  },
+  {
+    "name": "Opéra",
+    "slug": "opera",
+    "arrondissement": 1,
+    "coordinates": {
+      "lng": 5.374999,
+      "lat": 43.293358
+    }
+  },
+  {
+    "name": "Saint-Charles",
+    "slug": "saint-charles",
+    "arrondissement": 1,
+    "coordinates": {
+      "lng": 5.388027,
+      "lat": 43.304413
+    }
+  },
+  {
+    "name": "Thiers",
+    "slug": "thiers",
+    "arrondissement": 1,
+    "coordinates": {
+      "lng": 5.384866,
+      "lat": 43.297214
+    }
+  },
+  {
+    "name": "Arenc",
+    "slug": "arenc",
+    "arrondissement": 2,
+    "coordinates": {
+      "lng": 5.357305,
+      "lat": 43.322633
+    }
+  },
+  {
+    "name": "Grands-Carmes",
+    "slug": "grands-carmes",
+    "arrondissement": 2,
+    "coordinates": {
+      "lng": 5.370983,
+      "lat": 43.301567
+    }
+  },
+  {
+    "name": "Hôtel de Ville",
+    "slug": "hotel-de-ville",
+    "arrondissement": 2,
+    "coordinates": {
+      "lng": 5.367743,
+      "lat": 43.297079
+    }
+  },
+  {
+    "name": "La Joliette",
+    "slug": "la-joliette",
+    "arrondissement": 2,
+    "coordinates": {
+      "lng": 5.36641,
+      "lat": 43.303953
+    }
+  },
+  {
+    "name": "Belle-de-Mai",
+    "slug": "belle-de-mai",
+    "arrondissement": 3,
+    "coordinates": {
+      "lng": 5.386427,
+      "lat": 43.311448
+    }
+  },
+  {
+    "name": "La Villette",
+    "slug": "la-villette",
+    "arrondissement": 3,
+    "coordinates": {
+      "lng": 5.372596,
+      "lat": 43.31124
+    }
+  },
+  {
+    "name": "Saint-Lazare",
+    "slug": "saint-lazare",
+    "arrondissement": 3,
+    "coordinates": {
+      "lng": 5.377587,
+      "lat": 43.30628
+    }
+  },
+  {
+    "name": "Saint-Mauront",
+    "slug": "saint-mauront",
+    "arrondissement": 3,
+    "coordinates": {
+      "lng": 5.376496,
+      "lat": 43.316311
+    }
+  },
+  {
+    "name": "Chutes-Lavie",
+    "slug": "chutes-lavie",
+    "arrondissement": 4,
+    "coordinates": {
+      "lng": 5.396612,
+      "lat": 43.312283
+    }
+  },
+  {
+    "name": "Cinq-Avenues",
+    "slug": "cinq-avenues",
+    "arrondissement": 4,
+    "coordinates": {
+      "lng": 5.396624,
+      "lat": 43.302613
+    }
+  },
+  {
+    "name": "La Blancarde",
+    "slug": "la-blancarde",
+    "arrondissement": 4,
+    "coordinates": {
+      "lng": 5.405459,
+      "lat": 43.302567
+    }
+  },
+  {
+    "name": "Les Chartreux",
+    "slug": "les-chartreux",
+    "arrondissement": 4,
+    "coordinates": {
+      "lng": 5.404126,
+      "lat": 43.311216
+    }
+  },
+  {
+    "name": "Baille",
+    "slug": "baille",
+    "arrondissement": 5,
+    "coordinates": {
+      "lng": 5.398746,
+      "lat": 43.288494
+    }
+  },
+  {
+    "name": "La Conception",
+    "slug": "la-conception",
+    "arrondissement": 5,
+    "coordinates": {
+      "lng": 5.393238,
+      "lat": 43.291406
+    }
+  },
+  {
+    "name": "Le Camas",
+    "slug": "le-camas",
+    "arrondissement": 5,
+    "coordinates": {
+      "lng": 5.393626,
+      "lat": 43.296188
+    }
+  },
+  {
+    "name": "Saint-Pierre",
+    "slug": "saint-pierre",
+    "arrondissement": 5,
+    "coordinates": {
+      "lng": 5.407382,
+      "lat": 43.293398
+    }
+  },
+  {
+    "name": "Castellane",
+    "slug": "castellane",
+    "arrondissement": 6,
+    "coordinates": {
+      "lng": 5.38308,
+      "lat": 43.285078
+    }
+  },
+  {
+    "name": "Lodi",
+    "slug": "lodi",
+    "arrondissement": 6,
+    "coordinates": {
+      "lng": 5.388051,
+      "lat": 43.28628
+    }
+  },
+  {
+    "name": "Notre-Dame-du-Mont",
+    "slug": "notre-dame-du-mont",
+    "arrondissement": 6,
+    "coordinates": {
+      "lng": 5.385423,
+      "lat": 43.292318
+    }
+  },
+  {
+    "name": "Palais-de-Justice",
+    "slug": "palais-de-justice",
+    "arrondissement": 6,
+    "coordinates": {
+      "lng": 5.37435,
+      "lat": 43.288916
+    }
+  },
+  {
+    "name": "Préfecture",
+    "slug": "prefecture",
+    "arrondissement": 6,
+    "coordinates": {
+      "lng": 5.380668,
+      "lat": 43.290674
+    }
+  },
+  {
+    "name": "Vauban",
+    "slug": "vauban",
+    "arrondissement": 6,
+    "coordinates": {
+      "lng": 5.376071,
+      "lat": 43.283497
+    }
+  },
+  {
+    "name": "Bompard",
+    "slug": "bompard",
+    "arrondissement": 7,
+    "coordinates": {
+      "lng": 5.361448,
+      "lat": 43.280623
+    }
+  },
+  {
+    "name": "Endoume",
+    "slug": "endoume",
+    "arrondissement": 7,
+    "coordinates": {
+      "lng": 5.353021,
+      "lat": 43.282863
+    }
+  },
+  {
+    "name": "Le Pharo",
+    "slug": "le-pharo",
+    "arrondissement": 7,
+    "coordinates": {
+      "lng": 5.358463,
+      "lat": 43.291456
+    }
+  },
+  {
+    "name": "Les Îles",
+    "slug": "les-iles",
+    "arrondissement": 7,
+    "coordinates": {
+      "lng": 5.304034,
+      "lat": 43.276512
+    }
+  },
+  {
+    "name": "Roucas-Blanc",
+    "slug": "roucas-blanc",
+    "arrondissement": 7,
+    "coordinates": {
+      "lng": 5.367953,
+      "lat": 43.275554
+    }
+  },
+  {
+    "name": "Saint-Lambert",
+    "slug": "saint-lambert",
+    "arrondissement": 7,
+    "coordinates": {
+      "lng": 5.361428,
+      "lat": 43.28656
+    }
+  },
+  {
+    "name": "Saint-Victor",
+    "slug": "saint-victor",
+    "arrondissement": 7,
+    "coordinates": {
+      "lng": 5.368128,
+      "lat": 43.289234
+    }
+  },
+  {
+    "name": "Bonneveine",
+    "slug": "bonneveine",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.380438,
+      "lat": 43.254566
+    }
+  },
+  {
+    "name": "La Plage",
+    "slug": "la-plage",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.374815,
+      "lat": 43.265355
+    }
+  },
+  {
+    "name": "Le Rouet",
+    "slug": "le-rouet",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.392648,
+      "lat": 43.277824
+    }
+  },
+  {
+    "name": "Les Goudes",
+    "slug": "les-goudes",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.365011,
+      "lat": 43.20982
+    }
+  },
+  {
+    "name": "Montredon",
+    "slug": "montredon",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.36592,
+      "lat": 43.23077
+    }
+  },
+  {
+    "name": "Périer",
+    "slug": "perier",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.380444,
+      "lat": 43.275857
+    }
+  },
+  {
+    "name": "Pointe Rouge",
+    "slug": "pointe-rouge",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.379952,
+      "lat": 43.238748
+    }
+  },
+  {
+    "name": "Saint-Giniez",
+    "slug": "saint-giniez",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.389189,
+      "lat": 43.269281
+    }
+  },
+  {
+    "name": "Sainte-Anne",
+    "slug": "sainte-anne",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.391917,
+      "lat": 43.257571
+    }
+  },
+  {
+    "name": "Vieille-Chapelle",
+    "slug": "vieille-chapelle",
+    "arrondissement": 8,
+    "coordinates": {
+      "lng": 5.383967,
+      "lat": 43.246023
+    }
+  },
+  {
+    "name": "Carpiagne",
+    "slug": "carpiagne",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.498803,
+      "lat": 43.249728
+    }
+  },
+  {
+    "name": "La Panouse",
+    "slug": "la-panouse",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.432166,
+      "lat": 43.255131
+    }
+  },
+  {
+    "name": "Le Cabot",
+    "slug": "le-cabot",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.419882,
+      "lat": 43.258774
+    }
+  },
+  {
+    "name": "Le Redon",
+    "slug": "le-redon",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.443789,
+      "lat": 43.23086
+    }
+  },
+  {
+    "name": "Les Baumettes",
+    "slug": "les-baumettes",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.425356,
+      "lat": 43.223724
+    }
+  },
+  {
+    "name": "Mazargues",
+    "slug": "mazargues",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.40557,
+      "lat": 43.250005
+    }
+  },
+  {
+    "name": "Sainte-Marguerite",
+    "slug": "sainte-marguerite",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.406092,
+      "lat": 43.265966
+    }
+  },
+  {
+    "name": "Sormiou",
+    "slug": "sormiou",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.400318,
+      "lat": 43.222736
+    }
+  },
+  {
+    "name": "Vaufreges",
+    "slug": "vaufreges",
+    "arrondissement": 9,
+    "coordinates": {
+      "lng": 5.480564,
+      "lat": 43.226961
+    }
+  },
+  {
+    "name": "La Capelette",
+    "slug": "la-capelette",
+    "arrondissement": 10,
+    "coordinates": {
+      "lng": 5.405994,
+      "lat": 43.280047
+    }
+  },
+  {
+    "name": "La Timone",
+    "slug": "la-timone",
+    "arrondissement": 10,
+    "coordinates": {
+      "lng": 5.414206,
+      "lat": 43.287443
+    }
+  },
+  {
+    "name": "Menpenti",
+    "slug": "menpenti",
+    "arrondissement": 10,
+    "coordinates": {
+      "lng": 5.395873,
+      "lat": 43.282167
+    }
+  },
+  {
+    "name": "Pont-de-Vivaux",
+    "slug": "pont-de-vivaux",
+    "arrondissement": 10,
+    "coordinates": {
+      "lng": 5.419466,
+      "lat": 43.280398
+    }
+  },
+  {
+    "name": "Saint-Loup",
+    "slug": "saint-loup",
+    "arrondissement": 10,
+    "coordinates": {
+      "lng": 5.439594,
+      "lat": 43.275331
+    }
+  },
+  {
+    "name": "Saint-Tronc",
+    "slug": "saint-tronc",
+    "arrondissement": 10,
+    "coordinates": {
+      "lng": 5.434402,
+      "lat": 43.266531
+    }
+  },
+  {
+    "name": "Éoures",
+    "slug": "eoures",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.524673,
+      "lat": 43.30107
+    }
+  },
+  {
+    "name": "La Barasse",
+    "slug": "la-barasse",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.478012,
+      "lat": 43.268667
+    }
+  },
+  {
+    "name": "La Milliere",
+    "slug": "la-milliere",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.500673,
+      "lat": 43.273743
+    }
+  },
+  {
+    "name": "La Pomme",
+    "slug": "la-pomme",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.438565,
+      "lat": 43.291082
+    }
+  },
+  {
+    "name": "La Treille",
+    "slug": "la-treille",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.510515,
+      "lat": 43.315315
+    }
+  },
+  {
+    "name": "La Valbarelle",
+    "slug": "la-valbarelle",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.451401,
+      "lat": 43.282048
+    }
+  },
+  {
+    "name": "La Valentine",
+    "slug": "la-valentine",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.482031,
+      "lat": 43.30208
+    }
+  },
+  {
+    "name": "Les Accates",
+    "slug": "les-accates",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.495182,
+      "lat": 43.304816
+    }
+  },
+  {
+    "name": "Les Camoins",
+    "slug": "les-camoins",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.512294,
+      "lat": 43.305391
+    }
+  },
+  {
+    "name": "Saint-Marcel",
+    "slug": "saint-marcel",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.463413,
+      "lat": 43.283451
+    }
+  },
+  {
+    "name": "Saint-Menet",
+    "slug": "saint-menet",
+    "arrondissement": 11,
+    "coordinates": {
+      "lng": 5.502767,
+      "lat": 43.290373
+    }
+  },
+  {
+    "name": "La Fourragere",
+    "slug": "la-fourragere",
+    "arrondissement": 12,
+    "coordinates": {
+      "lng": 5.430907,
+      "lat": 43.303299
+    }
+  },
+  {
+    "name": "Les Caillols",
+    "slug": "les-caillols",
+    "arrondissement": 12,
+    "coordinates": {
+      "lng": 5.446979,
+      "lat": 43.302663
+    }
+  },
+  {
+    "name": "Les Trois Lucs",
+    "slug": "les-trois-lucs",
+    "arrondissement": 12,
+    "coordinates": {
+      "lng": 5.465206,
+      "lat": 43.310321
+    }
+  },
+  {
+    "name": "Montolivet",
+    "slug": "montolivet",
+    "arrondissement": 12,
+    "coordinates": {
+      "lng": 5.424743,
+      "lat": 43.316811
+    }
+  },
+  {
+    "name": "Saint-Barnabe",
+    "slug": "saint-barnabe",
+    "arrondissement": 12,
+    "coordinates": {
+      "lng": 5.417388,
+      "lat": 43.304664
+    }
+  },
+  {
+    "name": "Saint-Jean-du-Desert",
+    "slug": "saint-jean-du-desert",
+    "arrondissement": 12,
+    "coordinates": {
+      "lng": 5.422397,
+      "lat": 43.295214
+    }
+  },
+  {
+    "name": "Saint-Julien",
+    "slug": "saint-julien",
+    "arrondissement": 12,
+    "coordinates": {
+      "lng": 5.442077,
+      "lat": 43.31319
+    }
+  },
+  {
+    "name": "Château-Gombert",
+    "slug": "chateau-gombert",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.441877,
+      "lat": 43.348332
+    }
+  },
+  {
+    "name": "La Croix Rouge",
+    "slug": "la-croix-rouge",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.445285,
+      "lat": 43.335927
+    }
+  },
+  {
+    "name": "La Rose",
+    "slug": "la-rose",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.428807,
+      "lat": 43.329877
+    }
+  },
+  {
+    "name": "Les Medecins",
+    "slug": "les-medecins",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.454292,
+      "lat": 43.363531
+    }
+  },
+  {
+    "name": "Les Mourets",
+    "slug": "les-mourets",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.422854,
+      "lat": 43.366961
+    }
+  },
+  {
+    "name": "Les Olives",
+    "slug": "les-olives",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.449584,
+      "lat": 43.325971
+    }
+  },
+  {
+    "name": "Malpassé",
+    "slug": "malpasse",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.414625,
+      "lat": 43.325456
+    }
+  },
+  {
+    "name": "Palama",
+    "slug": "palama",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.439438,
+      "lat": 43.374316
+    }
+  },
+  {
+    "name": "Saint-Jerome",
+    "slug": "saint-jerome",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.415972,
+      "lat": 43.334528
+    }
+  },
+  {
+    "name": "Saint-Just",
+    "slug": "saint-just",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.405266,
+      "lat": 43.320481
+    }
+  },
+  {
+    "name": "Saint-Mitre",
+    "slug": "saint-mitre",
+    "arrondissement": 13,
+    "coordinates": {
+      "lng": 5.423655,
+      "lat": 43.346347
+    }
+  },
+  {
+    "name": "Bon-Secours",
+    "slug": "bon-secours",
+    "arrondissement": 14,
+    "coordinates": {
+      "lng": 5.38543,
+      "lat": 43.321077
+    }
+  },
+  {
+    "name": "Le Canet",
+    "slug": "le-canet",
+    "arrondissement": 14,
+    "coordinates": {
+      "lng": 5.37635,
+      "lat": 43.326099
+    }
+  },
+  {
+    "name": "Le Merlan",
+    "slug": "le-merlan",
+    "arrondissement": 14,
+    "coordinates": {
+      "lng": 5.405884,
+      "lat": 43.357039
+    }
+  },
+  {
+    "name": "Les Arnavaux",
+    "slug": "les-arnavaux",
+    "arrondissement": 14,
+    "coordinates": {
+      "lng": 5.377403,
+      "lat": 43.334604
+    }
+  },
+  {
+    "name": "Saint-Barthelemy",
+    "slug": "saint-barthelemy",
+    "arrondissement": 14,
+    "coordinates": {
+      "lng": 5.39539,
+      "lat": 43.326903
+    }
+  },
+  {
+    "name": "Saint-Joseph",
+    "slug": "saint-joseph",
+    "arrondissement": 14,
+    "coordinates": {
+      "lng": 5.385389,
+      "lat": 43.352804
+    }
+  },
+  {
+    "name": "Sainte-Marthe",
+    "slug": "sainte-marthe",
+    "arrondissement": 14,
+    "coordinates": {
+      "lng": 5.394573,
+      "lat": 43.345286
+    }
+  },
+  {
+    "name": "La Cabucelle",
+    "slug": "la-cabucelle",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.361538,
+      "lat": 43.333849
+    }
+  },
+  {
+    "name": "La Calade",
+    "slug": "la-calade",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.349732,
+      "lat": 43.342835
+    }
+  },
+  {
+    "name": "La Delorme",
+    "slug": "la-delorme",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.371483,
+      "lat": 43.345068
+    }
+  },
+  {
+    "name": "La Viste",
+    "slug": "la-viste",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.355323,
+      "lat": 43.360947
+    }
+  },
+  {
+    "name": "Les Aygalades",
+    "slug": "les-aygalades",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.377341,
+      "lat": 43.361069
+    }
+  },
+  {
+    "name": "Les Borels",
+    "slug": "les-borels",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.368567,
+      "lat": 43.365816
+    }
+  },
+  {
+    "name": "Les Crottes",
+    "slug": "les-crottes",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.366536,
+      "lat": 43.323896
+    }
+  },
+  {
+    "name": "Notre-Dame-Limite",
+    "slug": "notre-dame-limite",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.365293,
+      "lat": 43.382286
+    }
+  },
+  {
+    "name": "Saint-Antoine",
+    "slug": "saint-antoine",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.363461,
+      "lat": 43.372735
+    }
+  },
+  {
+    "name": "Saint-Louis",
+    "slug": "saint-louis",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.359199,
+      "lat": 43.345712
+    }
+  },
+  {
+    "name": "Verduron",
+    "slug": "verduron",
+    "arrondissement": 15,
+    "coordinates": {
+      "lng": 5.343111,
+      "lat": 43.371206
+    }
+  },
+  {
+    "name": "L’Estaque",
+    "slug": "l-estaque",
+    "arrondissement": 16,
+    "coordinates": {
+      "lng": 5.315965,
+      "lat": 43.368359
+    }
+  },
+  {
+    "name": "Les Riaux",
+    "slug": "les-riaux",
+    "arrondissement": 16,
+    "coordinates": {
+      "lng": 5.292709,
+      "lat": 43.371167
+    }
+  },
+  {
+    "name": "Saint-Andre",
+    "slug": "saint-andre",
+    "arrondissement": 16,
+    "coordinates": {
+      "lng": 5.34244,
+      "lat": 43.352636
+    }
+  },
+  {
+    "name": "Saint-Henri",
+    "slug": "saint-henri",
+    "arrondissement": 16,
+    "coordinates": {
+      "lng": 5.330555,
+      "lat": 43.359891
+    }
+  }
+]
