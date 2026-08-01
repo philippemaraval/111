@@ -51,7 +51,7 @@ export function Header({ availableCount, searchIndex }: HeaderProps) {
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Navigation principale">
           <Link href="/#collection" className="text-sm font-semibold text-navy hover:text-sea">La collection</Link>
           <Link href="/#carte" className="text-sm font-semibold text-navy hover:text-sea">Les quartiers</Link>
-          <Link href="/#histoire" className="text-sm font-semibold text-navy hover:text-sea">Notre démarche</Link>
+          <Link href="/histoire" className="text-sm font-semibold text-navy hover:text-sea">Notre histoire</Link>
         </nav>
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2 lg:ml-0">
@@ -100,7 +100,7 @@ export function Header({ availableCount, searchIndex }: HeaderProps) {
 
       <nav className={cn("absolute inset-x-0 border-b border-navy/10 bg-white p-5 shadow-card lg:hidden", isMenuOpen ? "block" : "hidden")}>
         <div className="mx-auto flex max-w-7xl flex-col gap-1">
-          {[["La collection", "/#collection"], ["Les quartiers", "/#carte"], ["Notre démarche", "/#histoire"]].map(([label, href]) => (
+          {[["La collection", "/#collection"], ["Les quartiers", "/#carte"], ["Notre histoire", "/histoire"]].map(([label, href]) => (
             <Link key={href} href={href} onClick={() => setIsMenuOpen(false)} className="rounded-xl px-4 py-3 text-lg font-semibold hover:bg-sand">{label}</Link>
           ))}
           <p className="px-4 pt-3 text-xs text-navy/45">{availableCount} quartier{availableCount > 1 ? "s" : ""} disponible{availableCount > 1 ? "s" : ""}</p>

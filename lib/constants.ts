@@ -1,4 +1,5 @@
 export const TOTAL_NEIGHBORHOODS = 111;
+export const PRODUCT_PRICE_EUROS = 15;
 
 export const AVAILABLE_NEIGHBORHOOD_SLUGS = [
   "la-joliette",

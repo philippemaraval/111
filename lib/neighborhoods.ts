@@ -1,7 +1,8 @@
 import { cache } from "react";
 
-import { AVAILABLE_NEIGHBORHOOD_SLUGS, isNeighborhoodAvailable } from "@/lib/constants";
+import { AVAILABLE_NEIGHBORHOOD_SLUGS, isNeighborhoodAvailable, PRODUCT_PRICE_EUROS } from "@/lib/constants";
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
+import { neighborhoodDescriptions } from "@/lib/neighborhood-descriptions";
 import {
   hasPublishedProductImages,
   laJolietteGallery
@@ -43,10 +44,10 @@ function enrichNeighborhood(
     name: row.name,
     slug,
     arrondissement: row.arrondissement,
-    price: row.price,
+    price: PRODUCT_PRICE_EUROS,
     stockBySize: parseStock(row.stock_by_size),
     imageUrl: hasProductImages ? laJolietteGallery[0].url : row.image_url,
-    descriptionHistory: row.description_history,
+    descriptionHistory: neighborhoodDescriptions[slug] ?? row.description_history,
     coordinates: parseCoordinates(row.coordinates),
     isAvailable: isNeighborhoodAvailable(slug),
     releaseDate: row.release_date,

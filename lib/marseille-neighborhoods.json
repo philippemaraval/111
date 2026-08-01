@@ -90,7 +90,7 @@
     }
   },
   {
-    "name": "Belle-de-Mai",
+    "name": "Belle de Mai",
     "slug": "belle-de-mai",
     "arrondissement": 3,
     "coordinates": {
@@ -558,7 +558,7 @@
     }
   },
   {
-    "name": "La Milliere",
+    "name": "La Millière",
     "slug": "la-milliere",
     "arrondissement": 11,
     "coordinates": {
@@ -639,7 +639,7 @@
     }
   },
   {
-    "name": "La Fourragere",
+    "name": "La Fourragère",
     "slug": "la-fourragere",
     "arrondissement": 12,
     "coordinates": {
@@ -675,7 +675,7 @@
     }
   },
   {
-    "name": "Saint-Barnabe",
+    "name": "Saint-Barnabé",
     "slug": "saint-barnabe",
     "arrondissement": 12,
     "coordinates": {
@@ -684,7 +684,7 @@
     }
   },
   {
-    "name": "Saint-Jean-du-Desert",
+    "name": "Saint-Jean-du-Désert",
     "slug": "saint-jean-du-desert",
     "arrondissement": 12,
     "coordinates": {
@@ -729,7 +729,7 @@
     }
   },
   {
-    "name": "Les Medecins",
+    "name": "Les Médecins",
     "slug": "les-medecins",
     "arrondissement": 13,
     "coordinates": {
@@ -774,7 +774,7 @@
     }
   },
   {
-    "name": "Saint-Jerome",
+    "name": "Saint-Jérôme",
     "slug": "saint-jerome",
     "arrondissement": 13,
     "coordinates": {
@@ -837,7 +837,7 @@
     }
   },
   {
-    "name": "Saint-Barthelemy",
+    "name": "Saint-Barthélemy",
     "slug": "saint-barthelemy",
     "arrondissement": 14,
     "coordinates": {
@@ -981,7 +981,7 @@
     }
   },
   {
-    "name": "Saint-Andre",
+    "name": "Saint-André",
     "slug": "saint-andre",
     "arrondissement": 16,
     "coordinates": {

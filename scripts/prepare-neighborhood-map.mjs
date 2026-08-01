@@ -98,17 +98,26 @@ function slugify(value) {
 }
 
 const nameOverrides = {
+  "belle-de-mai": "Belle de Mai",
   "chateau-gombert": "Château-Gombert",
   eoures: "Éoures",
   "hotel-de-ville": "Hôtel de Ville",
   "l-estaque": "L’Estaque",
   "les-iles": "Les Îles",
+  "les-medecins": "Les Médecins",
+  "la-fourragere": "La Fourragère",
+  "la-milliere": "La Millière",
   malpasse: "Malpassé",
   "notre-dame-du-mont": "Notre-Dame-du-Mont",
   opera: "Opéra",
   perier: "Périer",
   prefecture: "Préfecture",
   "sainte-anne": "Sainte-Anne",
+  "saint-andre": "Saint-André",
+  "saint-barnabe": "Saint-Barnabé",
+  "saint-barthelemy": "Saint-Barthélemy",
+  "saint-jean-du-desert": "Saint-Jean-du-Désert",
+  "saint-jerome": "Saint-Jérôme",
   "sainte-marguerite": "Sainte-Marguerite",
   "sainte-marthe": "Sainte-Marthe"
 };

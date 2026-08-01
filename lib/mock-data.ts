@@ -1,5 +1,6 @@
 import neighborhoodCatalog from "@/lib/marseille-neighborhoods.json";
-import { getNeighborhoodCatalogStatus, isNeighborhoodAvailable } from "@/lib/constants";
+import { getNeighborhoodCatalogStatus, isNeighborhoodAvailable, PRODUCT_PRICE_EUROS } from "@/lib/constants";
+import { neighborhoodDescriptions } from "@/lib/neighborhood-descriptions";
 import {
   hasPublishedProductImages,
   laJolietteGallery
@@ -56,11 +57,7 @@ export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) =
   const gallery = hasProductImages
     ? laJolietteGallery
     : galleryFor(item.name);
-  const voteCount = isAvailable
-    ? 35 + ((index * 7) % 45)
-    : status === "project"
-      ? 75 + ((index * 17) % 160)
-      : 12 + ((index * 29) % 125);
+  const voteCount = 0;
   const salesCount = isAvailable ? 9 + (index % 5) * 3 : 0;
   const stockSeed = isAvailable ? 4 + (index % 3) * 2 : 0;
 
@@ -69,7 +66,7 @@ export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) =
     name: item.name,
     slug,
     arrondissement: item.arrondissement,
-    price: isAvailable ? 39 + (index % 3) * 4 : 42,
+    price: PRODUCT_PRICE_EUROS,
     stockBySize: {
       S: stockSeed,
       M: stockSeed + 2,
@@ -77,7 +74,7 @@ export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) =
       XL: Math.max(0, stockSeed - 1)
     },
     imageUrl: gallery[0].url,
-    descriptionHistory: `${item.name} incarne un Marseille de proximité et de caractère. ${item.vibe} Chaque design de la série 111 capture cette mémoire locale avec une composition typographique rétro, des teintes de terre cuite et un marquage inspiré des vieilles enseignes du quartier.`,
+    descriptionHistory: neighborhoodDescriptions[slug] ?? item.vibe,
     coordinates: item.coordinates,
     isAvailable,
     releaseDate: isAvailable ? "2026-05-15" : status === "project" ? "2026-06-20" : null,
@@ -109,14 +106,7 @@ export const mockSearchIndex: SearchIndexItem[] = mockNeighborhoods.map((item) =
   isAvailable: item.isAvailable
 }));
 
-export const mockVotes: VoteRow[] = mockNeighborhoods.flatMap((item, index) =>
-  Array.from({ length: Math.max(2, Math.floor(item.voteCount / 18)) }, (_, voteIndex) => ({
-    id: `${item.id}-vote-${voteIndex + 1}`,
-    email: `fan${index + voteIndex + 1}@quartiers111.fr`,
-    neighborhood_id: item.id,
-    created_at: `2026-03-${String((voteIndex % 9) + 10).padStart(2, "0")}T08:15:00.000Z`
-  }))
-);
+export const mockVotes: VoteRow[] = [];
 
 export const mockVoteSummaries: VoteSummary[] = mockNeighborhoods.map((item) => {
   const votes = mockVotes.filter((vote) => vote.neighborhood_id === item.id);

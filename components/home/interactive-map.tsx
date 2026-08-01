@@ -47,15 +47,24 @@ const MAX_LAT = 43.392;
 const LONGITUDE_RATIO = Math.cos((43.29 * Math.PI) / 180);
 
 const DISPLAY_NAMES: Record<string, string> = {
+  "belle-de-mai": "Belle de Mai",
   "chateau-gombert": "Château-Gombert",
   eoures: "Éoures",
   "hotel-de-ville": "Hôtel de Ville",
   "l-estaque": "L’Estaque",
   "les-iles": "Les Îles",
+  "les-medecins": "Les Médecins",
+  "la-fourragere": "La Fourragère",
+  "la-milliere": "La Millière",
   malpasse: "Malpassé",
   opera: "Opéra",
   perier: "Périer",
-  prefecture: "Préfecture"
+  prefecture: "Préfecture",
+  "saint-andre": "Saint-André",
+  "saint-barnabe": "Saint-Barnabé",
+  "saint-barthelemy": "Saint-Barthélemy",
+  "saint-jean-du-desert": "Saint-Jean-du-Désert",
+  "saint-jerome": "Saint-Jérôme"
 };
 
 function project([longitude, latitude]: Position): Position {

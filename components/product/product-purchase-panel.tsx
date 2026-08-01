@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Check, ChevronDown, ShoppingBag, Sparkles } from "lucide-react";
 
 import { VoteForm } from "@/components/product/vote-form";
@@ -14,6 +15,7 @@ export function ProductPurchasePanel({ neighborhood }: { neighborhood: Neighborh
   const available = availableSizes(neighborhood.stockBySize);
   const [selectedSize, setSelectedSize] = useState<Size | null>(available[0] ?? null);
   const [added, setAdded] = useState(false);
+  const shortDescription = neighborhood.descriptionHistory.split(". ")[0];
 
   function handleAddToCart() {
     if (!selectedSize) return;
@@ -30,11 +32,11 @@ export function ProductPurchasePanel({ neighborhood }: { neighborhood: Neighborh
         <p className="text-xl font-bold">{formatCurrency(neighborhood.price)}</p>
         <span className={cn("rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.15em]", neighborhood.isAvailable ? "bg-olive/10 text-olive" : "bg-terracotta/10 text-terracotta")}>{neighborhood.isAvailable ? "En stock" : "Prochainement"}</span>
       </div>
-      <p className="mt-6 text-base leading-7 text-navy/65">Un morceau de Marseille à porter, inspiré par l’énergie et les détails qui rendent {neighborhood.name} unique.</p>
+      <p className="mt-6 text-base leading-7 text-navy/65">{shortDescription}{shortDescription.endsWith(".") ? "" : "."}</p>
 
       {neighborhood.isAvailable ? (
         <div className="mt-8">
-          <div className="flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-[0.16em]">Choisir une taille</p><button type="button" className="text-xs font-semibold text-navy/50 underline underline-offset-4">Guide des tailles</button></div>
+          <div className="flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-[0.16em]">Choisir une taille</p><Link href="/guide-des-tailles" className="focus-ring rounded text-xs font-semibold text-navy/50 underline underline-offset-4 hover:text-sea">Guide des tailles</Link></div>
           <div className="mt-3 grid grid-cols-4 gap-2">
             {SIZE_ORDER.map((size) => {
               const enabled = neighborhood.stockBySize[size] > 0;

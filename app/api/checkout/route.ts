@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { PRODUCT_PRICE_EUROS } from "@/lib/constants";
 import { getStripeClient, hasStripeEnv } from "@/lib/stripe";
 import { getSiteUrl } from "@/lib/utils";
 
@@ -26,6 +27,10 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { items } = checkoutSchema.parse(body);
+    const normalizedItems = items.map((item) => ({
+      ...item,
+      unitPrice: PRODUCT_PRICE_EUROS
+    }));
     const origin = headers().get("origin") ?? getSiteUrl();
 
     if (process.env.RENDER_API_URL) {
@@ -37,7 +42,7 @@ export async function POST(request: Request) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            items,
+            items: normalizedItems,
             origin
           })
         }
@@ -68,7 +73,7 @@ export async function POST(request: Request) {
       billing_address_collection: "required",
       success_url: `${origin}/cart?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cart?canceled=1`,
-      line_items: items.map((item) => ({
+      line_items: normalizedItems.map((item) => ({
         quantity: item.quantity,
         price_data: {
           currency: "eur",
@@ -96,7 +101,7 @@ export async function POST(request: Request) {
 
       if (!orderError && order) {
         await supabase.from("order_items").insert(
-          items.map((item) => ({
+          normalizedItems.map((item) => ({
             order_id: order.id,
             neighborhood_id: item.neighborhoodId,
             size: item.size,

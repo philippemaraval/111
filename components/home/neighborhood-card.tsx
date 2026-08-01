@@ -23,7 +23,7 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: Neighborhood 
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-sea">{neighborhood.arrondissement}<sup>e</sup> arrondissement</p>
           <h3 className="mt-1 text-2xl font-black tracking-tight text-navy">{neighborhood.name}</h3>
-          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-navy/45"><Heart className="h-3.5 w-3.5 text-terracotta" /> {neighborhood.voteCount} Marseillais le soutiennent</p>
+          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-navy/45"><Heart className="h-3.5 w-3.5 text-terracotta" /> {neighborhood.voteCount} vote{neighborhood.voteCount === 1 ? "" : "s"}</p>
         </div>
         <p className="pt-5 text-base font-bold text-navy">{formatCurrency(neighborhood.price)}</p>
       </div>

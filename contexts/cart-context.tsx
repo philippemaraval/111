@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { clampQuantity } from "@/lib/utils";
+import { PRODUCT_PRICE_EUROS } from "@/lib/constants";
 import type { CartItem, Size } from "@/lib/types";
 
 type CartContextValue = {
@@ -39,7 +40,8 @@ export function CartProvider({ children }: PropsWithChildren) {
 
     if (raw) {
       try {
-        setItems(JSON.parse(raw) as CartItem[]);
+        const storedItems = JSON.parse(raw) as CartItem[];
+        setItems(storedItems.map((item) => ({ ...item, unitPrice: PRODUCT_PRICE_EUROS })));
       } catch {
         window.localStorage.removeItem(STORAGE_KEY);
       }
