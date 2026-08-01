@@ -74,7 +74,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
             <h2 className="mt-3 text-4xl font-black uppercase leading-none tracking-[-0.04em]">Un quartier,<br />un point d’ancrage.</h2>
             <p className="mt-5 max-w-md leading-7 text-navy/60"><MapPin className="mr-2 inline h-5 w-5 text-terracotta" />{neighborhood.name}, dans le {neighborhood.arrondissement}<sup>e</sup> arrondissement de Marseille.</p>
           </div>
-          <MiniMap coordinates={neighborhood.coordinates} />
+          <MiniMap coordinates={neighborhood.coordinates} neighborhoodSlug={neighborhood.slug} />
         </div>
       </section>
 
