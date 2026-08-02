@@ -56,13 +56,12 @@ export function Footer() {
           <p className="hidden items-center gap-2 xl:flex"><Users className="h-4 w-4 text-sea" /> Les habitants choisissent la suite</p>
         </div>
         <div className="flex items-center gap-2" aria-label="Réseaux sociaux">
-          {[
-            { ...socialLinks[0], icon: Instagram },
-            { ...socialLinks[1], icon: Facebook },
-            { ...socialLinks[2], icon: Music2 }
-          ].map((social) => (
-            <a key={social.label} href={social.href} target="_blank" rel="noreferrer" aria-label={social.label} className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/65 hover:border-sea hover:text-white">
-              <social.icon className="h-4 w-4" />
+          {socialLinks.map((social) => (
+            <a key={social.label} href={social.href} target="_blank" rel="noreferrer" aria-label={`${social.label}${social.handle ? ` ${social.handle}` : ""}`} className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/65 hover:border-sea hover:text-white">
+              {social.label === "Instagram" ? <Instagram className="h-4 w-4" /> : null}
+              {social.label === "X" ? <span aria-hidden="true" className="text-sm font-black">X</span> : null}
+              {social.label === "Facebook" ? <Facebook className="h-4 w-4" /> : null}
+              {social.label === "TikTok" ? <Music2 className="h-4 w-4" /> : null}
             </a>
           ))}
         </div>

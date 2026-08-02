@@ -44,7 +44,7 @@ export default function ContactPage() {
       <EditorialSection kicker="Réseaux sociaux" title="Retrouver 111">
         <div className="flex flex-wrap gap-3">
           {socialLinks.map((social) => (
-            <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="focus-ring rounded-full border border-navy/15 px-5 py-3 text-sm font-bold text-navy hover:border-sea hover:text-sea">{social.label}</a>
+            <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="focus-ring rounded-full border border-navy/15 px-5 py-3 text-sm font-bold text-navy hover:border-sea hover:text-sea">{social.label}{social.handle ? ` · ${social.handle}` : ""}</a>
           ))}
         </div>
       </EditorialSection>
