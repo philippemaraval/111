@@ -28,7 +28,7 @@ export function HeroSection() {
 
         <div className="relative min-h-[520px] overflow-hidden bg-[#f3f3f3] lg:min-h-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/illustrations/la-joliette-porte-dos.jpg" alt="T-shirt 111 La Joliette porté" className="h-full w-full object-contain object-center transition duration-700 hover:scale-[1.02]" />
+          <img src="/illustrations/la-joliette-porte-dos.png?v=hd-2" alt="T-shirt 111 La Joliette porté" className="h-full w-full object-contain object-center transition duration-700 hover:scale-[1.02]" />
           <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between rounded-2xl bg-white/90 p-4 backdrop-blur-md sm:bottom-8 sm:left-8 sm:right-8">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-sea">La collection 111</p>
