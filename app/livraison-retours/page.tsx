@@ -31,7 +31,8 @@ export default function ShippingReturnsPage() {
       </div>
 
       <EditorialSection kicker="Expédition" title="Préparation et livraison">
-        <p>Les options de livraison, leur prix et leur délai estimatif sont affichés avant le paiement. Dès que le colis est confié au transporteur, un message de confirmation est envoyé à l’adresse utilisée lors de la commande.</p>
+        <p>La livraison coûte 4,99 €, à domicile comme en point relais Mondial Relay, quelle que soit la quantité commandée. Elle est offerte dès 60 € d’achat. Le choix du mode de livraison est proposé avant le paiement.</p>
+        <p>Dès que le colis est confié au transporteur, un message de confirmation est envoyé à l’adresse utilisée lors de la commande.</p>
         <p>En cas de retard inhabituel, de colis indiqué comme livré mais introuvable ou d’adresse erronée, contactez-nous à <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> avec votre numéro de commande.</p>
       </EditorialSection>
 

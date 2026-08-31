@@ -4,20 +4,25 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Minus, Plus, ShieldCheck, Trash2, Truck } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
+import { calculateShippingPrice, getShippingLabel, type ShippingMethod } from "@/lib/shipping";
 import { clampQuantity, formatCurrency } from "@/lib/utils";
 
 export function CartPageClient() {
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const shipping = useMemo(() => (subtotal >= 60 ? 0 : 6), [subtotal]);
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("mondial-relay");
+  const shipping = useMemo(
+    () => calculateShippingPrice(subtotal),
+    [subtotal]
+  );
   const total = subtotal + shipping;
 
   async function handleCheckout() {
     setIsCheckingOut(true);
     setCheckoutError("");
     try {
-      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) });
+      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, shippingMethod }) });
       const payload = (await response.json()) as { url?: string; demoMode?: boolean; error?: string };
       if (!response.ok || !payload.url) throw new Error(payload.error ?? "Le paiement ne peut pas être lancé pour le moment.");
       if (payload.demoMode) clearCart();
@@ -49,7 +54,17 @@ export function CartPageClient() {
         </section>
         <aside className="h-fit rounded-[24px] bg-sand p-6 sm:p-8 lg:sticky lg:top-32">
           <p className="section-kicker">Récapitulatif</p><h2 className="mt-2 text-3xl font-black">Prêt à rayonner ?</h2>
-          <div className="mt-7 space-y-4 border-b border-navy/10 pb-6 text-sm"><div className="flex justify-between"><span className="text-navy/55">Sous-total</span><strong>{formatCurrency(subtotal)}</strong></div><div className="flex justify-between"><span className="text-navy/55">Livraison</span><strong>{shipping === 0 ? "Offerte" : formatCurrency(shipping)}</strong></div></div>
+          <fieldset className="mt-7 space-y-3">
+            <legend className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-navy/50">Mode de livraison</legend>
+            {(["mondial-relay", "home"] as const).map((method) => {
+              const methodPrice = calculateShippingPrice(subtotal);
+              return <label key={method} className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border bg-white p-4 transition ${shippingMethod === method ? "border-sea ring-1 ring-sea" : "border-navy/10 hover:border-sea/50"}`}>
+                <span className="flex items-center gap-3"><input type="radio" name="shipping-method" value={method} checked={shippingMethod === method} onChange={() => setShippingMethod(method)} className="h-4 w-4 accent-sea" /><span><span className="block text-sm font-bold">{getShippingLabel(method)}</span>{method === "mondial-relay" && <span className="mt-0.5 block text-xs text-navy/45">Choix du relais après la commande</span>}</span></span>
+                <strong className="shrink-0 text-sm">{methodPrice === 0 ? "Offerte" : formatCurrency(methodPrice)}</strong>
+              </label>;
+            })}
+          </fieldset>
+          <div className="mt-6 space-y-4 border-b border-navy/10 pb-6 text-sm"><div className="flex justify-between"><span className="text-navy/55">Sous-total</span><strong>{formatCurrency(subtotal)}</strong></div><div className="flex justify-between"><span className="text-navy/55">{getShippingLabel(shippingMethod)}</span><strong>{shipping === 0 ? "Offerte" : formatCurrency(shipping)}</strong></div></div>
           <div className="flex items-center justify-between py-6"><span className="font-bold">Total</span><span className="text-2xl font-black">{formatCurrency(total)}</span></div>
           <button type="button" onClick={handleCheckout} disabled={isCheckingOut} className="focus-ring flex w-full items-center justify-between rounded-full bg-sea px-6 py-4 text-sm font-bold text-white hover:bg-navy disabled:opacity-50">{isCheckingOut ? "Redirection…" : "Passer au paiement"}<ArrowRight className="h-4 w-4" /></button>
           {checkoutError && <p role="alert" className="mt-3 text-sm font-semibold text-terracotta">{checkoutError}</p>}

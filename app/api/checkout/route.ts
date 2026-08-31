@@ -6,6 +6,7 @@ import { MYSTERY_PACK_PRICE_EUROS, PACK_PRICES_EUROS, PRODUCT_PRICE_EUROS } from
 import { listNeighborhoods } from "@/lib/neighborhoods";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { getStripeClient, hasStripeEnv } from "@/lib/stripe";
+import { calculateShippingPrice, getShippingLabel } from "@/lib/shipping";
 import type { Neighborhood, Size } from "@/lib/types";
 import { getSiteUrl } from "@/lib/utils";
 
@@ -19,7 +20,10 @@ const cartItemSchema = z.object({
   unitPrice: z.number().positive(), imageUrl: z.string().min(1),
   selections: z.array(selectionSchema).min(1).max(5)
 });
-const checkoutSchema = z.object({ items: z.array(cartItemSchema).min(1).max(30) });
+const checkoutSchema = z.object({
+  items: z.array(cartItemSchema).min(1).max(30),
+  shippingMethod: z.enum(["mondial-relay", "home"])
+});
 type InputItem = z.infer<typeof cartItemSchema>;
 type ResolvedItem = {
   kind: InputItem["kind"];
@@ -99,9 +103,15 @@ function resolveItems(items: InputItem[], neighborhoods: Neighborhood[]): Resolv
 
 export async function POST(request: Request) {
   try {
-    const { items } = checkoutSchema.parse(await request.json());
+    const { items, shippingMethod } = checkoutSchema.parse(await request.json());
     const neighborhoods = await listNeighborhoods({ availability: "available" });
     const resolvedItems = resolveItems(items, neighborhoods);
+    const subtotal = resolvedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const shirtCount = resolvedItems.reduce(
+      (sum, item) => sum + item.selections.length * item.quantity,
+      0
+    );
+    const shippingPrice = calculateShippingPrice(subtotal);
     const origin = headers().get("origin") ?? getSiteUrl();
 
     if (process.env.RENDER_API_URL) {
@@ -122,7 +132,12 @@ export async function POST(request: Request) {
       const response = await fetch(`${process.env.RENDER_API_URL.replace(/\/$/, "")}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: forwardedItems, origin })
+        body: JSON.stringify({
+          items: forwardedItems,
+          origin,
+          shippingMethod,
+          shippingAmount: Math.round(shippingPrice * 100)
+        })
       });
       const payload = await response.json();
       return NextResponse.json(payload, { status: response.status });
@@ -134,6 +149,17 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment", billing_address_collection: "required",
+      shipping_address_collection: shippingMethod === "home" ? { allowed_countries: ["FR"] } : undefined,
+      shipping_options: shippingPrice > 0 ? [{ shipping_rate_data: {
+        type: "fixed_amount",
+        display_name: getShippingLabel(shippingMethod),
+        fixed_amount: { currency: "eur", amount: Math.round(shippingPrice * 100) }
+      }}] : undefined,
+      metadata: {
+        shipping_method: shippingMethod,
+        shipping_label: getShippingLabel(shippingMethod),
+        shirt_count: String(shirtCount)
+      },
       success_url: `${origin}/cart?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cart?canceled=1`,
       line_items: resolvedItems.map((item) => ({ quantity: item.quantity, price_data: {

@@ -17,7 +17,7 @@ export default function TermsPage() {
     >
       <EditorialSection title="Produits et prix">
         <p>Les caractéristiques principales de chaque t-shirt sont présentées sur sa fiche. Les photographies et rendus cherchent à être fidèles, mais de légères variations de couleur peuvent apparaître selon l’écran ou la série de fabrication.</p>
-        <p>Le prix de vente actuel est de 15 € par t-shirt, toutes taxes comprises lorsqu’elles sont applicables. Les frais de livraison sont indiqués séparément avant la validation de la commande.</p>
+        <p>Le prix de vente actuel est de 25 € par t-shirt, toutes taxes comprises lorsqu’elles sont applicables. Les frais de livraison sont indiqués séparément avant la validation de la commande.</p>
       </EditorialSection>
 
       <EditorialSection title="Commande et paiement">
@@ -26,7 +26,7 @@ export default function TermsPage() {
       </EditorialSection>
 
       <EditorialSection title="Livraison">
-        <p>Les modes, tarifs et estimations de livraison disponibles sont présentés au moment de la commande. Le client doit fournir une adresse complète et vérifier les informations saisies avant paiement.</p>
+        <p>La livraison est facturée 4,99 €, à domicile ou en point relais Mondial Relay, quelle que soit la quantité commandée. Elle est offerte à partir de 60 € d’achat. Le client doit fournir les informations nécessaires et les vérifier avant paiement.</p>
         <p>En cas de difficulté, contactez <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> avec votre référence de commande.</p>
       </EditorialSection>
 
