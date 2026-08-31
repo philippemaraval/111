@@ -92,14 +92,22 @@ export type VoteSummary = {
   emails: string[];
 };
 
-export type CartItem = {
+export type CartSelection = {
   neighborhoodId: string;
   slug: string;
   name: string;
   size: Size;
+  imageUrl: string;
+};
+
+export type CartItem = {
+  id: string;
+  kind: "individual" | "pack" | "mystery-pack";
+  name: string;
   quantity: number;
   unitPrice: number;
   imageUrl: string;
+  selections: CartSelection[];
 };
 
 export type Database = {

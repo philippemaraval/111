@@ -11,7 +11,7 @@ import {
 
 import { clampQuantity } from "@/lib/utils";
 import { PRODUCT_PRICE_EUROS } from "@/lib/constants";
-import type { CartItem, Size } from "@/lib/types";
+import type { CartItem } from "@/lib/types";
 
 type CartContextValue = {
   items: CartItem[];
@@ -19,8 +19,8 @@ type CartContextValue = {
   itemCount: number;
   subtotal: number;
   addItem: (item: CartItem) => void;
-  removeItem: (neighborhoodId: string, size: Size) => void;
-  updateQuantity: (neighborhoodId: string, size: Size, quantity: number) => void;
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -40,8 +40,36 @@ export function CartProvider({ children }: PropsWithChildren) {
 
     if (raw) {
       try {
-        const storedItems = JSON.parse(raw) as CartItem[];
-        setItems(storedItems.map((item) => ({ ...item, unitPrice: PRODUCT_PRICE_EUROS })));
+        const storedItems = JSON.parse(raw) as Array<CartItem & {
+          neighborhoodId?: string;
+          slug?: string;
+          size?: "S" | "M" | "L" | "XL";
+        }>;
+        setItems(storedItems.flatMap((item) => {
+          if (item.kind && item.id && item.selections) {
+            return [{
+              ...item,
+              unitPrice: item.kind === "individual" ? PRODUCT_PRICE_EUROS : item.unitPrice
+            }];
+          }
+
+          if (!item.neighborhoodId || !item.slug || !item.size) return [];
+          return [{
+            id: `individual-${item.neighborhoodId}-${item.size}`,
+            kind: "individual" as const,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: PRODUCT_PRICE_EUROS,
+            imageUrl: item.imageUrl,
+            selections: [{
+              neighborhoodId: item.neighborhoodId,
+              slug: item.slug,
+              name: item.name,
+              size: item.size,
+              imageUrl: item.imageUrl
+            }]
+          }];
+        }));
       } catch {
         window.localStorage.removeItem(STORAGE_KEY);
       }
@@ -72,17 +100,14 @@ export function CartProvider({ children }: PropsWithChildren) {
       subtotal,
       addItem(item) {
         setItems((current) => {
-          const existing = current.find(
-            (entry) =>
-              entry.neighborhoodId === item.neighborhoodId && entry.size === item.size
-          );
+          const existing = current.find((entry) => entry.id === item.id);
 
           if (!existing) {
             return [...current, item];
           }
 
           return current.map((entry) =>
-            entry.neighborhoodId === item.neighborhoodId && entry.size === item.size
+            entry.id === item.id
               ? {
                   ...entry,
                   quantity: clampQuantity(entry.quantity + item.quantity)
@@ -92,18 +117,13 @@ export function CartProvider({ children }: PropsWithChildren) {
         });
         setIsDrawerOpen(true);
       },
-      removeItem(neighborhoodId, size) {
-        setItems((current) =>
-          current.filter(
-            (entry) =>
-              !(entry.neighborhoodId === neighborhoodId && entry.size === size)
-          )
-        );
+      removeItem(id) {
+        setItems((current) => current.filter((entry) => entry.id !== id));
       },
-      updateQuantity(neighborhoodId, size, quantity) {
+      updateQuantity(id, quantity) {
         setItems((current) =>
           current.map((entry) =>
-            entry.neighborhoodId === neighborhoodId && entry.size === size
+            entry.id === id
               ? { ...entry, quantity: clampQuantity(quantity) }
               : entry
           )

@@ -19,7 +19,21 @@ export function ProductPurchasePanel({ neighborhood }: { neighborhood: Neighborh
 
   function handleAddToCart() {
     if (!selectedSize) return;
-    addItem({ neighborhoodId: neighborhood.id, slug: neighborhood.slug, name: neighborhood.name, size: selectedSize, quantity: 1, unitPrice: neighborhood.price, imageUrl: neighborhood.imageUrl });
+    addItem({
+      id: `individual-${neighborhood.id}-${selectedSize}`,
+      kind: "individual",
+      name: neighborhood.name,
+      quantity: 1,
+      unitPrice: neighborhood.price,
+      imageUrl: neighborhood.imageUrl,
+      selections: [{
+        neighborhoodId: neighborhood.id,
+        slug: neighborhood.slug,
+        name: neighborhood.name,
+        size: selectedSize,
+        imageUrl: neighborhood.imageUrl
+      }]
+    });
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1800);
   }

@@ -44,6 +44,13 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="bg-navy px-4 py-16 text-white sm:px-6 lg:py-20">
+        <div className="mx-auto flex max-w-[1360px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div><p className="text-xs font-bold uppercase tracking-[0.24em] text-sun">Nouveaux packs</p><h2 className="mt-3 max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em] sm:text-6xl">3, 4 ou 5 quartiers. À toi de choisir — ou pas.</h2><p className="mt-5 max-w-2xl leading-7 text-white/60">Compose ton assortiment dès 65 €, ou tente le pack surprise de trois quartiers différents à 60 €.</p></div>
+          <Link href="/packs" className="focus-ring inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-sun px-6 py-4 text-sm font-bold text-navy hover:bg-white">Découvrir les packs <ArrowRight className="h-4 w-4" /></Link>
+        </div>
+      </section>
+
       <section id="histoire" className="bg-sun px-4 py-16 sm:px-6 lg:py-24">
         <div className="mx-auto grid max-w-[1360px] gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div className="max-w-md">

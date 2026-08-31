@@ -1,5 +1,13 @@
 export const TOTAL_NEIGHBORHOODS = 111;
-export const PRODUCT_PRICE_EUROS = 15;
+export const PRODUCT_PRICE_EUROS = 25;
+
+export const PACK_PRICES_EUROS = {
+  3: 65,
+  4: 80,
+  5: 95
+} as const;
+
+export const MYSTERY_PACK_PRICE_EUROS = 60;
 
 export const AVAILABLE_NEIGHBORHOOD_SLUGS = [
   "la-joliette",
