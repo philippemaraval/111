@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, MapPin, Music2, Sparkles, Users } from "lucide-react";
+import { Instagram, MapPin, Music2, Sparkles, Users } from "lucide-react";
 import { LogoMark } from "@/components/logo-mark";
 import { socialLinks } from "@/lib/site";
 
@@ -60,7 +60,7 @@ export function Footer() {
             <a key={social.label} href={social.href} target="_blank" rel="noreferrer" aria-label={`${social.label}${social.handle ? ` ${social.handle}` : ""}`} className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/65 hover:border-sea hover:text-white">
               {social.label === "Instagram" ? <Instagram className="h-4 w-4" /> : null}
               {social.label === "X" ? <span aria-hidden="true" className="text-sm font-black">X</span> : null}
-              {social.label === "Facebook" ? <Facebook className="h-4 w-4" /> : null}
+              {social.label === "Vinted" ? <span aria-hidden="true" className="text-sm font-black lowercase">v</span> : null}
               {social.label === "TikTok" ? <Music2 className="h-4 w-4" /> : null}
             </a>
           ))}

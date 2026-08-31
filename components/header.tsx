@@ -30,7 +30,7 @@ export function Header({ availableCount, searchIndex }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl">
       <div className="bg-navy px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white sm:text-xs">
-        Imaginé à Marseille · Séries courtes · Livraison offerte dès 90 €
+        Imaginé à Marseille · Séries courtes · Livraison offerte dès 60 €
       </div>
       <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between gap-5 border-b border-navy/10 px-4 sm:px-6 lg:px-10">
         <button

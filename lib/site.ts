@@ -17,6 +17,6 @@ export const socialLinks: readonly SocialLink[] = [
     handle: "@SunMedia111",
     href: "https://x.com/sunmedia111?s=11"
   },
-  { label: "Facebook", href: "https://www.facebook.com/111marseille" },
+  { label: "Vinted", handle: "111wear", href: "https://www.vinted.fr/member/3181567325-111wear" },
   { label: "TikTok", href: "https://www.tiktok.com/@111marseille" }
 ];

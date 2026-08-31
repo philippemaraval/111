@@ -10,7 +10,7 @@ export function CartPageClient() {
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const shipping = useMemo(() => (subtotal >= 90 ? 0 : 6), [subtotal]);
+  const shipping = useMemo(() => (subtotal >= 60 ? 0 : 6), [subtotal]);
   const total = subtotal + shipping;
 
   async function handleCheckout() {
@@ -53,7 +53,7 @@ export function CartPageClient() {
           <div className="flex items-center justify-between py-6"><span className="font-bold">Total</span><span className="text-2xl font-black">{formatCurrency(total)}</span></div>
           <button type="button" onClick={handleCheckout} disabled={isCheckingOut} className="focus-ring flex w-full items-center justify-between rounded-full bg-sea px-6 py-4 text-sm font-bold text-white hover:bg-navy disabled:opacity-50">{isCheckingOut ? "Redirection…" : "Passer au paiement"}<ArrowRight className="h-4 w-4" /></button>
           {checkoutError && <p role="alert" className="mt-3 text-sm font-semibold text-terracotta">{checkoutError}</p>}
-          <div className="mt-6 space-y-3 text-xs font-semibold text-navy/55"><p className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-olive" /> Paiement sécurisé</p><p className="flex items-center gap-2"><Truck className="h-4 w-4 text-sea" /> Livraison offerte dès 90 €</p><p className="flex items-center gap-2"><Check className="h-4 w-4 text-sea" /> Expédition suivie</p></div>
+          <div className="mt-6 space-y-3 text-xs font-semibold text-navy/55"><p className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-olive" /> Paiement sécurisé</p><p className="flex items-center gap-2"><Truck className="h-4 w-4 text-sea" /> Livraison offerte dès 60 €</p><p className="flex items-center gap-2"><Check className="h-4 w-4 text-sea" /> Expédition suivie</p></div>
         </aside>
       </div>
     </div>
