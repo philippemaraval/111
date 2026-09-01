@@ -21,15 +21,20 @@ export function CartPageClient() {
   async function handleCheckout() {
     setIsCheckingOut(true);
     setCheckoutError("");
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15_000);
     try {
-      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, shippingMethod }) });
+      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, shippingMethod }), signal: controller.signal });
       const payload = (await response.json()) as { url?: string; demoMode?: boolean; error?: string };
       if (!response.ok || !payload.url) throw new Error(payload.error ?? "Le paiement ne peut pas être lancé pour le moment.");
       if (payload.demoMode) clearCart();
       window.location.assign(payload.url);
     } catch (error) {
-      setCheckoutError(error instanceof Error ? error.message : "Le paiement ne peut pas être lancé pour le moment.");
-    } finally { setIsCheckingOut(false); }
+      setCheckoutError(error instanceof DOMException && error.name === "AbortError" ? "Stripe met trop de temps à répondre. Réessaie dans quelques instants." : error instanceof Error ? error.message : "Le paiement ne peut pas être lancé pour le moment.");
+    } finally {
+      window.clearTimeout(timeoutId);
+      setIsCheckingOut(false);
+    }
   }
 
   if (items.length === 0) return (
