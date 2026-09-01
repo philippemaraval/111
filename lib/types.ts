@@ -81,6 +81,7 @@ export type VoteRow = {
   id: string;
   email: string;
   neighborhood_id: string;
+  newsletter_consent: boolean;
   created_at: string;
 };
 
@@ -90,6 +91,7 @@ export type VoteSummary = {
   arrondissement: number;
   totalVotes: number;
   emails: string[];
+  newsletterEmails: string[];
 };
 
 export type CartSelection = {

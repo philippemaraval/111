@@ -13,10 +13,10 @@ export async function GET() {
   const { votes } = await getAdminDashboardData();
 
   const rows = [
-    "neighborhood,arrondissement,total_votes,emails",
+    "neighborhood,arrondissement,total_votes,emails,newsletter_emails",
     ...votes.map(
       (vote) =>
-        `"${vote.neighborhoodName.replace(/"/g, '""')}",${vote.arrondissement},${vote.totalVotes},"${vote.emails.join(" | ")}"`
+        `"${vote.neighborhoodName.replace(/"/g, '""')}",${vote.arrondissement},${vote.totalVotes},"${vote.emails.join(" | ")}","${vote.newsletterEmails.join(" | ")}"`
     )
   ].join("\n");
 

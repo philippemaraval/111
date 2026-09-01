@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: NeighborhoodPageProps): Promi
     title: neighborhood.seo.title ?? `${neighborhood.name} — T-shirt 111`,
     description: neighborhood.seo.description ?? neighborhood.descriptionHistory,
     keywords: neighborhood.seo.keywords,
+    alternates: { canonical: `/quartier/${neighborhood.slug}` },
     openGraph: { title: neighborhood.seo.title ?? neighborhood.name, description: neighborhood.seo.description ?? neighborhood.descriptionHistory, images: neighborhood.seo.image ? [neighborhood.seo.image] : [] }
   };
 }
@@ -26,9 +27,27 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
   const neighborhood = await getNeighborhoodBySlug(params.slug);
   if (!neighborhood) notFound();
   const related = (await listNeighborhoods({ arrondissement: neighborhood.arrondissement, sort: "popular" })).filter((item) => item.id !== neighborhood.id).slice(0, 3);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: `T-shirt 111 ${neighborhood.name}`,
+    description: neighborhood.descriptionHistory,
+    image: neighborhood.gallery.map((image) => image.url),
+    brand: { "@type": "Brand", name: "111 Marseille" },
+    url: `${siteUrl}/quartier/${neighborhood.slug}`,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "EUR",
+      price: neighborhood.price,
+      availability: neighborhood.isAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: `${siteUrl}/quartier/${neighborhood.slug}`
+    }
+  };
 
   return (
     <div className="pb-20">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema).replace(/</g, "\\u003c") }} />
       <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 lg:px-10">
         <Link href="/#collection" className="focus-ring inline-flex items-center gap-2 rounded-full py-2 text-xs font-bold uppercase tracking-[0.16em] text-navy/55 hover:text-sea"><ArrowLeft className="h-4 w-4" /> Retour à la collection</Link>
       </div>

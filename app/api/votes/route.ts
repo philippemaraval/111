@@ -5,14 +5,15 @@ import { recordVote } from "@/lib/neighborhoods";
 
 const voteSchema = z.object({
   email: z.string().email(),
-  neighborhoodId: z.string().min(1)
+  neighborhoodId: z.string().min(1),
+  newsletterConsent: z.boolean().default(false)
 });
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const payload = voteSchema.parse(body);
-    const result = await recordVote(payload.email, payload.neighborhoodId);
+    const result = await recordVote(payload.email, payload.neighborhoodId, payload.newsletterConsent);
 
     return NextResponse.json(result);
   } catch (error) {

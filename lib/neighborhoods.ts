@@ -223,7 +223,7 @@ export const getNeighborhoodGroups = cache(async () => {
   }));
 });
 
-export async function recordVote(email: string, neighborhoodId: string) {
+export async function recordVote(email: string, neighborhoodId: string, newsletterConsent: boolean) {
   if (!hasSupabaseEnv()) {
     return { success: true, demoMode: true };
   }
@@ -236,11 +236,22 @@ export async function recordVote(email: string, neighborhoodId: string) {
 
   const { error } = await supabase.from("votes").insert({
     email: email.toLowerCase(),
-    neighborhood_id: neighborhoodId
+    neighborhood_id: neighborhoodId,
+    newsletter_consent: newsletterConsent
   });
 
   if (error && error.code !== "23505") {
     throw new Error(error.message);
+  }
+
+  if (error?.code === "23505" && newsletterConsent) {
+    const { error: updateError } = await supabase
+      .from("votes")
+      .update({ newsletter_consent: true })
+      .eq("email", email.toLowerCase())
+      .eq("neighborhood_id", neighborhoodId);
+
+    if (updateError) throw new Error(updateError.message);
   }
 
   return { success: true, duplicate: error?.code === "23505" };
@@ -298,7 +309,10 @@ export async function getAdminDashboardData() {
       neighborhoodName: item.name,
       arrondissement: item.arrondissement,
       totalVotes: emails.length,
-      emails
+      emails,
+      newsletterEmails: (voteRows ?? [])
+        .filter((vote) => vote.neighborhood_id === item.id && vote.newsletter_consent)
+        .map((vote) => vote.email)
     };
   });
 

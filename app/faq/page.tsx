@@ -10,13 +10,14 @@ export const metadata: Metadata = {
 
 const questions = [
   ["Pourquoi la marque s’appelle-t-elle 111 ?", "Marseille compte officiellement 111 quartiers. La collection a vocation à les raconter un par un, à travers des visuels inspirés de leur histoire, de leur géographie et de leur quotidien."],
-  ["Quel est le prix d’un t-shirt ?", "Tous les t-shirts 111 sont proposés au même prix : 15 €, quel que soit le quartier disponible."],
+  ["Quel est le prix d’un t-shirt ?", "Tous les t-shirts 111 sont proposés au même prix : 25 €, quel que soit le quartier disponible."],
   ["Quels quartiers sont déjà disponibles ?", "La Joliette, Notre-Dame-du-Mont, Sainte-Anne, Cinq-Avenues et Mazargues constituent la collection actuellement disponible."],
   ["Comment fonctionne le vote ?", "Chaque quartier non disponible possède son propre compteur. Un vote par adresse e-mail et par quartier est enregistré ; le classement nous aide à décider quels visuels développer ensuite."],
   ["Voter m’oblige-t-il à acheter ?", "Non. Le vote est gratuit et sans obligation d’achat. Il sert uniquement à mesurer l’intérêt pour une future édition et à vous prévenir si elle voit le jour."],
   ["Comment choisir ma taille ?", "Consultez le guide des tailles et comparez les mesures avec un t-shirt que vous portez déjà. En cas d’hésitation, écrivez-nous avant de commander."],
   ["Où les t-shirts sont-ils fabriqués ?", "111 privilégie des séries courtes et une démarche locale pour la création. Les informations précises de confection et de marquage accompagnent chaque édition dès qu’elles sont confirmées."],
-  ["Comment suivre ma commande ?", "Lorsqu’un envoi suivi est disponible, le lien de suivi est transmis par e-mail dès la remise du colis au transporteur."],
+  ["Quels sont les délais de livraison ?", "La commande est préparée sous 3 jours ouvrés, puis livrée sous 3 à 5 jours ouvrés après son expédition."],
+  ["Comment suivre ma commande ?", "Le lien de suivi est transmis par e-mail dès la remise du colis au transporteur."],
   ["Puis-je retourner un t-shirt ?", "Oui, vous disposez du délai légal de rétractation de 14 jours après réception. Le produit doit être non porté, non lavé et retourné dans un état permettant sa remise en vente."],
   ["Comment entretenir mon t-shirt ?", "Lavez-le à 30 °C sur l’envers, avec des couleurs similaires. Évitez le sèche-linge et repassez-le également sur l’envers afin de préserver le visuel."],
   ["Une taille épuisée reviendra-t-elle ?", "Les collections sont produites en séries courtes. Un réassort dépend de la demande et des possibilités de production ; suivez 111 sur les réseaux pour les annonces."],

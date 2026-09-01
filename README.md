@@ -27,6 +27,7 @@ Application e-commerce SSR en `Next.js App Router` pour une marque de t-shirts d
 Copier [`.env.example`](/Users/philippemaraval/Documents/Marseille/111/.env.example) vers `.env.local` puis renseigner :
 
 - `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_CF_WEB_ANALYTICS_TOKEN` (facultatif, fourni par Cloudflare Web Analytics)
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`

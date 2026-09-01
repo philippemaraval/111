@@ -116,6 +116,7 @@ export const mockVoteSummaries: VoteSummary[] = mockNeighborhoods.map((item) => 
     neighborhoodName: item.name,
     arrondissement: item.arrondissement,
     totalVotes: item.voteCount,
-    emails: votes.map((vote) => vote.email)
+    emails: votes.map((vote) => vote.email),
+    newsletterEmails: votes.filter((vote) => vote.newsletter_consent).map((vote) => vote.email)
   };
 });
