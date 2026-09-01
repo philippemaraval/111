@@ -7,6 +7,7 @@ export function CloudflareAnalytics() {
 
   return (
     <Script
+      type="module"
       src="https://static.cloudflareinsights.com/beacon.min.js"
       strategy="afterInteractive"
       data-cf-beacon={JSON.stringify({ token })}
