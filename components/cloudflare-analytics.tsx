@@ -1,7 +1,8 @@
 import Script from "next/script";
 
 export function CloudflareAnalytics() {
-  const token = process.env.NEXT_PUBLIC_CF_WEB_ANALYTICS_TOKEN;
+  const token = process.env.NEXT_PUBLIC_CF_WEB_ANALYTICS_TOKEN
+    ?? "f58e3cf01387484dbf664ba031d479bc";
 
   if (!token) return null;
 
