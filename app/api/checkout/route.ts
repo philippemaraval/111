@@ -111,7 +111,7 @@ export async function POST(request: Request) {
       (sum, item) => sum + item.selections.length * item.quantity,
       0
     );
-    const shippingPrice = calculateShippingPrice(subtotal);
+    const shippingPrice = calculateShippingPrice(subtotal, shippingMethod);
     const origin = headers().get("origin") ?? getSiteUrl();
 
     if (process.env.RENDER_API_URL) {

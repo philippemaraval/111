@@ -26,7 +26,7 @@ export default function TermsPage() {
       </EditorialSection>
 
       <EditorialSection title="Livraison">
-        <p>La livraison est facturée 4,99 €, à domicile ou en point relais Mondial Relay, quelle que soit la quantité commandée. Elle est offerte à partir de 60 € d’achat. Le client doit fournir les informations nécessaires et les vérifier avant paiement.</p>
+        <p>Pour toute commande inférieure à 60 €, la livraison est facturée 4,99 € en point relais Mondial Relay ou 7,99 € à domicile. À partir de 60 € d’achat, la livraison en point relais est offerte et la livraison à domicile est facturée 4,99 €. Le client doit fournir les informations nécessaires et les vérifier avant paiement.</p>
         <p>La commande est préparée sous 3 jours ouvrés. Le délai de livraison estimé est ensuite de 3 à 5 jours ouvrés à compter de l’expédition.</p>
         <p>En cas de difficulté, contactez <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> avec votre référence de commande.</p>
       </EditorialSection>
