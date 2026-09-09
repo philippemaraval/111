@@ -112,6 +112,20 @@ export type CartItem = {
   selections: CartSelection[];
 };
 
+export type ServicePoint = {
+  id: string;
+  code: string;
+  name: string;
+  street: string;
+  houseNumber: string;
+  postalCode: string;
+  city: string;
+  latitude: number | null;
+  longitude: number | null;
+  distance: number | null;
+  carrier: string;
+};
+
 export type Database = {
   public: {
     Tables: {

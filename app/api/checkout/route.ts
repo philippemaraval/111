@@ -6,7 +6,12 @@ import { MYSTERY_PACK_PRICE_EUROS, PACK_PRICES_EUROS, PRODUCT_PRICE_EUROS } from
 import { listNeighborhoods } from "@/lib/neighborhoods";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { getStripeClient, hasStripeEnv } from "@/lib/stripe";
-import { calculateShippingPrice, getShippingLabel } from "@/lib/shipping";
+import { getMondialRelayServicePoint } from "@/lib/sendcloud";
+import {
+  calculateShipmentWeightGrams,
+  calculateShippingPrice,
+  getShippingLabel
+} from "@/lib/shipping";
 import type { Neighborhood, Size } from "@/lib/types";
 import { getSiteUrl } from "@/lib/utils";
 
@@ -22,7 +27,8 @@ const cartItemSchema = z.object({
 });
 const checkoutSchema = z.object({
   items: z.array(cartItemSchema).min(1).max(30),
-  shippingMethod: z.enum(["mondial-relay", "home"])
+  shippingMethod: z.enum(["mondial-relay", "home"]),
+  servicePointId: z.string().regex(/^\d+$/).optional()
 });
 type InputItem = z.infer<typeof cartItemSchema>;
 type ResolvedItem = {
@@ -103,7 +109,7 @@ function resolveItems(items: InputItem[], neighborhoods: Neighborhood[]): Resolv
 
 export async function POST(request: Request) {
   try {
-    const { items, shippingMethod } = checkoutSchema.parse(await request.json());
+    const { items, shippingMethod, servicePointId } = checkoutSchema.parse(await request.json());
     const neighborhoods = await listNeighborhoods({ availability: "available" });
     const resolvedItems = resolveItems(items, neighborhoods);
     const subtotal = resolvedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
@@ -111,7 +117,14 @@ export async function POST(request: Request) {
       (sum, item) => sum + item.selections.length * item.quantity,
       0
     );
+    const shipmentWeightGrams = calculateShipmentWeightGrams(shirtCount);
     const shippingPrice = calculateShippingPrice(subtotal, shippingMethod);
+    if (shippingMethod === "mondial-relay" && !servicePointId) {
+      throw new Error("sendcloud_invalid_service_point");
+    }
+    const servicePoint = shippingMethod === "mondial-relay"
+      ? await getMondialRelayServicePoint(servicePointId!)
+      : null;
     const origin = headers().get("origin") ?? getSiteUrl();
 
     if (process.env.RENDER_API_URL) {
@@ -136,6 +149,7 @@ export async function POST(request: Request) {
           items: forwardedItems,
           origin,
           shippingMethod,
+          servicePointId: servicePoint?.id,
           shippingAmount: Math.round(shippingPrice * 100)
         })
       });
@@ -149,7 +163,8 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment", billing_address_collection: "required",
-      shipping_address_collection: shippingMethod === "home" ? { allowed_countries: ["FR"] } : undefined,
+      phone_number_collection: { enabled: true },
+      shipping_address_collection: { allowed_countries: ["FR"] },
       shipping_options: shippingPrice > 0 ? [{ shipping_rate_data: {
         type: "fixed_amount",
         display_name: getShippingLabel(shippingMethod),
@@ -158,7 +173,13 @@ export async function POST(request: Request) {
       metadata: {
         shipping_method: shippingMethod,
         shipping_label: getShippingLabel(shippingMethod),
-        shirt_count: String(shirtCount)
+        shirt_count: String(shirtCount),
+        shipment_weight_grams: String(shipmentWeightGrams),
+        service_point_id: servicePoint?.id ?? "",
+        service_point_name: servicePoint?.name ?? "",
+        service_point_address: servicePoint
+          ? `${servicePoint.street} ${servicePoint.houseNumber}, ${servicePoint.postalCode} ${servicePoint.city}`
+          : ""
       },
       success_url: `${origin}/cart?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cart?canceled=1`,
@@ -196,6 +217,15 @@ export async function POST(request: Request) {
     }
     if (error instanceof Error && error.message.startsWith("invalid_")) {
       return NextResponse.json({ error: "Le contenu du panier est invalide." }, { status: 400 });
+    }
+    if (error instanceof Error && error.message === "sendcloud_invalid_service_point") {
+      return NextResponse.json({ error: "Ce point relais n’est plus disponible." }, { status: 400 });
+    }
+    if (error instanceof Error && error.message.startsWith("sendcloud_")) {
+      return NextResponse.json(
+        { error: "La sélection du point relais est temporairement indisponible." },
+        { status: 502 }
+      );
     }
     return NextResponse.json({ error: "Unable to create checkout session" }, { status: 500 });
   }

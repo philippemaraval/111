@@ -34,6 +34,8 @@ Copier [`.env.example`](/Users/philippemaraval/Documents/Marseille/111/.env.exam
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `SENDCLOUD_PUBLIC_KEY`
+- `SENDCLOUD_SECRET_KEY`
 - `ADMIN_EMAILS`
 - `RENDER_API_URL`
 
@@ -90,3 +92,4 @@ Le build génère `.open-next/worker.js`, ensuite utilisé par [`wrangler.jsonc`
 - Les requêtes catalogue utilisent SSR via la couche [`lib/neighborhoods.ts`](/Users/philippemaraval/Documents/Marseille/111/lib/neighborhoods.ts)
 - Quand Supabase n’est pas configuré, le storefront continue de fonctionner avec des données mockées
 - Les ventes ne comptent dans la popularité qu’après confirmation `paid` du webhook Stripe
+- Le choix du point relais passe par l’API Sendcloud et les commandes payées sont importées dans Sendcloud sans générer automatiquement d’étiquette
