@@ -199,7 +199,10 @@ export async function importPaidOrderToSendcloud(order: SendcloudPaidOrder) {
   const currency = order.currency.toUpperCase();
   const street = splitFrenchStreetAddress(order.addressLine1);
   const payload = [{
-    order_id: order.sessionId,
+    // Sendcloud limite l'identifiant externe à 64 caractères, contrairement
+    // aux identifiants de session Checkout Stripe. La fin reste unique et
+    // déterministe afin que les renvois du webhook soient idempotents.
+    order_id: order.sessionId.slice(-64),
     order_number: order.orderNumber,
     order_details: {
       integration: { id: integrationId },
