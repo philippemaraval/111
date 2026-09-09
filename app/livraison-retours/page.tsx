@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CheckCircle2, PackageCheck, RefreshCcw, Truck } from "lucide-react";
 
 import { EditorialLink, EditorialPage, EditorialSection } from "@/components/editorial-page";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, LEGAL_INFORMATION } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Livraison, retours et remboursements | 111 Marseille",
@@ -39,7 +39,7 @@ export default function ShippingReturnsPage() {
 
       <EditorialSection kicker="Rétractation" title="Changer d’avis">
         <p>Vous disposez de 14 jours à compter de la réception de votre commande pour nous informer clairement de votre décision de vous rétracter. Vous n’avez pas à justifier votre choix.</p>
-        <p>Après cette notification, le produit doit être renvoyé au plus tard dans les 14 jours suivants. Sauf erreur de préparation ou article défectueux, les frais de retour restent à votre charge.</p>
+        <p>Après cette notification, le produit doit être renvoyé au plus tard dans les 14 jours suivants à : {LEGAL_INFORMATION.tradeName} — {LEGAL_INFORMATION.ownerName}, {LEGAL_INFORMATION.address}. Sauf erreur de préparation ou article défectueux, les frais de retour restent à votre charge.</p>
         <div className="rounded-2xl border border-olive/20 bg-olive/5 p-5 text-sm text-navy">
           <p className="flex items-start gap-3"><CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-olive" /> Le t-shirt doit être non porté, non lavé, sans odeur ni détérioration, et retourné avec ses éventuels éléments d’origine.</p>
         </div>
@@ -49,6 +49,16 @@ export default function ShippingReturnsPage() {
         <p>Après réception et contrôle du retour, le remboursement est effectué avec le même moyen de paiement que celui utilisé lors de l’achat, sauf accord exprès pour une autre solution sans frais supplémentaires.</p>
         <p>Le remboursement comprend le prix du produit et, dans les conditions prévues par la loi, les frais de livraison standard initiaux. Il peut être différé jusqu’à récupération du bien ou réception d’une preuve d’expédition.</p>
         <EditorialLink href={`mailto:${CONTACT_EMAIL}?subject=Retour%20de%20commande%20111`}>Demander un retour</EditorialLink>
+      </EditorialSection>
+
+      <EditorialSection kicker="Formulaire" title="Modèle de rétractation">
+        <p>À adresser uniquement si vous souhaitez vous rétracter du contrat :</p>
+        <div className="rounded-2xl bg-sand p-5 text-sm leading-7 text-navy">
+          <p>À l’attention de {LEGAL_INFORMATION.ownerName} — {LEGAL_INFORMATION.tradeName}, {LEGAL_INFORMATION.address}, {CONTACT_EMAIL}.</p>
+          <p>Je vous notifie par la présente ma rétractation du contrat portant sur la vente du ou des biens suivants : […]</p>
+          <p>Commandé(s) le / reçu(s) le : […]<br />Numéro de commande : […]<br />Nom du consommateur : […]<br />Adresse du consommateur : […]<br />Date : […]<br />Signature, uniquement en cas d’envoi sur papier : […]</p>
+        </div>
+        <EditorialLink href={`mailto:${CONTACT_EMAIL}?subject=Rétractation%20commande%20111&body=Je%20vous%20notifie%20ma%20rétractation%20pour%20la%20commande%20n°%20…%0A%0ABien(s)%20concerné(s)%20:%20…%0ACommandé(s)%20le%20:%20…%0AReçu(s)%20le%20:%20…%0ANom%20:%20…%0AAdresse%20:%20…`}>Envoyer une rétractation</EditorialLink>
       </EditorialSection>
 
       <EditorialSection kicker="Erreur ou défaut" title="Nous prenons le relais">

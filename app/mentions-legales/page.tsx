@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { EditorialPage, EditorialSection } from "@/components/editorial-page";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, HOST_INFORMATION, LEGAL_INFORMATION } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Mentions légales | 111 Marseille",
@@ -16,13 +16,24 @@ export default function LegalNoticePage() {
       intro="Les informations essentielles concernant l’édition, l’hébergement et l’utilisation du site 111."
     >
       <EditorialSection title="Édition du site">
-        <p>Le site et la marque 111 sont édités par 111 Marseille, projet indépendant établi à Marseille, France.</p>
-        <p>Contact : <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
-        <p className="rounded-2xl bg-sand p-5 text-sm">Les informations administratives complètes de l’entreprise — forme juridique, adresse du siège, immatriculation et directeur de publication — seront ajoutées dès la finalisation de la structure commerciale et avant l’ouverture définitive des ventes.</p>
+        <p><strong>{LEGAL_INFORMATION.tradeName}</strong> est le nom commercial de l’entreprise individuelle de {LEGAL_INFORMATION.ownerName}, {LEGAL_INFORMATION.legalForm.toLowerCase()}.</p>
+        <div className="rounded-2xl bg-sand p-5 text-sm leading-7 text-navy">
+          <p>Adresse : {LEGAL_INFORMATION.address}</p>
+          <p>SIREN : {LEGAL_INFORMATION.siren}</p>
+          <p>SIRET : {LEGAL_INFORMATION.siret}</p>
+          <p>Immatriculation : {LEGAL_INFORMATION.registration}</p>
+          <p>{LEGAL_INFORMATION.vatNotice}</p>
+        </div>
+        <p>Email : <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><br />Téléphone : <a className="font-bold text-sea" href={`tel:${LEGAL_INFORMATION.phoneHref}`}>{LEGAL_INFORMATION.phoneDisplay}</a></p>
       </EditorialSection>
 
-      <EditorialSection title="Hébergement et services techniques">
-        <p>Le site est déployé sur l’infrastructure Cloudflare. Les fonctions de catalogue et de base de données peuvent s’appuyer sur Supabase ; les paiements sont traités par Stripe. Ces prestataires disposent de leurs propres conditions et politiques de sécurité.</p>
+      <EditorialSection title="Direction de la publication">
+        <p>Le directeur de la publication est {LEGAL_INFORMATION.ownerName}, en qualité d’entrepreneur individuel éditant le site.</p>
+      </EditorialSection>
+
+      <EditorialSection title="Hébergement">
+        <p>Le site est hébergé par {HOST_INFORMATION.name}, {HOST_INFORMATION.address}.</p>
+        <p>Téléphone : <a className="font-bold text-sea" href={`tel:${HOST_INFORMATION.phoneHref}`}>{HOST_INFORMATION.phoneDisplay}</a><br />Site : <a className="font-bold text-sea" href={HOST_INFORMATION.website} target="_blank" rel="noreferrer">{HOST_INFORMATION.website}</a></p>
       </EditorialSection>
 
       <EditorialSection title="Propriété intellectuelle">
