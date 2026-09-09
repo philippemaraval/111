@@ -225,7 +225,7 @@ export async function importPaidOrderToSendcloud(order: SendcloudPaidOrder) {
         currency
       },
       freight_costs: {
-        value: Number((order.shippingAmount / 100).toFixed(2)),
+        value: (order.shippingAmount / 100).toFixed(2),
         currency
       },
       status: { code: "paid", message: "Paiement confirmé par Stripe" }
@@ -256,7 +256,7 @@ export async function importPaidOrderToSendcloud(order: SendcloudPaidOrder) {
       }
     },
     service_point_details: order.servicePointId
-      ? { id: Number(order.servicePointId) }
+      ? { id: order.servicePointId }
       : undefined
   }];
 
