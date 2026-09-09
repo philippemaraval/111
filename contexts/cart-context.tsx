@@ -130,6 +130,7 @@ export function CartProvider({ children }: PropsWithChildren) {
         );
       },
       clearCart() {
+        window.localStorage.removeItem(STORAGE_KEY);
         setItems([]);
       },
       openDrawer() {

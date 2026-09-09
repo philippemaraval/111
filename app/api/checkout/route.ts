@@ -181,7 +181,7 @@ export async function POST(request: Request) {
           ? `${servicePoint.street} ${servicePoint.houseNumber}, ${servicePoint.postalCode} ${servicePoint.city}`
           : ""
       },
-      success_url: `${origin}/cart?success=1&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/commande/confirmee?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cart?canceled=1`,
       line_items: resolvedItems.map((item) => ({ quantity: item.quantity, price_data: {
         currency: "eur", unit_amount: Math.round(item.unitPrice * 100), product_data: {
