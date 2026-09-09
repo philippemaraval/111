@@ -69,7 +69,9 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
     return <ConfirmationUnavailable />;
   }
 
-  const paymentConfirmed = session.payment_status === "paid";
+  const paymentConfirmed =
+    session.payment_status === "paid" ||
+    session.payment_status === "no_payment_required";
   const orderNumber = `111-${session.id.slice(-8).toUpperCase()}`;
   const email = session.customer_details?.email ?? session.customer_email;
   const shippingLabel = session.metadata?.shipping_label ?? "Livraison suivie";

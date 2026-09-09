@@ -6,7 +6,7 @@ import { importPaidOrderToSendcloud } from "@/lib/sendcloud";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { getStripeClient, hasStripeEnv } from "@/lib/stripe";
 
-async function handlePaidCheckout(
+async function handleCompletedCheckout(
   stripe: Stripe,
   supabase: NonNullable<ReturnType<typeof createAdminSupabaseClient>>,
   session: Stripe.Checkout.Session
@@ -128,8 +128,11 @@ export async function POST(request: Request) {
   ) {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    if (session.payment_status === "paid") {
-      await handlePaidCheckout(stripe, supabase, session);
+    if (
+      session.payment_status === "paid" ||
+      session.payment_status === "no_payment_required"
+    ) {
+      await handleCompletedCheckout(stripe, supabase, session);
     }
   }
 

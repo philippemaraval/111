@@ -163,6 +163,7 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment", billing_address_collection: "required",
+      allow_promotion_codes: true,
       phone_number_collection: { enabled: true },
       shipping_address_collection: { allowed_countries: ["FR"] },
       shipping_options: shippingPrice > 0 ? [{ shipping_rate_data: {
