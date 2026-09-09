@@ -6,13 +6,21 @@ import { importPaidOrderToSendcloud } from "@/lib/sendcloud";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { getStripeClient, hasStripeEnv } from "@/lib/stripe";
 
+type CheckoutSessionWithCollectedInformation = Stripe.Checkout.Session & {
+  collected_information?: {
+    shipping_details?: Stripe.Checkout.Session.ShippingDetails | null;
+  } | null;
+};
+
 async function handleCompletedCheckout(
   stripe: Stripe,
   supabase: NonNullable<ReturnType<typeof createAdminSupabaseClient>>,
   session: Stripe.Checkout.Session
 ) {
   const customerEmail = session.customer_details?.email ?? session.customer_email;
-  const shippingDetails = session.shipping_details;
+  const modernSession = session as CheckoutSessionWithCollectedInformation;
+  const shippingDetails =
+    modernSession.collected_information?.shipping_details ?? session.shipping_details;
   const shippingAddress = shippingDetails?.address;
   const customerName = shippingDetails?.name ?? session.customer_details?.name;
   const customerPhone = session.customer_details?.phone;
@@ -119,7 +127,10 @@ export async function POST(request: Request) {
   const supabase = createAdminSupabaseClient();
 
   if (!supabase) {
-    return NextResponse.json({ received: true, demoMode: true });
+    return NextResponse.json(
+      { error: "Supabase webhook configuration is missing" },
+      { status: 500 }
+    );
   }
 
   if (
