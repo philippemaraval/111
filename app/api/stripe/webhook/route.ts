@@ -143,7 +143,18 @@ export async function POST(request: Request) {
       session.payment_status === "paid" ||
       session.payment_status === "no_payment_required"
     ) {
-      await handleCompletedCheckout(stripe, supabase, session);
+      try {
+        await handleCompletedCheckout(stripe, supabase, session);
+      } catch (error) {
+        return NextResponse.json(
+          {
+            error: error instanceof Error
+              ? error.message
+              : "Unable to process completed checkout"
+          },
+          { status: 500 }
+        );
+      }
     }
   }
 
