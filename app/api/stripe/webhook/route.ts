@@ -25,7 +25,7 @@ async function handleCompletedCheckout(
   const customerName = shippingDetails?.name ?? session.customer_details?.name;
   const customerPhone = session.customer_details?.phone;
 
-  await supabase
+  const { data: storedOrder, error: orderUpdateError } = await supabase
     .from("orders")
     .update({
       status: "paid",
@@ -33,7 +33,19 @@ async function handleCompletedCheckout(
       amount_total: session.amount_total ?? null,
       currency: session.currency ?? null
     })
-    .eq("stripe_session_id", session.id);
+    .eq("stripe_session_id", session.id)
+    .select("id")
+    .maybeSingle();
+
+  if (orderUpdateError) {
+    throw new Error(`supabase_order_update_failed:${orderUpdateError.message}`);
+  }
+
+  // Une commande supprimée volontairement de Supabase ne doit pas être
+  // recréée dans Sendcloud par une nouvelle tentative automatique de Stripe.
+  if (!storedOrder) {
+    return;
+  }
 
   const shippingMethod = session.metadata?.shipping_method;
   const servicePointId = session.metadata?.service_point_id;
