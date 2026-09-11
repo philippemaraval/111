@@ -17,12 +17,12 @@ export function hasSupabaseEnv() {
   );
 }
 
-export function createServerSupabaseClient() {
-  const cookieStore = cookies();
-
+export async function createServerSupabaseClient() {
   if (!hasSupabaseEnv()) {
     return null;
   }
+
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -10,9 +10,11 @@ import {
 import { createAdminSupabaseClient, createServerSupabaseClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { parseCoordinates, parseSeoMetadata, parseStock, slugify } from "@/lib/utils";
 import type {
+  Database,
   Neighborhood,
   NeighborhoodMetricsRow,
   NeighborhoodRow,
+  OrderSummary,
   SearchIndexItem,
   VoteRow,
   VoteSummary
@@ -108,7 +110,7 @@ export const listNeighborhoods = cache(async (filters: NeighborhoodFilters = {})
     return filterMockNeighborhoods(filters);
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   if (!supabase) {
     return filterMockNeighborhoods(filters);
@@ -173,7 +175,7 @@ export const getNeighborhoodSearchIndex = cache(async (): Promise<SearchIndexIte
     return mockSearchIndex;
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   if (!supabase) {
     return mockSearchIndex;
@@ -261,7 +263,8 @@ export async function getAdminDashboardData() {
   if (!hasSupabaseEnv()) {
     return {
       neighborhoods: mockNeighborhoods,
-      votes: mockVoteSummaries
+      votes: mockVoteSummaries,
+      orders: [] as OrderSummary[]
     };
   }
 
@@ -270,14 +273,17 @@ export async function getAdminDashboardData() {
   if (!supabase) {
     return {
       neighborhoods: mockNeighborhoods,
-      votes: mockVoteSummaries
+      votes: mockVoteSummaries,
+      orders: [] as OrderSummary[]
     };
   }
 
-  const [rowsResponse, metricsResponse, votesResponse] = await Promise.all([
+  const [rowsResponse, metricsResponse, votesResponse, ordersResponse, orderItemsResponse] = await Promise.all([
     supabase.from("neighborhoods").select("*"),
     supabase.from("neighborhood_metrics").select("*"),
-    supabase.from("votes").select("*").order("created_at", { ascending: false })
+    supabase.from("votes").select("*").order("created_at", { ascending: false }),
+    supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(100),
+    supabase.from("order_items").select("order_id, quantity")
   ]);
 
   const rows = rowsResponse.data as NeighborhoodRow[] | null;
@@ -287,7 +293,8 @@ export async function getAdminDashboardData() {
   if (!rows) {
     return {
       neighborhoods: mockNeighborhoods,
-      votes: mockVoteSummaries
+      votes: mockVoteSummaries,
+      orders: [] as OrderSummary[]
     };
   }
 
@@ -316,9 +323,27 @@ export async function getAdminDashboardData() {
     };
   });
 
+  const orderItems = (orderItemsResponse.data ?? []) as Array<{ order_id: string; quantity: number }>;
+  const orders = ((ordersResponse.data ?? []) as Database["public"]["Tables"]["orders"]["Row"][])
+    .map<OrderSummary>((order) => ({
+      id: order.id,
+      orderNumber: `111-${order.stripe_session_id.slice(-8).toUpperCase()}`,
+      email: order.email,
+      amountTotal: order.amount_total,
+      currency: order.currency,
+      status: order.status,
+      createdAt: order.created_at,
+      sendcloudImportedAt: order.sendcloud_imported_at,
+      sendcloudError: order.sendcloud_error,
+      itemCount: orderItems
+        .filter((item) => item.order_id === order.id)
+        .reduce((sum, item) => sum + item.quantity, 0)
+    }));
+
   return {
     neighborhoods,
-    votes
+    votes,
+    orders
   };
 }
 

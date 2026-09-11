@@ -20,6 +20,7 @@ export default async function AdminPage() {
       <AdminDashboard
         neighborhoods={data.neighborhoods}
         votes={data.votes}
+        orders={data.orders}
         demoMode={access.demoMode}
         adminEmail={access.user?.email}
       />

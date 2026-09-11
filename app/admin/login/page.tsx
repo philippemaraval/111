@@ -4,11 +4,15 @@ import { AdminLoginForm } from "@/components/admin/admin-login-form";
 import { hasSupabaseEnv } from "@/lib/supabase/server";
 
 type AdminLoginPageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
-  const demoMode = !hasSupabaseEnv() || searchParams?.mode === "demo";
+export default async function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const demoMode = process.env.NODE_ENV !== "production" && (
+    !hasSupabaseEnv() || resolvedSearchParams?.mode === "demo"
+  );
+  const configurationMissing = !hasSupabaseEnv();
 
   return (
     <div className="mx-auto grid min-h-[70vh] max-w-[1200px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-12">
@@ -28,7 +32,13 @@ export default function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
         )}
       </div>
 
-      {demoMode ? (
+      {configurationMissing && !demoMode ? (
+        <div className="rounded-[24px] border border-terracotta/20 bg-white p-6 shadow-soft">
+          <p className="section-kicker">Service indisponible</p>
+          <h2 className="mt-2 text-3xl font-black text-navy">Connexion temporairement indisponible</h2>
+          <p className="mt-4 text-sm text-navy/70">La configuration sécurisée de l’administration est incomplète. Réessayez plus tard.</p>
+        </div>
+      ) : demoMode ? (
         <div className="rounded-[24px] border border-navy/10 bg-white p-6 shadow-soft">
           <p className="section-kicker">Mode démo</p>
           <h2 className="mt-2 text-3xl font-black text-navy">Données de démonstration</h2>

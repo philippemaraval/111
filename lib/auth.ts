@@ -6,16 +6,16 @@ import { isAdminEmail } from "@/lib/utils";
 export async function getAdminAccess() {
   if (!hasSupabaseEnv()) {
     return {
-      demoMode: true,
+      demoMode: process.env.NODE_ENV !== "production",
       user: null
     };
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   if (!supabase) {
     return {
-      demoMode: true,
+      demoMode: process.env.NODE_ENV !== "production",
       user: null
     };
   }

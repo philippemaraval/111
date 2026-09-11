@@ -17,9 +17,9 @@ const updateSchema = z.object({
 });
 
 type RouteProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function PATCH(request: Request, { params }: RouteProps) {
@@ -30,9 +30,10 @@ export async function PATCH(request: Request, { params }: RouteProps) {
   }
 
   try {
+    const { id } = await params;
     const body = await request.json();
     const payload = updateSchema.parse(body);
-    const result = await updateNeighborhoodRecord(params.id, {
+    const result = await updateNeighborhoodRecord(id, {
       price: payload.price,
       is_available: payload.isAvailable,
       release_date: payload.releaseDate,

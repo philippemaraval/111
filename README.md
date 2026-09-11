@@ -41,7 +41,7 @@ Copier [`.env.example`](/Users/philippemaraval/Documents/Marseille/111/.env.exam
 
 ## Base Supabase
 
-La migration initiale est dans [`supabase/migrations/001_init.sql`](/Users/philippemaraval/Documents/Marseille/111/supabase/migrations/001_init.sql).
+Les migrations versionnées sont dans `supabase/migrations/` et doivent être appliquées dans l’ordre jusqu’à `008_order_fulfillment_and_safe_stock.sql`.
 
 Elle crée :
 
@@ -51,6 +51,8 @@ Elle crée :
 - `order_items`
 - la vue `neighborhood_metrics`
 
+La migration `008` ajoute le suivi logistique, les remboursements et un contrôle atomique du stock lors du passage d’une commande à l’état payé.
+
 ## Développement local
 
 ```bash
@@ -59,6 +61,15 @@ npm run dev
 ```
 
 Puis ouvrir `http://localhost:3000`.
+
+Contrôles avant livraison :
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
 
 ## Déploiement
 

@@ -94,6 +94,19 @@ export type VoteSummary = {
   newsletterEmails: string[];
 };
 
+export type OrderSummary = {
+  id: string;
+  orderNumber: string;
+  email: string | null;
+  amountTotal: number | null;
+  currency: string | null;
+  status: string;
+  createdAt: string;
+  sendcloudImportedAt: string | null;
+  sendcloudError: string | null;
+  itemCount: number;
+};
+
 export type CartSelection = {
   neighborhoodId: string;
   slug: string;
@@ -157,6 +170,9 @@ export type Database = {
           amount_total: number | null;
           currency: string | null;
           status: string;
+          sendcloud_imported_at: string | null;
+          sendcloud_error: string | null;
+          refunded_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -166,6 +182,9 @@ export type Database = {
           amount_total?: number | null;
           currency?: string | null;
           status?: string;
+          sendcloud_imported_at?: string | null;
+          sendcloud_error?: string | null;
+          refunded_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -173,6 +192,9 @@ export type Database = {
           amount_total?: number | null;
           currency?: string | null;
           status?: string;
+          sendcloud_imported_at?: string | null;
+          sendcloud_error?: string | null;
+          refunded_at?: string | null;
         };
         Relationships: [];
       };

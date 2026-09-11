@@ -91,7 +91,15 @@ export function buildSearchParams(
 }
 
 export function getSiteUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+  if (configuredUrl) {
+    return configuredUrl.replace(/\/$/, "");
+  }
+
+  return process.env.NODE_ENV === "production"
+    ? "https://111.sunmedia.workers.dev"
+    : "http://localhost:3000";
 }
 
 export function isAdminEmail(email?: string | null) {

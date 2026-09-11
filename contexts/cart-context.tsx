@@ -45,6 +45,8 @@ export function CartProvider({ children }: PropsWithChildren) {
           slug?: string;
           size?: "S" | "M" | "L" | "XL";
         }>;
+        // Hydration client uniquement : le panier persistant n'existe pas pendant le rendu serveur.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setItems(storedItems.flatMap((item) => {
           if (item.kind && item.id && item.selections) {
             return [{

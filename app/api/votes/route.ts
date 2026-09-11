@@ -10,6 +10,11 @@ const voteSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > 4_096) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
   try {
     const body = await request.json();
     const payload = voteSchema.parse(body);

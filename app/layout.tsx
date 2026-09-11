@@ -8,11 +8,14 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { Providers } from "@/components/providers";
 import { CloudflareAnalytics } from "@/components/cloudflare-analytics";
 import { getAvailabilityCount, getNeighborhoodSearchIndex } from "@/lib/neighborhoods";
+import { getSiteUrl } from "@/lib/utils";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "111 — Marseille, quartier par quartier",
   description: "Des t-shirts dessinés à Marseille pour porter haut les couleurs de chaque quartier.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
   manifest: "/manifest.webmanifest",
   alternates: { canonical: "./" },
   openGraph: {
@@ -50,7 +53,6 @@ export default async function RootLayout({
     getAvailabilityCount(),
     getNeighborhoodSearchIndex()
   ]);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",

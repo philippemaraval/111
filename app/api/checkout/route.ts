@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -108,6 +107,11 @@ function resolveItems(items: InputItem[], neighborhoods: Neighborhood[]): Resolv
 }
 
 export async function POST(request: Request) {
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > 100_000) {
+    return NextResponse.json({ error: "Checkout payload too large" }, { status: 413 });
+  }
+
   try {
     const { items, shippingMethod, servicePointId } = checkoutSchema.parse(await request.json());
     const neighborhoods = await listNeighborhoods({ availability: "available" });
@@ -125,7 +129,7 @@ export async function POST(request: Request) {
     const servicePoint = shippingMethod === "mondial-relay"
       ? await getMondialRelayServicePoint(servicePointId!)
       : null;
-    const origin = headers().get("origin") ?? getSiteUrl();
+    const origin = getSiteUrl();
 
     if (process.env.RENDER_API_URL) {
       const forwardedItems = resolvedItems.flatMap((item) => {
@@ -193,21 +197,34 @@ export async function POST(request: Request) {
     });
 
     const supabase = createAdminSupabaseClient();
-    if (supabase?.from && session.id) {
-      const { data: order, error: orderError } = await supabase.from("orders")
-        .insert({ stripe_session_id: session.id, status: "pending" }).select("id").single();
-      if (!orderError && order) {
-        const orderItems = resolvedItems.flatMap((item) => {
-          const totalCents = Math.round(item.unitPrice * 100);
-          const basePrice = Math.floor(totalCents / item.selections.length);
-          const remainder = totalCents - basePrice * item.selections.length;
-          return item.selections.map((selection, index) => ({
-            order_id: order.id, neighborhood_id: selection.neighborhood.id, size: selection.size,
-            quantity: item.quantity, unit_price: basePrice + (index < remainder ? 1 : 0)
-          }));
-        });
-        await supabase.from("order_items").insert(orderItems);
-      }
+    if (!supabase) {
+      await stripe.checkout.sessions.expire(session.id).catch(() => undefined);
+      throw new Error("order_storage_unavailable");
+    }
+
+    const { data: order, error: orderError } = await supabase.from("orders")
+      .insert({ stripe_session_id: session.id, status: "pending" }).select("id").single();
+    if (orderError || !order) {
+      await stripe.checkout.sessions.expire(session.id).catch(() => undefined);
+      throw new Error("order_storage_failed");
+    }
+
+    const orderItems = resolvedItems.flatMap((item) => {
+      const totalCents = Math.round(item.unitPrice * 100);
+      const basePrice = Math.floor(totalCents / item.selections.length);
+      const remainder = totalCents - basePrice * item.selections.length;
+      return item.selections.map((selection, index) => ({
+        order_id: order.id, neighborhood_id: selection.neighborhood.id, size: selection.size,
+        quantity: item.quantity, unit_price: basePrice + (index < remainder ? 1 : 0)
+      }));
+    });
+    const { error: orderItemsError } = await supabase.from("order_items").insert(orderItems);
+    if (orderItemsError) {
+      await Promise.allSettled([
+        stripe.checkout.sessions.expire(session.id),
+        supabase.from("orders").delete().eq("id", order.id)
+      ]);
+      throw new Error("order_storage_failed");
     }
     if (!session.url) return NextResponse.json({ error: "Stripe did not return a checkout URL" }, { status: 500 });
     return NextResponse.json({ url: session.url });
@@ -226,6 +243,12 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "La sélection du point relais est temporairement indisponible." },
         { status: 502 }
+      );
+    }
+    if (error instanceof Error && error.message.startsWith("order_storage_")) {
+      return NextResponse.json(
+        { error: "La commande ne peut pas être enregistrée pour le moment. Aucun paiement n’a été lancé." },
+        { status: 503 }
       );
     }
     return NextResponse.json({ error: "Unable to create checkout session" }, { status: 500 });

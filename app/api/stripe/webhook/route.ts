@@ -99,10 +99,30 @@ async function handleCompletedCheckout(
       amountTotal: item.amount_total
     }))
   });
+
+  await supabase.from("orders").update({
+    sendcloud_imported_at: new Date().toISOString(),
+    sendcloud_error: null
+  }).eq("id", storedOrder.id);
+}
+
+async function markCheckoutRefunded(
+  stripe: Stripe,
+  supabase: NonNullable<ReturnType<typeof createAdminSupabaseClient>>,
+  paymentIntentId: string
+) {
+  const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntentId, limit: 1 });
+  const session = sessions.data[0];
+  if (!session) return;
+
+  await supabase.from("orders").update({
+    status: "refunded",
+    refunded_at: new Date().toISOString()
+  }).eq("stripe_session_id", session.id);
 }
 
 export async function POST(request: Request) {
-  const signature = headers().get("stripe-signature");
+  const signature = (await headers()).get("stripe-signature");
 
   if (!hasStripeEnv() || !process.env.STRIPE_WEBHOOK_SECRET || !signature) {
     return NextResponse.json(
@@ -158,16 +178,40 @@ export async function POST(request: Request) {
       try {
         await handleCompletedCheckout(stripe, supabase, session);
       } catch (error) {
+        const message = error instanceof Error ? error.message : "Unable to process completed checkout";
+        if (message.includes("insufficient_stock") && typeof session.payment_intent === "string") {
+          await stripe.refunds.create(
+            { payment_intent: session.payment_intent, reason: "requested_by_customer" },
+            { idempotencyKey: `stock-refund-${session.id}` }
+          );
+          await supabase.from("orders").update({ status: "refund_pending" })
+            .eq("stripe_session_id", session.id);
+        } else {
+          await supabase.from("orders").update({ sendcloud_error: message.slice(0, 500) })
+            .eq("stripe_session_id", session.id);
+        }
         return NextResponse.json(
           {
-            error: error instanceof Error
-              ? error.message
-              : "Unable to process completed checkout"
+            error: message
           },
           { status: 500 }
         );
       }
     }
+  }
+
+  if (event.type === "checkout.session.async_payment_failed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await supabase.from("orders").update({ status: "payment_failed" })
+      .eq("stripe_session_id", session.id);
+  }
+
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId = typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+    if (paymentIntentId) await markCheckoutRefunded(stripe, supabase, paymentIntentId);
   }
 
   if (event.type === "checkout.session.expired") {

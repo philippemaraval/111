@@ -136,7 +136,7 @@ select
   25,
   '{"S": 0, "M": 0, "L": 0, "XL": 0}'::jsonb,
   case
-    when slug = 'la-joliette' then '/illustrations/la-joliette-plat-face.png'
+    when slug = 'la-joliette' then '/illustrations/la-joliette-plat-face.webp'
     else 'https://placehold.co/960x1200/f9f4eb/183247?text=' || replace(slug, '-', '+')
   end,
   'Un quartier marseillais raconté à travers ses lieux, son histoire et celles et ceux qui le font vivre.',

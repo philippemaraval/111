@@ -5,11 +5,12 @@ import { Download, Save } from "lucide-react";
 
 import { SIZE_ORDER } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
-import type { Neighborhood, VoteSummary } from "@/lib/types";
+import type { Neighborhood, OrderSummary, VoteSummary } from "@/lib/types";
 
 type AdminDashboardProps = {
   neighborhoods: Neighborhood[];
   votes: VoteSummary[];
+  orders: OrderSummary[];
   demoMode: boolean;
   adminEmail?: string | null;
 };
@@ -28,6 +29,7 @@ type InventoryState = Record<
 export function AdminDashboard({
   neighborhoods,
   votes,
+  orders,
   demoMode,
   adminEmail
 }: AdminDashboardProps) {
@@ -123,6 +125,39 @@ export function AdminDashboard({
             Export CSV
           </a>
         </div>
+      </section>
+
+      <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-sea">Commandes</p>
+            <h2 className="text-3xl font-black tracking-tight text-navy">Suivi des ventes</h2>
+          </div>
+          <p className="text-sm text-navy/60">Les 100 commandes les plus récentes.</p>
+        </div>
+        {orders.length === 0 ? (
+          <p className="rounded-2xl bg-sand p-5 text-sm text-navy/60">Aucune commande enregistrée.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="border-b border-navy/10 text-xs uppercase tracking-wider text-navy/45">
+                <tr><th className="p-3">Commande</th><th className="p-3">Client</th><th className="p-3">Articles</th><th className="p-3">Montant</th><th className="p-3">Statut</th><th className="p-3">Logistique</th></tr>
+              </thead>
+              <tbody className="divide-y divide-navy/10">
+                {orders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="p-3"><strong>{order.orderNumber}</strong><span className="mt-1 block text-xs text-navy/45">{new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(order.createdAt))}</span></td>
+                    <td className="p-3">{order.email ?? "En attente"}</td>
+                    <td className="p-3">{order.itemCount}</td>
+                    <td className="p-3 font-bold">{order.amountTotal === null ? "—" : formatCurrency(order.amountTotal / 100)}</td>
+                    <td className="p-3"><span className="rounded-full bg-sand px-3 py-1 text-xs font-bold">{order.status}</span></td>
+                    <td className="p-3 text-xs">{order.sendcloudImportedAt ? <span className="text-olive">Importée</span> : order.sendcloudError ? <span className="text-terracotta" title={order.sendcloudError}>Erreur Sendcloud</span> : "En attente"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">

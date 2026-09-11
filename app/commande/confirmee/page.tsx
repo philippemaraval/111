@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 type ConfirmationPageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function firstParam(value: string | string[] | undefined) {
@@ -54,7 +54,8 @@ function ConfirmationUnavailable() {
 }
 
 export default async function ConfirmationPage({ searchParams }: ConfirmationPageProps) {
-  const sessionId = firstParam(searchParams?.session_id);
+  const resolvedSearchParams = await searchParams;
+  const sessionId = firstParam(resolvedSearchParams?.session_id);
   const stripe = getStripeClient();
 
   if (!stripe || !sessionId || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) {

@@ -6,13 +6,15 @@ import { ArrowLeft, ArrowUpRight, Heart, MapPin, PencilRuler, Shirt } from "luci
 import { MiniMap } from "@/components/product/mini-map";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 import { getNeighborhoodBySlug, listNeighborhoods } from "@/lib/neighborhoods";
+import { getSiteUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-type NeighborhoodPageProps = { params: { slug: string } };
+type NeighborhoodPageProps = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: NeighborhoodPageProps): Promise<Metadata> {
-  const neighborhood = await getNeighborhoodBySlug(params.slug);
+  const { slug } = await params;
+  const neighborhood = await getNeighborhoodBySlug(slug);
   if (!neighborhood) return { title: "Quartier introuvable | 111" };
   return {
     title: neighborhood.seo.title ?? `${neighborhood.name} — T-shirt 111`,
@@ -24,10 +26,11 @@ export async function generateMetadata({ params }: NeighborhoodPageProps): Promi
 }
 
 export default async function NeighborhoodPage({ params }: NeighborhoodPageProps) {
-  const neighborhood = await getNeighborhoodBySlug(params.slug);
+  const { slug } = await params;
+  const neighborhood = await getNeighborhoodBySlug(slug);
   if (!neighborhood) notFound();
   const related = (await listNeighborhoods({ arrondissement: neighborhood.arrondissement, sort: "popular" })).filter((item) => item.id !== neighborhood.id).slice(0, 3);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
