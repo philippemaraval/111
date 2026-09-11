@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { EditorialPage, EditorialSection } from "@/components/editorial-page";
 import { CONTACT_EMAIL, LEGAL_INFORMATION } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Politique de confidentialité | 111 Marseille",
   description: "Comment 111 collecte, utilise et protège vos données personnelles."

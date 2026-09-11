@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { EditorialPage, EditorialSection } from "@/components/editorial-page";
 import { CONTACT_EMAIL, HOST_INFORMATION, LEGAL_INFORMATION } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Mentions légales | 111 Marseille",
   description: "Informations légales relatives au site 111 Marseille."

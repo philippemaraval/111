@@ -3,6 +3,8 @@ import { Ruler, Shirt } from "lucide-react";
 
 import { EditorialLink, EditorialPage, EditorialSection } from "@/components/editorial-page";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Guide des tailles | 111 Marseille",
   description: "Nos conseils pour choisir la bonne taille de t-shirt 111."

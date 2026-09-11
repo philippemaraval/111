@@ -225,13 +225,13 @@ export const getNeighborhoodGroups = cache(async () => {
 
 export async function recordVote(email: string, neighborhoodId: string, newsletterConsent: boolean) {
   if (!hasSupabaseEnv()) {
-    return { success: true, demoMode: true };
+    throw new Error("Supabase public configuration is missing");
   }
 
   const supabase = createAdminSupabaseClient();
 
   if (!supabase) {
-    return { success: true, demoMode: true };
+    throw new Error("Supabase admin configuration is missing");
   }
 
   const { error } = await supabase.from("votes").insert({

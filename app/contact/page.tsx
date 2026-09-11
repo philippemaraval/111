@@ -4,6 +4,8 @@ import { Clock3, Mail, MessageCircle, PackageSearch } from "lucide-react";
 import { EditorialLink, EditorialPage, EditorialSection } from "@/components/editorial-page";
 import { CONTACT_EMAIL, socialLinks } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Contact | 111 Marseille",
   description: "Une question sur une commande, un quartier ou le projet 111 ? Contactez-nous."

@@ -3,6 +3,8 @@ import { ChevronDown } from "lucide-react";
 
 import { EditorialLink, EditorialPage } from "@/components/editorial-page";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "F.A.Q. | 111 Marseille",
   description: "Prix, tailles, votes, livraison et retours : les réponses aux questions fréquentes sur 111."

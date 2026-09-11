@@ -3,6 +3,8 @@ import { Heart, Map, PencilRuler, Shirt } from "lucide-react";
 
 import { EditorialLink, EditorialPage, EditorialSection } from "@/components/editorial-page";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "L’histoire de 111 | Marseille, quartier par quartier",
   description: "Découvrez l’origine de 111, une marque marseillaise qui transforme l’identité des quartiers en images à porter."
