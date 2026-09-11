@@ -30,7 +30,7 @@ export default function LegalNoticePage() {
       </EditorialSection>
 
       <EditorialSection title="Direction de la publication">
-        <p>Le directeur de la publication est {LEGAL_INFORMATION.ownerName}, en qualité d’entrepreneur individuel éditant le site.</p>
+        <p>La direction de la publication est assurée par l’entrepreneur individuel identifié ci-dessus.</p>
       </EditorialSection>
 
       <EditorialSection title="Hébergement">

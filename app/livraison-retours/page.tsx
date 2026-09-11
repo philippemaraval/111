@@ -41,7 +41,7 @@ export default function ShippingReturnsPage() {
 
       <EditorialSection kicker="Rétractation" title="Changer d’avis">
         <p>Vous disposez de 14 jours à compter de la réception de votre commande pour nous informer clairement de votre décision de vous rétracter. Vous n’avez pas à justifier votre choix.</p>
-        <p>Après cette notification, le produit doit être renvoyé au plus tard dans les 14 jours suivants à : {LEGAL_INFORMATION.tradeName} — {LEGAL_INFORMATION.ownerName}, {LEGAL_INFORMATION.address}. Sauf erreur de préparation ou article défectueux, les frais de retour restent à votre charge.</p>
+        <p>Après cette notification, le produit doit être renvoyé au plus tard dans les 14 jours suivants à : {LEGAL_INFORMATION.tradeName}, {LEGAL_INFORMATION.address}. Sauf erreur de préparation ou article défectueux, les frais de retour restent à votre charge.</p>
         <div className="rounded-2xl border border-olive/20 bg-olive/5 p-5 text-sm text-navy">
           <p className="flex items-start gap-3"><CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-olive" /> Le t-shirt doit être non porté, non lavé, sans odeur ni détérioration, et retourné avec ses éventuels éléments d’origine.</p>
         </div>
@@ -56,7 +56,7 @@ export default function ShippingReturnsPage() {
       <EditorialSection kicker="Formulaire" title="Modèle de rétractation">
         <p>À adresser uniquement si vous souhaitez vous rétracter du contrat :</p>
         <div className="rounded-2xl bg-sand p-5 text-sm leading-7 text-navy">
-          <p>À l’attention de {LEGAL_INFORMATION.ownerName} — {LEGAL_INFORMATION.tradeName}, {LEGAL_INFORMATION.address}, {CONTACT_EMAIL}.</p>
+          <p>À l’attention de {LEGAL_INFORMATION.tradeName}, {LEGAL_INFORMATION.address}, {CONTACT_EMAIL}.</p>
           <p>Je vous notifie par la présente ma rétractation du contrat portant sur la vente du ou des biens suivants : […]</p>
           <p>Commandé(s) le / reçu(s) le : […]<br />Numéro de commande : […]<br />Nom du consommateur : […]<br />Adresse du consommateur : […]<br />Date : […]<br />Signature, uniquement en cas d’envoi sur papier : […]</p>
         </div>
