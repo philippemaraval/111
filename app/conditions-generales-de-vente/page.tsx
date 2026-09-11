@@ -18,9 +18,9 @@ export default function TermsPage() {
       intro="Ces conditions résument les règles applicables aux achats effectués sur le site 111 par un consommateur."
     >
       <EditorialSection title="Identité du vendeur">
-        <p>Les produits sont vendus par {LEGAL_INFORMATION.ownerName}, entrepreneur individuel exerçant sous le nom commercial {LEGAL_INFORMATION.tradeName}, domicilié au {LEGAL_INFORMATION.address}.</p>
+        <p>Les produits sont vendus par {LEGAL_INFORMATION.tradeName}, entreprise individuelle domiciliée au {LEGAL_INFORMATION.address}.</p>
         <p>SIREN : {LEGAL_INFORMATION.siren} — SIRET : {LEGAL_INFORMATION.siret} — {LEGAL_INFORMATION.registration}.</p>
-        <p>Contact : <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> — <a className="font-bold text-sea" href={`tel:${LEGAL_INFORMATION.phoneHref}`}>{LEGAL_INFORMATION.phoneDisplay}</a>.</p>
+        <p>Contact : <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
       </EditorialSection>
 
       <EditorialSection title="Produits et prix">

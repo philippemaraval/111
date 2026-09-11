@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       intro="Cette page explique quelles données sont utilisées par 111, pourquoi elles le sont et comment exercer vos droits."
     >
       <EditorialSection title="Responsable du traitement">
-        <p>Le responsable du traitement est {LEGAL_INFORMATION.ownerName}, entrepreneur individuel exerçant sous le nom commercial {LEGAL_INFORMATION.tradeName}, au {LEGAL_INFORMATION.address}. Il peut être contacté à <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
+        <p>Le responsable du traitement est l’entreprise individuelle exploitant {LEGAL_INFORMATION.tradeName}, identifiée sous le SIREN {LEGAL_INFORMATION.siren} et domiciliée au {LEGAL_INFORMATION.address}. Elle peut être contactée à <a className="font-bold text-sea" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
       </EditorialSection>
 
       <EditorialSection title="Les données concernées">
