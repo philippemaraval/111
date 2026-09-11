@@ -47,6 +47,13 @@ async function handleCompletedCheckout(
     return;
   }
 
+  await supabase.from("order_events").insert({
+    order_id: storedOrder.id,
+    event_type: "paid",
+    source: "stripe",
+    detail: { stripe_event: "checkout_completed" }
+  });
+
   const shippingMethod = session.metadata?.shipping_method;
   const servicePointId = session.metadata?.service_point_id;
   const weightGrams = Number(session.metadata?.shipment_weight_grams ?? 0);
@@ -75,7 +82,7 @@ async function handleCompletedCheckout(
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
   const orderNumber = `111-${session.id.slice(-8).toUpperCase()}`;
 
-  await importPaidOrderToSendcloud({
+  const sendcloudOrder = await importPaidOrderToSendcloud({
     sessionId: session.id,
     orderNumber,
     createdAt: new Date(session.created * 1000).toISOString(),
@@ -102,8 +109,16 @@ async function handleCompletedCheckout(
 
   await supabase.from("orders").update({
     sendcloud_imported_at: new Date().toISOString(),
-    sendcloud_error: null
+    sendcloud_error: null,
+    sendcloud_order_id: sendcloudOrder ? String(sendcloudOrder.id) : null,
+    shipping_status: "imported"
   }).eq("id", storedOrder.id);
+  await supabase.from("order_events").insert({
+    order_id: storedOrder.id,
+    event_type: "sendcloud_imported",
+    source: "sendcloud",
+    detail: { sendcloud_order_id: sendcloudOrder ? String(sendcloudOrder.id) : null }
+  });
 }
 
 async function markCheckoutRefunded(
@@ -115,10 +130,16 @@ async function markCheckoutRefunded(
   const session = sessions.data[0];
   if (!session) return;
 
-  await supabase.from("orders").update({
+  const { data: refundedOrder } = await supabase.from("orders").update({
     status: "refunded",
     refunded_at: new Date().toISOString()
-  }).eq("stripe_session_id", session.id);
+  }).eq("stripe_session_id", session.id).select("id").maybeSingle();
+  if (refundedOrder) await supabase.from("order_events").insert({
+    order_id: refundedOrder.id,
+    event_type: "refunded",
+    source: "stripe",
+    detail: { payment_intent_id: paymentIntentId }
+  });
 }
 
 export async function POST(request: Request) {
@@ -211,7 +232,7 @@ export async function POST(request: Request) {
     const paymentIntentId = typeof charge.payment_intent === "string"
       ? charge.payment_intent
       : charge.payment_intent?.id;
-    if (paymentIntentId) await markCheckoutRefunded(stripe, supabase, paymentIntentId);
+    if (charge.refunded && paymentIntentId) await markCheckoutRefunded(stripe, supabase, paymentIntentId);
   }
 
   if (event.type === "checkout.session.expired") {

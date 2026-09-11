@@ -25,7 +25,7 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: Neighborhood 
   return (
     <article className="group">
       <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[#f1f1f1]">
-        <Link href={`/quartier/${neighborhood.slug}`} className="focus-ring block h-full w-full" aria-label={`Découvrir le t-shirt ${neighborhood.name}`}>
+        <Link href={`/quartier/${neighborhood.slug}`} className="focus-ring block h-full w-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={image.url}
@@ -62,16 +62,18 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: Neighborhood 
             >
               <ChevronRight className="h-5 w-5" />
             </button>
-            <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 rounded-full bg-white/90 px-3 py-2 shadow-soft" role="group" aria-label={`Photo ${activeImage + 1} sur ${gallery.length}`}>
+            <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1 rounded-full bg-white/90 px-2 py-1 shadow-soft" role="group" aria-label={`Photo ${activeImage + 1} sur ${gallery.length}`}>
               {gallery.map((galleryImage, index) => (
                 <button
                   key={galleryImage.url}
                   type="button"
                   onClick={() => setActiveImage(index)}
-                  className={`focus-ring h-2 rounded-full transition-all ${index === activeImage ? "w-5 bg-sea" : "w-2 bg-navy/20 hover:bg-navy/40"}`}
+                  className="focus-ring grid h-8 w-8 place-items-center rounded-full"
                   aria-label={`Afficher ${galleryImage.label}`}
                   aria-current={index === activeImage ? "true" : undefined}
-                />
+                >
+                  <span className={`h-2 rounded-full transition-all ${index === activeImage ? "w-5 bg-sea" : "w-2 bg-navy/25"}`} />
+                </button>
               ))}
             </div>
           </>

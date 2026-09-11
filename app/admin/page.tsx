@@ -21,6 +21,8 @@ export default async function AdminPage() {
         neighborhoods={data.neighborhoods}
         votes={data.votes}
         orders={data.orders}
+        messages={data.messages}
+        reviews={data.reviews}
         demoMode={access.demoMode}
         adminEmail={access.user?.email}
       />

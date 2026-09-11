@@ -27,12 +27,22 @@ const questions = [
 ];
 
 export default function FaqPage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: questions.map(([question, answer]) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer }
+    }))
+  };
   return (
     <EditorialPage
       eyebrow="F.A.Q."
       title="Tout ce qu’il faut savoir."
       intro="La collection, les votes, les tailles et les commandes : les réponses essentielles sont réunies ici."
     >
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }} />
       <div className="space-y-3">
         {questions.map(([question, answer]) => (
           <details key={question} className="group rounded-2xl border border-navy/10 bg-white p-5 open:bg-sand sm:p-6">

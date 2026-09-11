@@ -1,5 +1,6 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   outputFileTracingRoot: process.cwd(),
   poweredByHeader: false,
   images: {
@@ -7,6 +8,12 @@ const nextConfig = {
   },
   async headers() {
     return [{
+      source: "/illustrations/:path*",
+      headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }]
+    }, {
+      source: "/data/:path*",
+      headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }]
+    }, {
       source: "/:path*",
       headers: [
         { key: "X-Content-Type-Options", value: "nosniff" },

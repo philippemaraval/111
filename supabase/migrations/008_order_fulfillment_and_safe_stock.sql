@@ -47,7 +47,7 @@ begin
     end loop;
   end if;
 
-  if new.status = 'refunded' and old.status = 'paid' then
+  if new.status = 'refunded' and old.status is distinct from 'refunded' then
     for item in
       select neighborhood_id, size, sum(quantity)::integer as quantity
       from public.order_items

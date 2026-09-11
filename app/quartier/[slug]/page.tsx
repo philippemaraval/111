@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowUpRight, Heart, MapPin, PencilRuler, Shirt } from "luci
 
 import { MiniMap } from "@/components/product/mini-map";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
-import { getNeighborhoodBySlug, listNeighborhoods } from "@/lib/neighborhoods";
+import { getNeighborhoodBySlug, listNeighborhoods, listPublishedReviews } from "@/lib/neighborhoods";
 import { getSiteUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,11 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
   const { slug } = await params;
   const neighborhood = await getNeighborhoodBySlug(slug);
   if (!neighborhood) notFound();
-  const related = (await listNeighborhoods({ arrondissement: neighborhood.arrondissement, sort: "popular" })).filter((item) => item.id !== neighborhood.id).slice(0, 3);
+  const [sameArea, reviews] = await Promise.all([
+    listNeighborhoods({ arrondissement: neighborhood.arrondissement, sort: "popular" }),
+    listPublishedReviews(neighborhood.id)
+  ]);
+  const related = sameArea.filter((item) => item.id !== neighborhood.id).slice(0, 3);
   const siteUrl = getSiteUrl();
   const productSchema = {
     "@context": "https://schema.org",
@@ -44,7 +48,25 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
       priceCurrency: "EUR",
       price: neighborhood.price,
       availability: neighborhood.isAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      url: `${siteUrl}/quartier/${neighborhood.slug}`
+      url: `${siteUrl}/quartier/${neighborhood.slug}`,
+      seller: { "@type": "Organization", name: "111 Marseille" },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: "FR" },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 3, unitCode: "DAY" },
+          transitTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 5, unitCode: "DAY" }
+        }
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "FR",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 14,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/ReturnFeesCustomerResponsibility"
+      }
     }
   };
 
@@ -67,6 +89,8 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
         </div>
         <div className="lg:pl-5"><ProductPurchasePanel neighborhood={neighborhood} /></div>
       </section>
+
+      {reviews.length > 0 && <section className="mx-auto max-w-[1440px] px-4 py-16 sm:px-6 lg:px-10"><p className="section-kicker">Avis vérifiés</p><div className="mt-5 grid gap-4 md:grid-cols-3">{reviews.map((review) => <article key={review.id} className="rounded-2xl border border-navy/10 bg-white p-6"><p className="text-sun" aria-label={`${review.rating} étoiles sur 5`}>{"★".repeat(review.rating)}<span className="text-navy/15">{"★".repeat(5-review.rating)}</span></p><p className="mt-4 leading-7 text-navy/70">{review.body}</p><p className="mt-4 text-sm font-bold">{review.author_name} · achat vérifié</p></article>)}</div></section>}
 
       <section className="mx-auto max-w-[1440px] px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
         <div className="grid gap-12 border-t border-navy/10 pt-14 lg:grid-cols-[0.75fr_1.25fr]">

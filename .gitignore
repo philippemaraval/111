@@ -7,6 +7,9 @@ dist
 coverage
 *.log
 .open-next
+.lighthouseci
+test-results
+playwright-report
 .wrangler
 .dev.vars
 .cloudflare

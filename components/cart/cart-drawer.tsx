@@ -10,8 +10,8 @@ export function CartDrawer() {
   const { items, isDrawerOpen, subtotal, closeDrawer, removeItem, updateQuantity } = useCart();
   return (
     <>
-      <div className={`fixed inset-0 z-40 bg-navy/45 backdrop-blur-sm transition ${isDrawerOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`} onClick={closeDrawer} />
-      <aside role="dialog" aria-modal="true" aria-label="Votre panier" className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-card transition-transform duration-300 ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
+      <div aria-hidden="true" className={`fixed inset-0 z-40 bg-navy/45 backdrop-blur-sm transition ${isDrawerOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`} onClick={closeDrawer} />
+      <div role="dialog" aria-modal="true" aria-label="Votre panier" aria-hidden={!isDrawerOpen} inert={!isDrawerOpen} className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-card transition-transform duration-300 ${isDrawerOpen ? "translate-x-0" : "pointer-events-none translate-x-full"}`}>
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-navy/10 px-5 py-5">
             <div className="flex items-center gap-3"><LogoMark className="h-10 w-10 text-sea" /><div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sea">Ta sélection</p><h2 className="text-2xl font-black tracking-tight">Panier ({items.length})</h2></div></div>
@@ -32,7 +32,7 @@ export function CartDrawer() {
           </div>
           {items.length > 0 && <div className="border-t border-navy/10 p-5"><div className="mb-4 flex items-center justify-between"><span className="text-sm text-navy/55">Sous-total</span><span className="text-xl font-black">{formatCurrency(subtotal)}</span></div><Link href="/cart" onClick={closeDrawer} className="focus-ring flex items-center justify-between rounded-full bg-sea px-6 py-4 text-sm font-bold text-white hover:bg-navy">Voir mon panier <ArrowRight className="h-4 w-4" /></Link><p className="mt-3 text-center text-[11px] text-navy/40">Livraison calculée à l’étape suivante</p></div>}
         </div>
-      </aside>
+      </div>
     </>
   );
 }

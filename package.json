@@ -10,6 +10,8 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit --incremental false",
     "test": "node --import tsx --test tests/*.test.ts",
+    "test:e2e": "playwright test",
+    "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun",
     "preview": "npm run build:cf && wrangler dev",
     "deploy": "npm run build:cf && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
@@ -29,6 +31,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

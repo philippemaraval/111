@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
   const siteUrl = getSiteUrl();
 
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/admin", "/api/"] }],
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/suivi-commande"] }],
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl
   };

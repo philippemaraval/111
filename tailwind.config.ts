@@ -13,7 +13,7 @@ const config: Config = {
         sand: "#f5f2eb",
         ochre: "#ff8a34",
         terracotta: "#ff5c52",
-        sea: "#129fd4",
+        sea: "#007da8",
         navy: "#12202f",
         sun: "#ffd43b",
         olive: "#39875a",

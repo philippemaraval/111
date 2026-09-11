@@ -6,6 +6,7 @@ import { listNeighborhoods } from "@/lib/neighborhoods";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { getStripeClient, hasStripeEnv } from "@/lib/stripe";
 import { getMondialRelayServicePoint } from "@/lib/sendcloud";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import {
   calculateShipmentWeightGrams,
   calculateShippingPrice,
@@ -107,6 +108,9 @@ function resolveItems(items: InputItem[], neighborhoods: Neighborhood[]): Resolv
 }
 
 export async function POST(request: Request) {
+  if (!await enforceRateLimit(request, "checkout", 8, 60)) {
+    return NextResponse.json({ error: "Trop de tentatives. Réessaie dans une minute." }, { status: 429 });
+  }
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > 100_000) {
     return NextResponse.json({ error: "Checkout payload too large" }, { status: 413 });
@@ -202,28 +206,21 @@ export async function POST(request: Request) {
       throw new Error("order_storage_unavailable");
     }
 
-    const { data: order, error: orderError } = await supabase.from("orders")
-      .insert({ stripe_session_id: session.id, status: "pending" }).select("id").single();
-    if (orderError || !order) {
-      await stripe.checkout.sessions.expire(session.id).catch(() => undefined);
-      throw new Error("order_storage_failed");
-    }
-
     const orderItems = resolvedItems.flatMap((item) => {
       const totalCents = Math.round(item.unitPrice * 100);
       const basePrice = Math.floor(totalCents / item.selections.length);
       const remainder = totalCents - basePrice * item.selections.length;
       return item.selections.map((selection, index) => ({
-        order_id: order.id, neighborhood_id: selection.neighborhood.id, size: selection.size,
+        neighborhood_id: selection.neighborhood.id, size: selection.size,
         quantity: item.quantity, unit_price: basePrice + (index < remainder ? 1 : 0)
       }));
     });
-    const { error: orderItemsError } = await supabase.from("order_items").insert(orderItems);
-    if (orderItemsError) {
-      await Promise.allSettled([
-        stripe.checkout.sessions.expire(session.id),
-        supabase.from("orders").delete().eq("id", order.id)
-      ]);
+    const { error: orderStorageError } = await supabase.rpc("create_pending_order", {
+      p_stripe_session_id: session.id,
+      p_items: orderItems
+    });
+    if (orderStorageError) {
+      await stripe.checkout.sessions.expire(session.id).catch(() => undefined);
       throw new Error("order_storage_failed");
     }
     if (!session.url) return NextResponse.json({ error: "Stripe did not return a checkout URL" }, { status: 500 });

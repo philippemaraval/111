@@ -5,10 +5,14 @@ import {
   hasSendcloudEnv,
   searchMondialRelayServicePoints
 } from "@/lib/sendcloud";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const postalCodeSchema = z.string().regex(/^\d{5}$/);
 
 export async function GET(request: Request) {
+  if (!await enforceRateLimit(request, "service-points", 30, 60)) {
+    return NextResponse.json({ error: "Trop de recherches. Réessayez dans une minute." }, { status: 429 });
+  }
   if (!hasSendcloudEnv()) {
     return NextResponse.json(
       { error: "La sélection des points relais n’est pas encore configurée." },

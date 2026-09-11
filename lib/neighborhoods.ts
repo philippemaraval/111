@@ -11,10 +11,12 @@ import { createAdminSupabaseClient, createServerSupabaseClient, hasSupabaseEnv }
 import { parseCoordinates, parseSeoMetadata, parseStock, slugify } from "@/lib/utils";
 import type {
   Database,
+  ContactMessage,
   Neighborhood,
   NeighborhoodMetricsRow,
   NeighborhoodRow,
   OrderSummary,
+  Review,
   SearchIndexItem,
   VoteRow,
   VoteSummary
@@ -170,6 +172,15 @@ export const getNeighborhoodBySlug = cache(async (slug: string) => {
   return neighborhoods.find((item) => item.slug === slug) ?? null;
 });
 
+export const listPublishedReviews = cache(async (neighborhoodId: string): Promise<Review[]> => {
+  const supabase = createAdminSupabaseClient();
+  if (!supabase) return [];
+  const { data } = await supabase.from("reviews").select("*")
+    .eq("neighborhood_id", neighborhoodId).eq("status", "published")
+    .order("created_at", { ascending: false }).limit(20);
+  return (data ?? []) as Review[];
+});
+
 export const getNeighborhoodSearchIndex = cache(async (): Promise<SearchIndexItem[]> => {
   if (!hasSupabaseEnv()) {
     return mockSearchIndex;
@@ -264,7 +275,9 @@ export async function getAdminDashboardData() {
     return {
       neighborhoods: mockNeighborhoods,
       votes: mockVoteSummaries,
-      orders: [] as OrderSummary[]
+      orders: [] as OrderSummary[],
+      messages: [] as ContactMessage[],
+      reviews: [] as Review[]
     };
   }
 
@@ -274,16 +287,21 @@ export async function getAdminDashboardData() {
     return {
       neighborhoods: mockNeighborhoods,
       votes: mockVoteSummaries,
-      orders: [] as OrderSummary[]
+      orders: [] as OrderSummary[],
+      messages: [] as ContactMessage[],
+      reviews: [] as Review[]
     };
   }
 
-  const [rowsResponse, metricsResponse, votesResponse, ordersResponse, orderItemsResponse] = await Promise.all([
+  const [rowsResponse, metricsResponse, votesResponse, ordersResponse, orderItemsResponse, messagesResponse, orderEventsResponse, reviewsResponse] = await Promise.all([
     supabase.from("neighborhoods").select("*"),
     supabase.from("neighborhood_metrics").select("*"),
     supabase.from("votes").select("*").order("created_at", { ascending: false }),
     supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(100),
-    supabase.from("order_items").select("order_id, quantity")
+    supabase.from("order_items").select("order_id, neighborhood_id, size, quantity"),
+    supabase.from("contact_messages").select("*").order("created_at", { ascending: false }).limit(50),
+    supabase.from("order_events").select("order_id, event_type, source, created_at").order("created_at", { ascending: false }).limit(500),
+    supabase.from("reviews").select("*").order("created_at", { ascending: false }).limit(100)
   ]);
 
   const rows = rowsResponse.data as NeighborhoodRow[] | null;
@@ -294,7 +312,9 @@ export async function getAdminDashboardData() {
     return {
       neighborhoods: mockNeighborhoods,
       votes: mockVoteSummaries,
-      orders: [] as OrderSummary[]
+      orders: [] as OrderSummary[],
+      messages: [] as ContactMessage[],
+      reviews: [] as Review[]
     };
   }
 
@@ -323,7 +343,9 @@ export async function getAdminDashboardData() {
     };
   });
 
-  const orderItems = (orderItemsResponse.data ?? []) as Array<{ order_id: string; quantity: number }>;
+  const orderItems = (orderItemsResponse.data ?? []) as Array<{ order_id: string; neighborhood_id: string; size: "S" | "M" | "L" | "XL"; quantity: number }>;
+  const neighborhoodNames = new Map(neighborhoods.map((item) => [item.id, item.name]));
+  const orderEvents = (orderEventsResponse.data ?? []) as Array<{ order_id: string | null; event_type: string; source: string; created_at: string }>;
   const orders = ((ordersResponse.data ?? []) as Database["public"]["Tables"]["orders"]["Row"][])
     .map<OrderSummary>((order) => ({
       id: order.id,
@@ -337,13 +359,24 @@ export async function getAdminDashboardData() {
       sendcloudError: order.sendcloud_error,
       itemCount: orderItems
         .filter((item) => item.order_id === order.id)
-        .reduce((sum, item) => sum + item.quantity, 0)
+        .reduce((sum, item) => sum + item.quantity, 0),
+      items: orderItems.filter((item) => item.order_id === order.id).map((item) => ({
+        name: neighborhoodNames.get(item.neighborhood_id) ?? "Quartier inconnu",
+        size: item.size,
+        quantity: item.quantity
+      })),
+      lastEvent: (() => {
+        const event = orderEvents.find((item) => item.order_id === order.id);
+        return event ? { type: event.event_type, source: event.source, createdAt: event.created_at } : null;
+      })()
     }));
 
   return {
     neighborhoods,
     votes,
-    orders
+    orders,
+    messages: (messagesResponse.data ?? []) as ContactMessage[],
+    reviews: (reviewsResponse.data ?? []) as Review[]
   };
 }
 

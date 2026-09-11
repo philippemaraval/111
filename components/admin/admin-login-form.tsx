@@ -2,9 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { getSiteUrl } from "@/lib/utils";
-
 export function AdminLoginForm() {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "sent" | "error">("idle");
@@ -12,23 +9,17 @@ export function AdminLoginForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const supabase = createBrowserSupabaseClient();
-
-    if (!supabase) {
-      setState("error");
-      return;
-    }
-
     setState("loading");
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${getSiteUrl()}/auth/callback?next=/admin`
-      }
-    });
-
-    setState(error ? "error" : "sent");
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      setState(response.ok ? "sent" : "error");
+    } catch {
+      setState("error");
+    }
   }
 
   return (

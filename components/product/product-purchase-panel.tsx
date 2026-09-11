@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Check, ChevronDown, ShoppingBag, Sparkles } from "lucide-react";
 
 import { VoteForm } from "@/components/product/vote-form";
+import { ProductActions } from "@/components/product/product-actions";
+import { StockAlertForm } from "@/components/product/stock-alert-form";
 import { useCart } from "@/contexts/cart-context";
 import { SIZE_ORDER } from "@/lib/constants";
 import { availableSizes, cn, formatCurrency } from "@/lib/utils";
@@ -47,6 +49,7 @@ export function ProductPurchasePanel({ neighborhood }: { neighborhood: Neighborh
         <span className={cn("rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.15em]", neighborhood.isAvailable ? "bg-olive/10 text-olive" : "bg-terracotta/10 text-terracotta")}>{neighborhood.isAvailable ? "En stock" : "Prochainement"}</span>
       </div>
       <p className="mt-6 text-base leading-7 text-navy/65">{shortDescription}{shortDescription.endsWith(".") ? "" : "."}</p>
+      <ProductActions slug={neighborhood.slug} name={neighborhood.name} />
 
       {neighborhood.isAvailable ? (
         <div className="mt-8">
@@ -57,6 +60,7 @@ export function ProductPurchasePanel({ neighborhood }: { neighborhood: Neighborh
               return <button key={size} type="button" disabled={!enabled} onClick={() => setSelectedSize(size)} className={cn("focus-ring rounded-xl border py-3 text-sm font-bold transition", selectedSize === size ? "border-navy bg-navy text-white" : "border-navy/15 hover:border-sea", !enabled && "cursor-not-allowed bg-sand text-navy/25 line-through")}>{size}</button>;
             })}
           </div>
+          <StockAlertForm neighborhoodId={neighborhood.id} unavailableSizes={SIZE_ORDER.filter((size) => neighborhood.stockBySize[size] <= 0)} />
           <button type="button" onClick={handleAddToCart} disabled={!selectedSize} className="focus-ring mt-4 flex w-full items-center justify-center gap-3 rounded-full bg-sea px-6 py-4 text-sm font-bold text-white transition hover:bg-navy disabled:opacity-40">
             {added ? <Check className="h-5 w-5" /> : <ShoppingBag className="h-5 w-5" />}{added ? "Ajouté au panier" : "Ajouter au panier"}
           </button>

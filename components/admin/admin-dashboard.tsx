@@ -1,16 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, Save } from "lucide-react";
+import { Download, RotateCcw, Save, XCircle } from "lucide-react";
 
 import { SIZE_ORDER } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
-import type { Neighborhood, OrderSummary, VoteSummary } from "@/lib/types";
+import type { ContactMessage, Neighborhood, OrderSummary, Review, VoteSummary } from "@/lib/types";
 
 type AdminDashboardProps = {
   neighborhoods: Neighborhood[];
   votes: VoteSummary[];
   orders: OrderSummary[];
+  messages: ContactMessage[];
+  reviews: Review[];
   demoMode: boolean;
   adminEmail?: string | null;
 };
@@ -26,10 +28,41 @@ type InventoryState = Record<
   }
 >;
 
+function OrderActions({ order }: { order: OrderSummary }) {
+  const [state, setState] = useState(order.status);
+  const [busy, setBusy] = useState(false);
+
+  async function act(payload: { action: "set-status"; status: "preparing" | "shipped" | "delivered" | "returned" } | { action: "cancel" | "refund" }) {
+    if (payload.action !== "set-status" && !window.confirm(payload.action === "refund" ? "Confirmer le remboursement intégral ?" : "Confirmer l’annulation de cette commande ?")) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json() as { status?: string };
+      if (response.ok && result.status) setState(result.status);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <div className="flex flex-wrap gap-2">
+    <select disabled={busy} value={["preparing", "shipped", "delivered", "returned"].includes(state) ? state : ""} onChange={(event) => event.target.value && void act({ action: "set-status", status: event.target.value as "preparing" | "shipped" | "delivered" | "returned" })} className="rounded-lg border border-navy/10 px-2 py-1 text-xs">
+      <option value="">{state}</option><option value="preparing">Préparation</option><option value="shipped">Expédiée</option><option value="delivered">Livrée</option><option value="returned">Retournée</option>
+    </select>
+    <button disabled={busy || state === "refunded"} onClick={() => void act({ action: "refund" })} className="rounded-lg border border-navy/10 p-2 text-terracotta" title="Rembourser"><RotateCcw className="h-4 w-4" /></button>
+    <button disabled={busy || ["cancelled", "refunded"].includes(state)} onClick={() => void act({ action: "cancel" })} className="rounded-lg border border-navy/10 p-2 text-terracotta" title="Annuler"><XCircle className="h-4 w-4" /></button>
+  </div>;
+}
+
 export function AdminDashboard({
   neighborhoods,
   votes,
   orders,
+  messages,
+  reviews,
   demoMode,
   adminEmail
 }: AdminDashboardProps) {
@@ -128,6 +161,16 @@ export function AdminDashboard({
       </section>
 
       <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
+        <div className="mb-5"><p className="text-xs uppercase tracking-[0.24em] text-sea">Messages</p><h2 className="text-3xl font-black tracking-tight text-navy">Demandes reçues</h2></div>
+        <div className="grid gap-3 md:grid-cols-2">{messages.length === 0 ? <p className="text-sm text-navy/60">Aucun message reçu.</p> : messages.map((message) => <article key={message.id} className="rounded-2xl bg-sand p-5"><p className="text-xs text-navy/45">{new Date(message.created_at).toLocaleDateString("fr-FR")} · {message.email}</p><h3 className="mt-2 font-black">{message.subject}</h3><p className="mt-2 whitespace-pre-wrap text-sm text-navy/65">{message.message}</p></article>)}</div>
+      </section>
+
+      <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
+        <div className="mb-5"><p className="text-xs uppercase tracking-[0.24em] text-sea">Avis clients</p><h2 className="text-3xl font-black tracking-tight text-navy">Modération</h2></div>
+        <div className="grid gap-3 md:grid-cols-2">{reviews.length === 0 ? <p className="text-sm text-navy/60">Aucun avis reçu.</p> : reviews.map((review) => <article key={review.id} className="rounded-2xl bg-sand p-5"><p className="text-sm font-bold">{review.author_name} · {review.rating}/5 · {review.status}</p><p className="mt-2 text-sm text-navy/70">{review.body}</p>{review.status === "pending" && <div className="mt-4 flex gap-2"><button onClick={() => void fetch(`/api/admin/reviews/${review.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "published" }) }).then(() => window.location.reload())} className="rounded-full bg-olive px-4 py-2 text-xs font-bold text-white">Publier</button><button onClick={() => void fetch(`/api/admin/reviews/${review.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "rejected" }) }).then(() => window.location.reload())} className="rounded-full bg-white px-4 py-2 text-xs font-bold text-terracotta">Refuser</button></div>}</article>)}</div>
+      </section>
+
+      <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-sea">Commandes</p>
@@ -141,17 +184,17 @@ export function AdminDashboard({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="border-b border-navy/10 text-xs uppercase tracking-wider text-navy/45">
-                <tr><th className="p-3">Commande</th><th className="p-3">Client</th><th className="p-3">Articles</th><th className="p-3">Montant</th><th className="p-3">Statut</th><th className="p-3">Logistique</th></tr>
+                <tr><th className="p-3">Commande</th><th className="p-3">Client</th><th className="p-3">Articles</th><th className="p-3">Montant</th><th className="p-3">Logistique</th><th className="p-3">Actions</th></tr>
               </thead>
               <tbody className="divide-y divide-navy/10">
                 {orders.map((order) => (
                   <tr key={order.id}>
                     <td className="p-3"><strong>{order.orderNumber}</strong><span className="mt-1 block text-xs text-navy/45">{new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(order.createdAt))}</span></td>
                     <td className="p-3">{order.email ?? "En attente"}</td>
-                    <td className="p-3">{order.itemCount}</td>
+                    <td className="p-3"><strong>{order.itemCount}</strong><span className="mt-1 block max-w-64 text-xs text-navy/45">{order.items.map((item) => `${item.name} · ${item.size} × ${item.quantity}`).join(" · ")}</span></td>
                     <td className="p-3 font-bold">{order.amountTotal === null ? "—" : formatCurrency(order.amountTotal / 100)}</td>
-                    <td className="p-3"><span className="rounded-full bg-sand px-3 py-1 text-xs font-bold">{order.status}</span></td>
-                    <td className="p-3 text-xs">{order.sendcloudImportedAt ? <span className="text-olive">Importée</span> : order.sendcloudError ? <span className="text-terracotta" title={order.sendcloudError}>Erreur Sendcloud</span> : "En attente"}</td>
+                    <td className="p-3 text-xs">{order.sendcloudImportedAt ? <span className="text-olive">Importée</span> : order.sendcloudError ? <span className="text-terracotta" title={order.sendcloudError}>Erreur Sendcloud</span> : "En attente"}{order.lastEvent && <span className="mt-1 block text-navy/40">{order.lastEvent.type} · {order.lastEvent.source}</span>}</td>
+                    <td className="p-3"><OrderActions order={order} /></td>
                   </tr>
                 ))}
               </tbody>

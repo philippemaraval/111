@@ -28,6 +28,7 @@ export function Footer() {
             <Link href="/#carte" className="hover:text-white">La carte des quartiers</Link>
             <Link href="/histoire" className="hover:text-white">Histoire de la marque</Link>
             <Link href="/cart" className="hover:text-white">Mon panier</Link>
+            <Link href="/favoris" className="hover:text-white">Mes favoris</Link>
           </div>
         </div>
         <div>
@@ -37,6 +38,8 @@ export function Footer() {
             <Link href="/faq" className="hover:text-white">F.A.Q.</Link>
             <Link href="/guide-des-tailles" className="hover:text-white">Guide des tailles</Link>
             <Link href="/livraison-retours" className="hover:text-white">Livraison, retours & remboursements</Link>
+            <Link href="/suivi-commande" className="hover:text-white">Suivre ma commande</Link>
+            <Link href="/avis" className="hover:text-white">Donner un avis</Link>
           </div>
         </div>
         <div>

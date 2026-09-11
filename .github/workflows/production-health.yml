@@ -1,0 +1,18 @@
+name: Production health
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production endpoints
+        run: |
+          set -euo pipefail
+          base="https://111.sunmedia.workers.dev"
+          curl --fail --retry 4 --retry-delay 10 "$base/api/health"
+          curl --fail --retry 4 --retry-delay 10 "$base/sitemap.xml" >/dev/null
+          curl --fail --retry 4 --retry-delay 10 "$base/admin/login" >/dev/null

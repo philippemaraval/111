@@ -3,6 +3,7 @@ import { Clock3, Mail, MessageCircle, PackageSearch } from "lucide-react";
 
 import { EditorialLink, EditorialPage, EditorialSection } from "@/components/editorial-page";
 import { CONTACT_EMAIL, socialLinks } from "@/lib/site";
+import { ContactForm } from "@/components/contact-form";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,9 @@ export default function ContactPage() {
       title="On se parle ?"
       intro="Une question sur une taille, une commande, un quartier ou une collaboration ? Écrivez-nous, nous vous répondrons simplement et sans détour."
     >
+      <EditorialSection kicker="Formulaire" title="Envoyer un message">
+        <ContactForm />
+      </EditorialSection>
       <EditorialSection kicker="Nous écrire" title="Le chemin le plus court">
         <div className="rounded-3xl bg-sand p-6 sm:p-8">
           <Mail className="h-7 w-7 text-sea" />

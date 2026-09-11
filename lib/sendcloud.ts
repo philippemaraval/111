@@ -94,6 +94,7 @@ async function sendcloudFetch<T>(url: string, init?: RequestInit): Promise<T> {
       throw new Error(`sendcloud_api_error:${response.status}:${detail}`);
     }
 
+    if (response.status === 204) return undefined as T;
     return await response.json() as T;
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("sendcloud_")) {
@@ -272,4 +273,27 @@ export async function importPaidOrderToSendcloud(order: SendcloudPaidOrder) {
   });
 
   return response.data[0] ?? null;
+}
+
+export async function deleteSendcloudOrder(orderId: string) {
+  try {
+    await sendcloudFetch<void>(
+      `https://panel.sendcloud.sc/api/v3/orders/${encodeURIComponent(orderId)}`,
+      { method: "DELETE" }
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("sendcloud_api_error:404:")) return;
+    throw error;
+  }
+}
+
+export async function updateSendcloudOrderStatus(orderId: string, code: string, message: string) {
+  await sendcloudFetch<unknown>(
+    `https://panel.sendcloud.sc/api/v3/orders/${encodeURIComponent(orderId)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_details: { status: { code, message }, order_updated_at: new Date().toISOString() } })
+    }
+  );
 }

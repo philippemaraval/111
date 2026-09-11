@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { recordVote } from "@/lib/neighborhoods";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const voteSchema = z.object({
   email: z.string().email(),
@@ -10,6 +11,9 @@ const voteSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!await enforceRateLimit(request, "votes", 5, 3600)) {
+    return NextResponse.json({ error: "Trop de votes envoyés. Réessayez plus tard." }, { status: 429 });
+  }
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > 4_096) {
     return NextResponse.json({ error: "Payload too large" }, { status: 413 });

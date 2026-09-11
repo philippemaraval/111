@@ -105,7 +105,12 @@ export type OrderSummary = {
   sendcloudImportedAt: string | null;
   sendcloudError: string | null;
   itemCount: number;
+  items: Array<{ name: string; size: Size; quantity: number }>;
+  lastEvent: { type: string; source: string; createdAt: string } | null;
 };
+
+export type ContactMessage = Database["public"]["Tables"]["contact_messages"]["Row"];
+export type Review = Database["public"]["Tables"]["reviews"]["Row"];
 
 export type CartSelection = {
   neighborhoodId: string;
@@ -173,6 +178,10 @@ export type Database = {
           sendcloud_imported_at: string | null;
           sendcloud_error: string | null;
           refunded_at: string | null;
+          sendcloud_order_id: string | null;
+          shipping_status: string;
+          cancelled_at: string | null;
+          updated_at: string;
           created_at: string;
         };
         Insert: {
@@ -185,6 +194,10 @@ export type Database = {
           sendcloud_imported_at?: string | null;
           sendcloud_error?: string | null;
           refunded_at?: string | null;
+          sendcloud_order_id?: string | null;
+          shipping_status?: string;
+          cancelled_at?: string | null;
+          updated_at?: string;
           created_at?: string;
         };
         Update: {
@@ -195,6 +208,10 @@ export type Database = {
           sendcloud_imported_at?: string | null;
           sendcloud_error?: string | null;
           refunded_at?: string | null;
+          sendcloud_order_id?: string | null;
+          shipping_status?: string;
+          cancelled_at?: string | null;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -237,6 +254,30 @@ export type Database = {
           }
         ];
       };
+      stock_alerts: {
+        Row: { id: string; neighborhood_id: string; size: Size; email: string; notified_at: string | null; created_at: string };
+        Insert: { id?: string; neighborhood_id: string; size: Size; email: string; notified_at?: string | null; created_at?: string };
+        Update: Partial<{ notified_at: string | null }>;
+        Relationships: [];
+      };
+      order_events: {
+        Row: { id: string; order_id: string | null; event_type: string; source: string; detail: Json; created_at: string };
+        Insert: { id?: string; order_id?: string | null; event_type: string; source: string; detail?: Json; created_at?: string };
+        Update: never;
+        Relationships: [];
+      };
+      reviews: {
+        Row: { id: string; order_id: string | null; neighborhood_id: string | null; author_name: string; rating: number; body: string; status: string; created_at: string };
+        Insert: { id?: string; order_id?: string | null; neighborhood_id?: string | null; author_name: string; rating: number; body: string; status?: string; created_at?: string };
+        Update: Partial<{ status: string }>;
+        Relationships: [];
+      };
+      contact_messages: {
+        Row: { id: string; name: string; email: string; subject: string; message: string; status: string; created_at: string };
+        Insert: { id?: string; name: string; email: string; subject: string; message: string; status?: string; created_at?: string };
+        Update: Partial<{ status: string }>;
+        Relationships: [];
+      };
     };
     Views: {
       neighborhood_metrics: {
@@ -252,7 +293,16 @@ export type Database = {
         ];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      consume_rate_limit: {
+        Args: { rate_key: string; max_requests: number; window_seconds: number };
+        Returns: boolean;
+      };
+      create_pending_order: {
+        Args: { p_stripe_session_id: string; p_items: Json };
+        Returns: string;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

@@ -68,6 +68,7 @@ export function Header({ availableCount, searchIndex }: HeaderProps) {
             type="button"
             onClick={openDrawer}
             className="focus-ring relative flex items-center gap-2 rounded-full bg-navy px-4 py-3 text-sm font-semibold text-white hover:bg-sea"
+            aria-label={`Ouvrir le panier, ${itemCount} article${itemCount === 1 ? "" : "s"}`}
           >
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Panier</span>
