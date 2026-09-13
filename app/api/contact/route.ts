@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { contactNotificationJob, queueEmail } from "@/lib/email-automations";
 
 const schema = z.object({ name: z.string().trim().min(2).max(100), email: z.string().email(), subject: z.string().trim().min(2).max(150), message: z.string().trim().min(10).max(4000), website: z.string().max(0) });
 
@@ -12,6 +13,9 @@ export async function POST(request: Request) {
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Service indisponible." }, { status: 503 });
   const message = { name: parsed.data.name, email: parsed.data.email, subject: parsed.data.subject, message: parsed.data.message };
-  const { error } = await supabase.from("contact_messages").insert({ ...message, email: message.email.toLowerCase() });
-  return error ? NextResponse.json({ error: "Envoi impossible." }, { status: 500 }) : NextResponse.json({ success: true });
+  const normalizedMessage = { ...message, email: message.email.toLowerCase() };
+  const { data, error } = await supabase.from("contact_messages").insert(normalizedMessage).select("id").single();
+  if (error || !data) return NextResponse.json({ error: "Envoi impossible." }, { status: 500 });
+  await queueEmail(contactNotificationJob({ id: data.id, ...normalizedMessage }));
+  return NextResponse.json({ success: true });
 }

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Composez un pack de tee-shirts de quartiers marseillais ou laissez-nous choisir trois quartiers surprise."
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function PacksPage() {
   const neighborhoods = await listNeighborhoods({ availability: "available", sort: "name" });

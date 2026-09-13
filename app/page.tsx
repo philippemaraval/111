@@ -2,11 +2,11 @@ import Link from "next/link";
 import { ArrowRight, MapPin, PencilRuler, Sparkles } from "lucide-react";
 
 import { HeroSection } from "@/components/home/hero-section";
-import { InteractiveMap } from "@/components/home/interactive-map";
+import { LazyInteractiveMap } from "@/components/home/lazy-interactive-map";
 import { NeighborhoodCard } from "@/components/home/neighborhood-card";
 import { listNeighborhoods } from "@/lib/neighborhoods";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function HomePage() {
   const neighborhoods = await listNeighborhoods({ sort: "popular" });
@@ -64,7 +64,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <InteractiveMap neighborhoods={neighborhoods} />
+      <LazyInteractiveMap neighborhoods={neighborhoods} />
     </div>
   );
 }

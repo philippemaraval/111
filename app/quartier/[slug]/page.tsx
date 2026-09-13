@@ -5,12 +5,18 @@ import { ArrowLeft, ArrowUpRight, Heart, MapPin, PencilRuler, Shirt } from "luci
 
 import { MiniMap } from "@/components/product/mini-map";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
+import { ProductImage } from "@/components/product-image";
 import { getNeighborhoodBySlug, listNeighborhoods, listPublishedReviews } from "@/lib/neighborhoods";
 import { getSiteUrl } from "@/lib/utils";
+import { AVAILABLE_NEIGHBORHOOD_SLUGS } from "@/lib/constants";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type NeighborhoodPageProps = { params: Promise<{ slug: string }> };
+
+export function generateStaticParams() {
+  return AVAILABLE_NEIGHBORHOOD_SLUGS.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({ params }: NeighborhoodPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -82,8 +88,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
         <div className="grid gap-3 sm:grid-cols-2">
           {neighborhood.gallery.map((image, index) => (
             <div key={`${image.label}-${index}`} className="group relative overflow-hidden rounded-[20px] bg-[#f2f2f2]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image.url} alt={`${neighborhood.name}, ${image.label}`} className="aspect-[4/5] w-full object-contain transition duration-700 group-hover:scale-[1.015]" />
+              <ProductImage priority={index === 0} src={image.url} sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 29vw" alt={`${neighborhood.name}, ${image.label}`} className="aspect-[4/5] w-full object-contain transition duration-700 group-hover:scale-[1.015]" />
               <span className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.15em] text-navy">{image.label}</span>
             </div>
           ))}

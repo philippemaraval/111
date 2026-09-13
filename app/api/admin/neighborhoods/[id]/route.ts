@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { getAdminAccess } from "@/lib/auth";
@@ -39,6 +40,7 @@ export async function PATCH(request: Request, { params }: RouteProps) {
       release_date: payload.releaseDate,
       stock_by_size: payload.stockBySize
     });
+    revalidatePath("/", "layout");
 
     return NextResponse.json(result);
   } catch (error) {

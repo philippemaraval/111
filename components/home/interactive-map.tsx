@@ -194,7 +194,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   }
 
   return (
-    <section id="carte" className="mx-auto max-w-[1440px] scroll-mt-32 px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
+    <section className="mx-auto max-w-[1440px] px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
       <div className="mb-9 grid gap-7 lg:grid-cols-[1fr_0.65fr] lg:items-end">
         <div className="max-w-3xl">
           <p className="section-kicker">La vraie carte des 111</p>

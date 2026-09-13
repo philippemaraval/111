@@ -4,7 +4,6 @@ import { CheckCircle2, PackageCheck, RefreshCcw, Truck } from "lucide-react";
 import { EditorialLink, EditorialPage, EditorialSection } from "@/components/editorial-page";
 import { CONTACT_EMAIL, LEGAL_INFORMATION } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Livraison, retours et remboursements | 111 Marseille",

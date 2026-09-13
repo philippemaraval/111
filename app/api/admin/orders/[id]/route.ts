@@ -5,6 +5,7 @@ import { getAdminAccess } from "@/lib/auth";
 import { deleteSendcloudOrder, updateSendcloudOrderStatus } from "@/lib/sendcloud";
 import { getStripeClient } from "@/lib/stripe";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { queueEmail, reviewRequestJob } from "@/lib/email-automations";
 
 const schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("set-status"), status: z.enum(["preparing", "shipped", "delivered", "returned"]) }),
@@ -40,6 +41,13 @@ export async function PATCH(request: Request, { params }: Props) {
         status: nextStatus,
         shipping_status: nextStatus === "shipped" || nextStatus === "delivered" ? nextStatus : order.shipping_status
       }).eq("id", id);
+      if (nextStatus === "delivered" && order.email) {
+        await queueEmail(reviewRequestJob({
+          orderId: order.id,
+          orderNumber: `111-${order.stripe_session_id.slice(-8).toUpperCase()}`,
+          email: order.email
+        }));
+      }
     } else {
       const session = await stripe.checkout.sessions.retrieve(order.stripe_session_id);
       if (session.payment_status === "paid" && typeof session.payment_intent === "string") {

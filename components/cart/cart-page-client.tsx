@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, LoaderCircle, MapPin, Minus, Plus, Search, ShieldCheck, Trash2, Truck } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
+import { ProductImage } from "@/components/product-image";
 import { calculateShippingPrice, getShippingLabel, type ShippingMethod } from "@/lib/shipping";
 import type { ServicePoint } from "@/lib/types";
 import { clampQuantity, formatCurrency } from "@/lib/utils";
@@ -98,8 +99,7 @@ export function CartPageClient() {
         <section className="divide-y divide-navy/10 border-y border-navy/10">
           {items.map((item) => (
             <article key={item.id} className="flex gap-4 py-6 sm:gap-6">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.imageUrl} alt={item.name} className="h-40 w-28 rounded-xl bg-sand object-cover sm:h-48 sm:w-36" />
+              <ProductImage src={item.imageUrl} sizes="(max-width: 639px) 112px, 144px" alt={item.name} className="h-40 w-28 rounded-xl bg-sand object-cover sm:h-48 sm:w-36" />
               <div className="flex min-w-0 flex-1 flex-col"><div className="flex items-start justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sea">{item.kind === "individual" ? "T-shirt 111" : "Offre pack 111"}</p><h2 className="mt-1 text-2xl font-black">{item.name}</h2><div className="mt-2 space-y-1 text-sm text-navy/50">{item.selections.map((selection, index) => <p key={`${selection.neighborhoodId}-${index}`}>{selection.name} · Taille {selection.size}</p>)}</div></div><button type="button" onClick={() => removeItem(item.id)} className="focus-ring rounded-full p-2 text-navy/35 hover:text-terracotta" aria-label={`Retirer ${item.name}`}><Trash2 className="h-4 w-4" /></button></div>
                 <div className="mt-auto flex items-center justify-between pt-4">{item.kind === "individual" ? <div className="flex items-center rounded-full border border-navy/10"><button type="button" onClick={() => updateQuantity(item.id, clampQuantity(item.quantity - 1))} className="focus-ring p-3" aria-label="Diminuer"><Minus className="h-4 w-4" /></button><span className="min-w-8 text-center text-sm font-bold">{item.quantity}</span><button type="button" onClick={() => updateQuantity(item.id, clampQuantity(item.quantity + 1))} className="focus-ring p-3" aria-label="Augmenter"><Plus className="h-4 w-4" /></button></div> : <span className="text-xs font-bold uppercase tracking-wider text-sea">1 pack</span>}<p className="text-lg font-black">{formatCurrency(item.unitPrice * item.quantity)}</p></div>
               </div>

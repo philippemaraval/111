@@ -41,7 +41,7 @@ Copier [`.env.example`](/Users/philippemaraval/Documents/Marseille/111/.env.exam
 
 ## Base Supabase
 
-Les migrations versionnées sont dans `supabase/migrations/` et doivent être appliquées dans l’ordre jusqu’à `009_operations_rate_limits_and_tracking.sql`.
+Les migrations versionnées sont dans `supabase/migrations/` et doivent être appliquées dans l’ordre jusqu’à `010_email_automation_queue.sql`.
 
 Elle crée :
 
@@ -52,6 +52,8 @@ Elle crée :
 - la vue `neighborhood_metrics`
 
 La migration `008` ajoute le suivi logistique, les remboursements et un contrôle atomique du stock lors du passage d’une commande à l’état payé.
+
+La migration `010` ajoute la file fiable des notifications e-mail (contact, réassort et demande d’avis).
 
 La checklist des interventions externes est dans `docs/FINALISATION_EXTERNE.md`.
 

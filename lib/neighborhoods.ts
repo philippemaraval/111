@@ -1,13 +1,13 @@
 import { cache } from "react";
 
-import { AVAILABLE_NEIGHBORHOOD_SLUGS, isNeighborhoodAvailable, PRODUCT_PRICE_EUROS } from "@/lib/constants";
+import { AVAILABLE_NEIGHBORHOOD_SLUGS, isNeighborhoodAvailable, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
 import { neighborhoodDescriptions } from "@/lib/neighborhood-descriptions";
 import {
   hasPublishedProductImages,
   laJolietteGallery
 } from "@/lib/product-illustrations";
-import { createAdminSupabaseClient, createServerSupabaseClient, hasSupabaseEnv } from "@/lib/supabase/server";
+import { createAdminSupabaseClient, createPublicSupabaseClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { parseCoordinates, parseSeoMetadata, parseStock, slugify } from "@/lib/utils";
 import type {
   Database,
@@ -21,6 +21,7 @@ import type {
   VoteRow,
   VoteSummary
 } from "@/lib/types";
+import { queueEmail, stockBackJob } from "@/lib/email-automations";
 
 type NeighborhoodFilters = {
   arrondissement?: number;
@@ -112,7 +113,7 @@ export const listNeighborhoods = cache(async (filters: NeighborhoodFilters = {})
     return filterMockNeighborhoods(filters);
   }
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
   if (!supabase) {
     return filterMockNeighborhoods(filters);
@@ -186,7 +187,7 @@ export const getNeighborhoodSearchIndex = cache(async (): Promise<SearchIndexIte
     return mockSearchIndex;
   }
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
   if (!supabase) {
     return mockSearchIndex;
@@ -399,6 +400,9 @@ export async function updateNeighborhoodRecord(
     return { success: true, demoMode: true };
   }
 
+  const { data: previous } = await supabase.from("neighborhoods")
+    .select("name, seo_metadata, stock_by_size").eq("id", neighborhoodId).single();
+
   const { error } = await supabase
     .from("neighborhoods")
     .update(updates)
@@ -406,6 +410,19 @@ export async function updateNeighborhoodRecord(
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (previous && updates.stock_by_size) {
+    const previousStock = parseStock(previous.stock_by_size);
+    const slug = parseSeoMetadata(previous.seo_metadata).slug ?? slugify(previous.name);
+    const restockedSizes = SIZE_ORDER.filter((size) => previousStock[size] <= 0 && (updates.stock_by_size?.[size] ?? 0) > 0);
+    if (restockedSizes.length) {
+      const { data: alerts } = await supabase.from("stock_alerts").select("id, email, size")
+        .eq("neighborhood_id", neighborhoodId).is("notified_at", null).in("size", restockedSizes);
+      for (const alert of alerts ?? []) {
+        await queueEmail(stockBackJob({ alertId: alert.id, email: alert.email, neighborhoodName: previous.name, slug, size: alert.size }));
+      }
+    }
   }
 
   return { success: true };

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ProductImage } from "@/components/product-image";
 
 import { formatCurrency } from "@/lib/utils";
 import type { Neighborhood } from "@/lib/types";
@@ -26,10 +27,10 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: Neighborhood 
     <article className="group">
       <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[#f1f1f1]">
         <Link href={`/quartier/${neighborhood.slug}`} className="focus-ring block h-full w-full">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <ProductImage
             key={image.url}
             src={image.url}
+            sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
             alt={`T-shirt 111 ${neighborhood.name}, ${image.label}`}
             className="h-full w-full animate-[reveal-up_300ms_ease-out] object-contain p-2 transition duration-700 group-hover:scale-[1.015]"
           />

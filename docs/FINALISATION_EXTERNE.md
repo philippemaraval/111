@@ -6,8 +6,9 @@ Dans SQL Editor, exécuter dans cet ordre :
 
 1. `supabase/migrations/008_order_fulfillment_and_safe_stock.sql`
 2. `supabase/migrations/009_operations_rate_limits_and_tracking.sql`
+3. `supabase/migrations/010_email_automation_queue.sql`
 
-Contrôler ensuite la présence de `order_events`, `api_rate_limits`, `stock_alerts`, `reviews` et `contact_messages`. La migration 009 active le rate limiting distribué ; le déploiement ne doit pas être considéré complet avant son application.
+Contrôler ensuite la présence de `order_events`, `api_rate_limits`, `stock_alerts`, `reviews`, `contact_messages` et `email_jobs`. La migration 009 active le rate limiting distribué et la migration 010 la file d’automatisation.
 
 Dans Stripe, vérifier que le webhook de production écoute bien `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired` et `charge.refunded`.
 
@@ -45,3 +46,5 @@ Choisir un médiateur de la consommation, ajouter ses coordonnées aux CGV, puis
 ## 7. E-mails et automatisations
 
 Les reçus/remboursements restent gérés par Stripe et le suivi par Sendcloud. Avant d’ajouter une relance panier ou une newsletter, choisir un outil, vérifier la base légale, fournir une désinscription et mettre à jour la politique de confidentialité.
+
+La migration 010 met en file les notifications de contact, les retours en stock et les demandes d’avis après livraison. Pour conserver Gmail, créer un projet Google Apps Script avec `docs/google-apps-script-email.gs`, ajouter `EMAIL_AUTOMATION_TOKEN` dans ses propriétés de script, puis déployer le script comme application Web accessible à tous. Définir son URL dans `EMAIL_AUTOMATION_WEBHOOK_URL` et la même valeur secrète dans `EMAIL_AUTOMATION_TOKEN` côté Cloudflare. Le webhook reçoit les champs `token`, `id`, `type`, `to`, `subject`, `text` et `replyTo`. Les échecs sont conservés et peuvent être relancés depuis l’administration. Aucune relance panier ni newsletter n’est envoyée sans consentement explicite.

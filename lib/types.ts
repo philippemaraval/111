@@ -278,6 +278,12 @@ export type Database = {
         Update: Partial<{ status: string }>;
         Relationships: [];
       };
+      email_jobs: {
+        Row: { id: string; kind: "contact_notification" | "stock_back" | "review_request"; recipient: string; subject: string; body: string; reply_to: string | null; dedupe_key: string | null; status: "pending" | "sending" | "sent" | "failed"; attempts: number; available_at: string; sent_at: string | null; last_error: string | null; created_at: string };
+        Insert: { id?: string; kind: "contact_notification" | "stock_back" | "review_request"; recipient: string; subject: string; body: string; reply_to?: string | null; dedupe_key?: string | null; status?: "pending" | "sending" | "sent" | "failed"; attempts?: number; available_at?: string; sent_at?: string | null; last_error?: string | null; created_at?: string };
+        Update: Partial<{ status: "pending" | "sending" | "sent" | "failed"; attempts: number; available_at: string; sent_at: string | null; last_error: string | null }>;
+        Relationships: [];
+      };
     };
     Views: {
       neighborhood_metrics: {
@@ -301,6 +307,10 @@ export type Database = {
       create_pending_order: {
         Args: { p_stripe_session_id: string; p_items: Json };
         Returns: string;
+      };
+      claim_email_jobs: {
+        Args: { max_jobs?: number };
+        Returns: Database["public"]["Tables"]["email_jobs"]["Row"][];
       };
     };
     Enums: Record<string, never>;

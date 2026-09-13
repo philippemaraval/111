@@ -5,7 +5,6 @@ import { EditorialLink, EditorialPage, EditorialSection } from "@/components/edi
 import { CONTACT_EMAIL, socialLinks } from "@/lib/site";
 import { ContactForm } from "@/components/contact-form";
 
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contact | 111 Marseille",

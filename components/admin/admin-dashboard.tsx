@@ -57,6 +57,19 @@ function OrderActions({ order }: { order: OrderSummary }) {
   </div>;
 }
 
+function EmailJobsButton() {
+  const [result, setResult] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function run() {
+    setBusy(true); setResult("");
+    const response = await fetch("/api/admin/email-jobs/run", { method: "POST" });
+    const data = await response.json() as { configured?: boolean; sent?: number; failed?: number };
+    setResult(!data.configured ? "Webhook e-mail non configuré" : `${data.sent ?? 0} envoyé(s), ${data.failed ?? 0} échec(s)`);
+    setBusy(false);
+  }
+  return <div className="mt-4"><button type="button" disabled={busy} onClick={() => void run()} className="rounded-full bg-sand px-4 py-2 text-sm font-bold text-navy">{busy ? "Envoi…" : "Relancer les e-mails en attente"}</button>{result && <p role="status" className="mt-2 text-xs text-navy/60">{result}</p>}</div>;
+}
+
 export function AdminDashboard({
   neighborhoods,
   votes,
@@ -146,6 +159,7 @@ export function AdminDashboard({
           <p className="text-xs uppercase tracking-[0.24em] text-sea">Disponibles</p>
           <p className="mt-3 font-display text-5xl text-navy">{availableCount}</p>
           <p className="mt-2 text-sm text-navy/65">Quartiers activés sur 111.</p>
+          <EmailJobsButton />
         </div>
         <div className="rounded-[24px] border border-navy/10 bg-white p-6 shadow-soft">
           <p className="text-xs uppercase tracking-[0.24em] text-sea">Votes</p>

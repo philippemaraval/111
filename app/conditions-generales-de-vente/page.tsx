@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { EditorialPage, EditorialSection } from "@/components/editorial-page";
 import { CONTACT_EMAIL, LEGAL_INFORMATION } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Conditions générales de vente | 111 Marseille",
