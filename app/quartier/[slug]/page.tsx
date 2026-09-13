@@ -42,6 +42,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
     description: neighborhood.descriptionHistory,
     image: neighborhood.gallery.map((image) => image.url),
     brand: { "@type": "Brand", name: "111 Marseille" },
+    material: "100 % coton, 165 g/m²",
     url: `${siteUrl}/quartier/${neighborhood.slug}`,
     offers: {
       "@type": "Offer",

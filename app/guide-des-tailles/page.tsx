@@ -15,7 +15,7 @@ export default function SizeGuidePage() {
     <EditorialPage
       eyebrow="Guide des tailles"
       title="Bien choisir, bien porter."
-      intro="La coupe est unisexe et droite. Pour trouver la taille qui vous convient, le plus fiable reste de comparer avec un t-shirt que vous aimez déjà porter."
+      intro="Le modèle Fruit of the Loom Valueweight SC230 présente une coupe droite et tubulaire, sans coutures latérales. Pour choisir, comparez ses mesures avec un t-shirt que vous aimez déjà porter."
     >
       <EditorialSection kicker="La méthode" title="Mesurer en deux gestes">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -30,7 +30,14 @@ export default function SizeGuidePage() {
             <p className="mt-2 text-sm leading-6">Mesurez depuis le point le plus haut de l’épaule jusqu’au bas du t-shirt.</p>
           </div>
         </div>
-        <p>Les mesures exactes peuvent légèrement varier selon la série et seront indiquées sur chaque fiche dès la production confirmée. Si vous êtes entre deux tailles, choisissez la plus petite pour un porté près du corps ou la plus grande pour davantage d’aisance.</p>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+            <caption className="mb-3 text-left font-bold">Mesures du vêtement posé à plat, en centimètres</caption>
+            <thead><tr className="border-b border-navy/15"><th className="py-3">Taille</th><th className="py-3">Largeur</th><th className="py-3">Longueur</th></tr></thead>
+            <tbody>{[["S", "48,5", "69,5"], ["M", "53,5", "72"], ["L", "56", "74,5"], ["XL", "61", "77"]].map(([size, width, length]) => <tr key={size} className="border-b border-navy/10"><th className="py-3">{size}</th><td className="py-3">{width} cm</td><td className="py-3">{length} cm</td></tr>)}</tbody>
+          </table>
+        </div>
+        <p>Le fabricant annonce une tolérance de 2,5 à 3 cm sur la largeur et la longueur, ainsi qu’une tolérance de rétrécissement de 5 %. Si vous êtes entre deux tailles, choisissez la plus petite pour un porté près du corps ou la plus grande pour davantage d’aisance.</p>
       </EditorialSection>
 
       <EditorialSection kicker="À retenir" title="Avant de commander">
