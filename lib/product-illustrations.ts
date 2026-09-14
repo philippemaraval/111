@@ -24,7 +24,9 @@ function galleryFor(slug: string): ProductGalleryImage[] {
 const publishedProductGalleries: Record<string, ProductGalleryImage[]> = {
   "La Joliette": galleryFor("la-joliette"),
   "Cinq-Avenues": galleryFor("cinq-avenues"),
-  "Notre-Dame-du-Mont": galleryFor("notre-dame-du-mont")
+  "Notre-Dame-du-Mont": galleryFor("notre-dame-du-mont"),
+  "Sainte-Anne": galleryFor("sainte-anne"),
+  Mazargues: galleryFor("mazargues")
 };
 
 export function getPublishedProductGallery(name: string) {

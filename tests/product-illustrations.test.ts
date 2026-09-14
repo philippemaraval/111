@@ -7,7 +7,9 @@ test("published neighborhood galleries expose four optimized product views", () 
   for (const [name, slug] of [
     ["La Joliette", "la-joliette"],
     ["Cinq-Avenues", "cinq-avenues"],
-    ["Notre-Dame-du-Mont", "notre-dame-du-mont"]
+    ["Notre-Dame-du-Mont", "notre-dame-du-mont"],
+    ["Sainte-Anne", "sainte-anne"],
+    ["Mazargues", "mazargues"]
   ]) {
     const gallery = getPublishedProductGallery(name);
 
