@@ -3,16 +3,78 @@ name: Production health
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "17,47 * * * *"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: production-health
+  cancel-in-progress: false
 
 jobs:
   health:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Check production endpoints
         run: |
           set -euo pipefail
           base="https://111.sunmedia.workers.dev"
-          curl --fail --retry 4 --retry-delay 10 "$base/api/health"
-          curl --fail --retry 4 --retry-delay 10 "$base/sitemap.xml" >/dev/null
-          curl --fail --retry 4 --retry-delay 10 "$base/admin/login" >/dev/null
+          health="$(curl --silent --show-error --fail --retry 2 --retry-all-errors --retry-delay 5 --max-time 30 "$base/api/health")"
+          echo "$health" | jq --exit-status '.status == "ok" and (.checks | to_entries | all(.value == true))'
+
+          for path in / /sitemap.xml /admin/login /contact; do
+            curl --silent --show-error --fail --retry 2 --retry-all-errors --retry-delay 5 --max-time 30 --output /dev/null "$base$path"
+          done
+
+      - name: Open incident issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[Monitoring] Incident sur la boutique 111";
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: `Le contrôle automatique de production a échoué.\n\nConsulter l'exécution : ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+              });
+            }
+
+      - name: Close recovered incident
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[Monitoring] Incident sur la boutique 111";
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100
+            });
+            const incident = issues.find((issue) => !issue.pull_request && issue.title === title);
+            if (incident) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: incident.number,
+                body: `Le contrôle est de nouveau au vert : ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: incident.number,
+                state: "closed"
+              });
+            }
