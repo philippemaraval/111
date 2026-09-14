@@ -12,6 +12,8 @@ Une génération peut produire jusqu'à trois variantes aux angles distincts. Ch
 
 La bibliothèque éditoriale permet d'ajouter, modifier, enrichir, archiver et restaurer les fiches de référence. Au moment de programmer une proposition, chaque réseau dispose de ses propres formats et médias : publication, carrousel, Reel ou Story sur Instagram ; photo ou vidéo sur TikTok ; texte seul, image ou vidéo sur X.
 
+La génération permet aussi de choisir la longueur des textes, le nombre de hashtags et les hashtags récurrents. Les aperçus reprennent l'identité et la mise en page de chaque réseau et réagissent au format sélectionné.
+
 ## Secrets
 
 - `BUFFER_API_KEY`
@@ -39,5 +41,6 @@ Pour une base créée avec la première version, appliquer dans l'ordre et une s
 - `migrations/005_content_library.sql`
 - `migrations/006_multivariants_platform_content.sql`
 - `migrations/007_platform_formats.sql`
+- `migrations/008_generation_style_controls.sql`
 
 La première validation réelle doit toujours être effectuée par le propriétaire depuis le dashboard.

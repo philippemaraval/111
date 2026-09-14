@@ -60,6 +60,9 @@ CREATE TABLE IF NOT EXISTS generation_jobs (
   tone TEXT,
   audience TEXT,
   call_to_action TEXT,
+  text_length TEXT NOT NULL DEFAULT 'medium',
+  hashtag_count INTEGER NOT NULL DEFAULT 3,
+  recurring_hashtags TEXT,
   error TEXT
 );
 

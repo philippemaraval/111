@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { bufferPostMetadata, gqlString, modelText, nextEditorialDate, parisLocalToUtc, parseJsonObject, selectChannels, toParisLocalInput } from "../src/core.js";
+import { cleanXText } from "../src/index.js";
 
 test("gqlString échappe le contenu utilisateur", () => {
   assert.equal(gqlString('Bonjour "Marseille"\n'), '"Bonjour \\"Marseille\\"\\n"');
@@ -11,6 +12,10 @@ test("bufferPostMetadata configure les publications image par plateforme", () =>
   assert.equal(bufferPostMetadata("instagram", "Texte", "reel"), "metadata: { instagram: { type: reel, shouldShareToFeed: true } }");
   assert.match(bufferPostMetadata("tiktok", "Titre photo"), /metadata: \{ tiktok: \{ title: "Titre photo" \} \}/);
   assert.equal(bufferPostMetadata("twitter", "Texte"), "");
+});
+
+test("cleanXText transforme les listes en texte naturel", () => {
+  assert.equal(cleanXText("- Marseille\n- Ses quartiers\n- 111", "secours"), "Marseille Ses quartiers 111");
 });
 
 test("parseJsonObject accepte un bloc Markdown", () => {

@@ -92,15 +92,15 @@ async function queueGeneration(env, options = {}) {
   }
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  await env.DB.prepare("INSERT INTO generation_jobs (id,created_at,updated_at,status,neighborhood,objective,subject_type,brief,variant_count,tone,audience,call_to_action) VALUES (?,?,?,'queued',?,?,?,?,?,?,?,?)")
-    .bind(id, now, now, options.subject || null, options.objective || "engagement", options.subjectType || "auto", options.brief || null, options.variantCount || 1, options.tone || null, options.audience || null, options.callToAction || null).run();
+  await env.DB.prepare("INSERT INTO generation_jobs (id,created_at,updated_at,status,neighborhood,objective,subject_type,brief,variant_count,tone,audience,call_to_action,text_length,hashtag_count,recurring_hashtags) VALUES (?,?,?,'queued',?,?,?,?,?,?,?,?,?,?,?)")
+    .bind(id, now, now, options.subject || null, options.objective || "engagement", options.subjectType || "auto", options.brief || null, options.variantCount || 1, options.tone || null, options.audience || null, options.callToAction || null, options.textLength || "medium", options.hashtagCount ?? 3, options.recurringHashtags || null).run();
   return { id, created: true };
 }
 
 async function runGenerationJob(env, jobId) {
   await env.DB.prepare("UPDATE generation_jobs SET status='running',updated_at=? WHERE id=?").bind(new Date().toISOString(), jobId).run();
   try {
-    const job = await env.DB.prepare("SELECT neighborhood AS subject,objective,subject_type AS subjectType,brief,variant_count AS variantCount,tone,audience,call_to_action AS callToAction FROM generation_jobs WHERE id=?").bind(jobId).first();
+    const job = await env.DB.prepare("SELECT neighborhood AS subject,objective,subject_type AS subjectType,brief,variant_count AS variantCount,tone,audience,call_to_action AS callToAction,text_length AS textLength,hashtag_count AS hashtagCount,recurring_hashtags AS recurringHashtags FROM generation_jobs WHERE id=?").bind(jobId).first();
     const count = Math.min(3, Math.max(1, Number(job?.variantCount) || 1));
     const groupId = count > 1 ? crypto.randomUUID() : null;
     let sharedMedia = null;
@@ -124,7 +124,7 @@ async function generateProposal(env, options = {}) {
   const objective = options.objective || "engagement";
   const brief = options.brief || "";
   const creativeAngle = variantAngle(options.variantIndex || 1);
-  const content = await generateCopy(env, { subject, subjectType, objective, brief, tone: options.tone, audience: options.audience, callToAction: options.callToAction, creativeAngle });
+  const content = await generateCopy(env, { subject, subjectType, objective, brief, tone: options.tone, audience: options.audience, callToAction: options.callToAction, creativeAngle, textLength: options.textLength, hashtagCount: options.hashtagCount, recurringHashtags: options.recurringHashtags });
   const visualPrompt = `Affiche streetwear carrée premium pour la marque 111 à Marseille. Sujet : ${subject}. Angle créatif : ${creativeAngle}. Objectif : ${objective}. ${brief ? `Consignes : ${brief}.` : ""} Bleu méditerranéen, jaune solaire, blanc cassé, composition graphique éditoriale, sans faux monument, sans texte autre que 111.`;
   let mediaKey = options.sharedMedia?.mediaKey;
   let mediaUrl = options.sharedMedia?.mediaUrl;
@@ -143,9 +143,11 @@ async function generateProposal(env, options = {}) {
   return { ok: true, id, status: "pending", proposedPublishAt: publishAt, media: { mediaKey, mediaUrl } };
 }
 
-async function generateCopy(env, { subject, subjectType, objective, brief, tone, audience, callToAction, creativeAngle }) {
+async function generateCopy(env, { subject, subjectType, objective, brief, tone, audience, callToAction, creativeAngle, textLength, hashtagCount, recurringHashtags }) {
   const fallback = fallbackCopy(subject, subjectType, objective);
-  const prompt = `MISSION PRIORITAIRE : respecte fidèlement toutes les CONSIGNES UTILISATEUR ci-dessous. Le sujet est "${subject}" (${subjectType}), l'objectif est "${objective}" et l'angle de cette variante est "${creativeAngle}".\n\nCONSIGNES UTILISATEUR :\n${brief || "Aucune consigne supplémentaire."}\n\nTON : ${tone || "direct, chaleureux et précis"}\nAUDIENCE : ${audience || "communauté marseillaise"}\nAPPEL À L'ACTION : ${callToAction || "adapté au contenu"}\n\nÉcris pour 111, une marque marseillaise streetwear. Chaque texte doit traiter explicitement le sujet et couvrir tous les points demandés dans les consignes. N'ajoute aucun fait, lieu, date, produit ou promotion absent des consignes. Adapte réellement chaque livrable au réseau. instagramCarousel décrit jusqu'à 5 slides, tiktokScript un script vidéo court, tiktokOverlay les textes à l'écran et xThread 1 à 3 posts numérotés. Instagram max 1200 caractères, TikTok max 500, X max 280.`;
+  const lengthGuide = { short: "court (Instagram 250-450 caractères, TikTok 120-220, X 100-160)", medium: "moyen (Instagram 500-800 caractères, TikTok 220-350, X 160-220)", long: "développé (Instagram 850-1200 caractères, TikTok 350-500, X 220-280)" }[textLength] || "moyen";
+  const hashtags = Math.max(0, Math.min(3, Number(hashtagCount) || 0));
+  const prompt = `MISSION PRIORITAIRE : respecte fidèlement toutes les CONSIGNES UTILISATEUR ci-dessous. Le sujet est "${subject}" (${subjectType}), l'objectif est "${objective}" et l'angle de cette variante est "${creativeAngle}".\n\nCONSIGNES UTILISATEUR :\n${brief || "Aucune consigne supplémentaire."}\n\nTON : ${tone || "direct, chaleureux et précis"}\nAUDIENCE : ${audience || "communauté marseillaise"}\nAPPEL À L'ACTION : ${callToAction || "adapté au contenu"}\nLONGUEUR : ${lengthGuide}\nHASHTAGS : exactement ${hashtags} par texte. Utilise en priorité : ${recurringHashtags || "aucun hashtag imposé"}.\n\nÉcris pour 111, une marque marseillaise streetwear. Chaque texte doit traiter explicitement le sujet et couvrir tous les points demandés dans les consignes. N'ajoute aucun fait, lieu, date, produit ou promotion absent des consignes. Adapte réellement chaque livrable au réseau. Pour X, écris un paragraphe naturel : aucune liste, aucune puce, aucun tiret en début de ligne. instagramCarousel décrit jusqu'à 5 slides, tiktokScript un script vidéo court, tiktokOverlay les textes à l'écran et xThread 1 à 3 posts numérotés. Instagram max 1200 caractères, TikTok max 500, X max 280.`;
   const fields = ["hook", "instagram", "instagramAlt", "instagramCarousel", "tiktok", "tiktokScript", "tiktokOverlay", "x", "xThread"];
   const responseFormat = { type: "json_schema", json_schema: { type: "object", properties: Object.fromEntries(fields.map(field => [field, { type: "string" }])), required: fields } };
   const errors = [];
@@ -155,7 +157,7 @@ async function generateCopy(env, { subject, subjectType, objective, brief, tone,
       const parsed = parseJsonObject(modelText(result));
       for (const field of ["hook", "instagram", "tiktok", "x"]) if (!String(parsed[field] || "").trim()) throw new Error(`Champ ${field} absent`);
       return {
-        hook: cleanGeneratedText(parsed.hook, 180, fallback.hook), instagram: cleanGeneratedText(parsed.instagram, 2200, fallback.instagram), tiktok: cleanGeneratedText(parsed.tiktok, 2200, fallback.tiktok), x: cleanGeneratedText(parsed.x, 280, fallback.x),
+        hook: cleanGeneratedText(parsed.hook, 180, fallback.hook), instagram: cleanGeneratedText(parsed.instagram, 2200, fallback.instagram), tiktok: cleanGeneratedText(parsed.tiktok, 2200, fallback.tiktok), x: cleanXText(parsed.x, fallback.x),
         instagramAlt: cleanGeneratedText(parsed.instagramAlt, 500, `Visuel 111 consacré à ${subject}.`), instagramCarousel: cleanGeneratedText(parsed.instagramCarousel, 1200, ""), tiktokScript: cleanGeneratedText(parsed.tiktokScript, 1600, fallback.tiktok), tiktokOverlay: cleanGeneratedText(parsed.tiktokOverlay, 500, fallback.hook), xThread: cleanGeneratedText(parsed.xThread, 1200, fallback.x),
       };
     } catch (error) {
@@ -192,6 +194,11 @@ function cleanGeneratedText(value, limit, fallback) {
   return text && text.length <= limit ? text : fallback;
 }
 
+export function cleanXText(value, fallback) {
+  const text = String(value || "").trim().split(/\n+/).map(line => line.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim()).filter(Boolean).join(" ").replace(/\s{2,}/g, " ");
+  return text && text.length <= 280 ? text : fallback;
+}
+
 function generationOptions(form) {
   if (!form) return {};
   const selectedSubject = limitedText(form.get("subject"), 100);
@@ -203,7 +210,10 @@ function generationOptions(form) {
   const objective = selectedObjective === "__custom__" ? customObjective : selectedObjective;
   if (selectedObjective === "__custom__" && !customObjective) throw new Error("Précise l'objectif libre");
   const variantCount = [1, 2, 3].includes(Number(form.get("variant_count"))) ? Number(form.get("variant_count")) : 1;
-  return { subject, subjectType: inferSubjectType(subject), objective, brief: limitedText(form.get("brief"), 600), variantCount, tone: limitedText(form.get("tone"), 80), audience: limitedText(form.get("audience"), 120), callToAction: limitedText(form.get("call_to_action"), 160) };
+  const textLength = ["short", "medium", "long"].includes(form.get("text_length")) ? form.get("text_length") : "medium";
+  const hashtagCount = [0, 1, 2, 3].includes(Number(form.get("hashtag_count"))) ? Number(form.get("hashtag_count")) : 3;
+  const recurringHashtags = ["111", "Marseille", "PorteTonQuartier"].filter(tag => form.has(`hashtag_${tag}`)).map(tag => `#${tag}`).slice(0, hashtagCount).join(" ");
+  return { subject, subjectType: inferSubjectType(subject), objective, brief: limitedText(form.get("brief"), 600), variantCount, tone: limitedText(form.get("tone"), 80), audience: limitedText(form.get("audience"), 120), callToAction: limitedText(form.get("call_to_action"), 160), textLength, hashtagCount, recurringHashtags };
 }
 
 function limitedText(value, limit) {
@@ -638,7 +648,7 @@ function networkPreview(network, p, active = false) {
   const advanced = network === "instagram" ? advancedField("Texte alternatif", "instagram_alt_text", p.instagram_alt_text, 500, 3) + advancedField("Idée de carrousel", "instagram_carousel", p.instagram_carousel, 1200, 5) : network === "tiktok" ? advancedField("Script vidéo", "tiktok_script", p.tiktok_script, 1600, 6) + advancedField("Texte à l'écran", "tiktok_overlay", p.tiktok_overlay, 500, 3) : advancedField("Mini-thread X", "x_thread", p.x_thread, 1200, 6);
   const selectedFormat = p[`${network}_format`] || (network === "instagram" ? "post" : network === "tiktok" ? "photo" : "image");
   const label = network === "x" ? "X" : network[0].toUpperCase() + network.slice(1);
-  return `<section class="network-preview ${active ? "active" : ""}" data-preview="${network}" ${enabled ? "" : "hidden"}><div class="panel-title"><span class="avatar">${network === "instagram" ? "IG" : network === "tiktok" ? "TT" : "X"}</span><h3>${label}</h3></div>${formatEditor(network, selectedFormat)}<label>Texte ${label}<small><span data-count="${network}">${String(text).length}</span>/${limit}</small><textarea name="${network === "x" ? "x_text" : `${network}_text`}" data-text="${network}" rows="${rows}" maxlength="${limit}">${escapeHtml(text)}</textarea></label><div class="preview-post"><div class="preview-account"><span class="avatar">111</span><strong>sunmedia.111</strong></div>${panelMediaMarkup(network, p, selectedFormat)}<p>${escapeHtml(text).replace(/\n/g, "<br>")}</p></div><details class="platform-kit"><summary>Options avancées</summary>${advanced}</details></section>`;
+  return `<section class="network-preview network-${network} format-${selectedFormat} ${active ? "active" : ""}" data-preview="${network}" ${enabled ? "" : "hidden"}><div class="panel-title"><span class="network-mark">${network === "instagram" ? "◎" : network === "tiktok" ? "♪" : "𝕏"}</span><h3>${label}</h3></div>${formatEditor(network, selectedFormat)}<label>Texte ${label}<small><span data-count="${network}">${String(text).length}</span>/${limit}</small><textarea name="${network === "x" ? "x_text" : `${network}_text`}" data-text="${network}" rows="${rows}" maxlength="${limit}">${escapeHtml(text)}</textarea></label><div class="preview-post"><div class="preview-account"><span class="avatar">111</span><span><strong>sunmedia.111</strong><small>${network === "x" ? "@sunmedia111 · maintenant" : network === "tiktok" ? "Sponsorisé · Suivre" : "Marseille"}</small></span><b>•••</b></div>${panelMediaMarkup(network, p, selectedFormat)}<p>${escapeHtml(text).replace(/\n/g, "<br>")}</p><div class="network-actions">${network === "instagram" ? "♡　⌁　➤　　　　　　　　　♧" : network === "tiktok" ? "♥　Commenter　Partager" : "♡  Répondre　♢  Republier　♡  J’aime　↗"}</div></div><details class="platform-kit"><summary>Options avancées</summary>${advanced}</details></section>`;
 }
 
 function panelMediaMarkup(network, proposal, format) {
@@ -653,6 +663,10 @@ function advancedField(label, name, value, max, rows) {
 
 function generationPanel() {
   return `<details class="generate-panel"><summary>+ Générer des variantes adaptées</summary><form method="post" action="/api/generate"><label>Variantes<select name="variant_count"><option value="1">1 proposition</option><option value="2">2 angles</option><option value="3" selected>3 angles</option></select></label><label>Ton<input name="tone" maxlength="80" placeholder="Complice, brut, premium…"></label><label>Audience<input name="audience" maxlength="120" placeholder="Marseillais de 20 à 35 ans…"></label><label>Appel à l'action<input name="call_to_action" maxlength="160" placeholder="Demander leur quartier, visiter la boutique…"></label><label>Sujet<select name="subject" data-choice="subject"><option value="">Laisser 111 choisir</option><optgroup label="111 et Marseille"><option>La marque 111</option><option>Marseille</option></optgroup><optgroup label="Quartiers">${NEIGHBORHOODS.map((item) => `<option>${escapeHtml(item)}</option>`).join("")}</optgroup><option value="__custom__">Autre sujet…</option></select></label><label class="conditional" data-custom="subject">Sujet libre<input name="custom_subject" maxlength="100"></label><label>Objectif<select name="objective" data-choice="objective"><option value="engagement">Créer de l'engagement</option><option value="lancement">Faire un lancement</option><option value="produit">Mettre en avant le produit</option><option value="histoire">Raconter une histoire</option><option value="__custom__">Autre objectif…</option></select></label><label class="conditional" data-custom="objective">Objectif libre<input name="custom_objective" maxlength="120"></label><label class="brief-field">Consignes précises<textarea name="brief" rows="3" maxlength="600" placeholder="Message à faire passer, faits à utiliser, éléments à éviter…"></textarea></label><button>Générer les variantes</button></form></details>`;
+}
+
+function generationStyleControls() {
+  return `<fieldset class="generation-style"><legend>Style rédactionnel</legend><label>Longueur<select name="text_length"><option value="short">Courte</option><option value="medium" selected>Moyenne</option><option value="long">Développée</option></select></label><label>Nombre de hashtags<select name="hashtag_count"><option value="0">Aucun</option><option value="1">1 hashtag</option><option value="2">2 hashtags</option><option value="3" selected>3 hashtags</option></select></label><div class="hashtag-options"><span>Hashtags récurrents</span><label><input type="checkbox" name="hashtag_111" checked> #111</label><label><input type="checkbox" name="hashtag_Marseille" checked> #Marseille</label><label><input type="checkbox" name="hashtag_PorteTonQuartier" checked> #PorteTonQuartier</label></div></fieldset>`;
 }
 
 function statusFilter(value, label, active) {
@@ -705,11 +719,11 @@ function libraryStyles() {
 }
 
 function formatStyles() {
-  return `.previews{display:grid;gap:18px;background:transparent;padding:0}.preview-tabs{display:none}.network-preview,.network-preview.active{display:block;background:#f5f2eb;border:1px solid #12202f14;padding:18px}.network-preview[hidden]{display:none!important}.panel-title{display:flex;align-items:center;gap:10px;margin-bottom:14px}.panel-title h3{margin:0}.format-card{background:#eef8fc;border-radius:14px;padding:14px;margin:0 0 14px}.format-card label{margin-top:10px!important}.format-card input[type=file]{background:#fff}.preview-post{margin-top:16px;background:#fff;padding:14px;border-radius:16px}.panel-media{display:grid;grid-template-columns:1fr;gap:8px}.panel-media img,.panel-media video{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:12px}.carousel-media{grid-template-columns:repeat(2,minmax(0,1fr))}.text-only-preview{padding:18px;background:#f5f2eb;border-radius:12px;color:#12202f99;text-align:center}.rejected-controls{display:grid;gap:8px;margin:10px 0}.rejected-controls form{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;padding:10px 14px;border-radius:14px}.rejected-controls button{margin:0}@media(max-width:600px){.rejected-controls form{align-items:flex-start;flex-direction:column}.carousel-media{grid-template-columns:1fr}}`;
+  return `.previews{display:grid;gap:18px;background:transparent;padding:0}.preview-tabs{display:none}.network-preview,.network-preview.active{display:block;border:2px solid;padding:18px}.network-instagram{background:#fff7fb;border-color:#d62976}.network-tiktok{background:#f3ffff;border-color:#25f4ee;box-shadow:inset -4px 0 #fe2c55}.network-x{background:#f5f5f5;border-color:#111}.network-preview[hidden]{display:none!important}.panel-title{display:flex;align-items:center;gap:10px;margin-bottom:14px}.panel-title h3{margin:0}.network-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#111;color:#fff;font-size:1.25rem}.network-instagram .network-mark{background:linear-gradient(135deg,#feda75,#d62976,#4f5bd5)}.network-tiktok .network-mark{box-shadow:-2px 2px #25f4ee,2px -2px #fe2c55}.format-card{background:#ffffffb8;border-radius:14px;padding:14px;margin:0 0 14px}.format-card label{margin-top:10px!important}.format-card input[type=file]{background:#fff}.preview-post{margin-top:16px;background:#fff;padding:14px;border:1px solid #d8dadd;border-radius:16px}.network-x .preview-post{border-radius:0;border-color:#cfd9de}.preview-account{justify-content:space-between}.preview-account>span:nth-child(2){flex:1}.preview-account small{display:block;float:none;color:#687684}.panel-media{display:grid;grid-template-columns:1fr;gap:4px}.panel-media img,.panel-media video{display:block;width:100%;max-height:520px;object-fit:cover;border-radius:10px}.network-instagram.format-story .panel-media,.network-instagram.format-reel .panel-media{max-width:310px;margin:auto;aspect-ratio:9/16}.network-instagram.format-story .panel-media img,.network-instagram.format-story .panel-media video,.network-instagram.format-reel .panel-media img,.network-instagram.format-reel .panel-media video{height:100%;max-height:none}.carousel-media{grid-template-columns:repeat(2,minmax(0,1fr))}.format-text .panel-media{display:none}.text-only-preview{padding:18px;background:#f5f2eb;border-radius:12px;color:#12202f99;text-align:center}.network-actions{padding-top:12px;border-top:1px solid #12202f14;font-size:.85rem;font-weight:700}.generation-style{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;background:#ffffff12;border-radius:14px;padding:14px}.generation-style legend{color:#ffd43b}.hashtag-options{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.hashtag-options>span{width:100%;font-weight:800}.hashtag-options label{display:flex;align-items:center;gap:5px}.rejected-controls{display:grid;gap:8px;margin:10px 0}.rejected-controls form{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;padding:10px 14px;border-radius:14px}.rejected-controls button{margin:0}@media(max-width:700px){.generation-style{grid-template-columns:1fr}.rejected-controls form{align-items:flex-start;flex-direction:column}.carousel-media{grid-template-columns:1fr}}`;
 }
 
 function mediaFormScripts() {
-  return `document.querySelectorAll('.edit-form').forEach(form=>{form.enctype='multipart/form-data';form.querySelectorAll('[data-network]').forEach(box=>{const panel=form.querySelector('[data-preview="'+box.dataset.network+'"]');const update=()=>panel.hidden=!box.checked;box.addEventListener('change',update);update()})});`;
+  return `document.querySelectorAll('.edit-form').forEach(form=>{form.enctype='multipart/form-data';form.querySelectorAll('[data-network]').forEach(box=>{const panel=form.querySelector('[data-preview="'+box.dataset.network+'"]');const update=()=>panel.hidden=!box.checked;box.addEventListener('change',update);update()});form.querySelectorAll('[data-format]').forEach(select=>{const panel=select.closest('[data-preview]');const update=()=>{[...panel.classList].filter(x=>x.startsWith('format-')).forEach(x=>panel.classList.remove(x));panel.classList.add('format-'+select.value);const empty=panel.querySelector('.text-only-preview');if(empty)empty.hidden=select.value!=='text'};select.addEventListener('change',update);update()});form.querySelectorAll('input[type=file][name$=_media]').forEach(input=>input.addEventListener('change',()=>{const holder=input.closest('[data-preview]').querySelector('.panel-media');if(!holder||!input.files.length)return;holder.innerHTML=[...input.files].map(file=>file.type.startsWith('video/')?'<video controls src="'+URL.createObjectURL(file)+'"></video>':'<img src="'+URL.createObjectURL(file)+'" alt="">').join('')}))});`;
 }
 
 function scripts() {
@@ -717,7 +731,7 @@ function scripts() {
 }
 
 function generationScripts() {
-  return `document.querySelectorAll('[data-choice]').forEach(select=>{const custom=document.querySelector('[data-custom="'+select.dataset.choice+'"]');const update=()=>{custom.classList.toggle('visible',select.value==='__custom__');const input=custom.querySelector('input');input.required=select.value==='__custom__';if(select.value!=='__custom__')input.value=''};select.addEventListener('change',update);update()});if(document.querySelector('[data-generation-pending]'))setTimeout(()=>location.reload(),5000);`;
+  return `document.querySelector('.generate-panel form')?.insertAdjacentHTML('afterbegin',${JSON.stringify(generationStyleControls())});document.querySelectorAll('[data-choice]').forEach(select=>{const custom=document.querySelector('[data-custom="'+select.dataset.choice+'"]');const update=()=>{custom.classList.toggle('visible',select.value==='__custom__');const input=custom.querySelector('input');input.required=select.value==='__custom__';if(select.value!=='__custom__')input.value=''};select.addEventListener('change',update);update()});if(document.querySelector('[data-generation-pending]'))setTimeout(()=>location.reload(),5000);`;
 }
 
 function brand() {
