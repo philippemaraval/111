@@ -7,6 +7,7 @@ Dans SQL Editor, exécuter dans cet ordre :
 1. `supabase/migrations/008_order_fulfillment_and_safe_stock.sql`
 2. `supabase/migrations/009_operations_rate_limits_and_tracking.sql`
 3. `supabase/migrations/010_email_automation_queue.sql`
+4. `supabase/migrations/011_fix_rate_limit_timestamp.sql`
 
 Contrôler ensuite la présence de `order_events`, `api_rate_limits`, `stock_alerts`, `reviews`, `contact_messages` et `email_jobs`. La migration 009 active le rate limiting distribué et la migration 010 la file d’automatisation.
 
