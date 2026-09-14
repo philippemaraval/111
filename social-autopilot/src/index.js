@@ -627,14 +627,24 @@ function platformToggle(name, label, checked, network) {
 }
 
 function textEditor(network, label, value, limit, rows) {
-  return `<label>${label} <small><span data-count="${network}">${String(value).length}</span>/${limit}</small><textarea name="${network === "x" ? "x_text" : `${network}_text`}" data-text="${network}" rows="${rows}" maxlength="${limit}">${escapeHtml(value)}</textarea></label>`;
+  return "";
 }
 
 function networkPreview(network, p, active = false) {
   const text = network === "x" ? p.x_text : p[`${network}_text`];
+  const limit = network === "x" ? 280 : 2200;
+  const rows = network === "instagram" ? 7 : 5;
+  const enabled = Boolean(p[`publish_${network}`]);
   const advanced = network === "instagram" ? advancedField("Texte alternatif", "instagram_alt_text", p.instagram_alt_text, 500, 3) + advancedField("Idée de carrousel", "instagram_carousel", p.instagram_carousel, 1200, 5) : network === "tiktok" ? advancedField("Script vidéo", "tiktok_script", p.tiktok_script, 1600, 6) + advancedField("Texte à l'écran", "tiktok_overlay", p.tiktok_overlay, 500, 3) : advancedField("Mini-thread X", "x_thread", p.x_thread, 1200, 6);
   const selectedFormat = p[`${network}_format`] || (network === "instagram" ? "post" : network === "tiktok" ? "photo" : "image");
-  return `<div class="network-preview ${active ? "active" : ""}" data-preview="${network}">${formatEditor(network, selectedFormat)}<div class="preview-post"><div class="preview-account"><span class="avatar">111</span><strong>sunmedia.111</strong></div><img src="${escapeHtml(p.media_url)}" alt=""><p>${escapeHtml(text).replace(/\n/g, "<br>")}</p></div><details class="platform-kit" open><summary>Kit créatif ${network === "x" ? "X" : network[0].toUpperCase() + network.slice(1)}</summary>${advanced}</details></div>`;
+  const label = network === "x" ? "X" : network[0].toUpperCase() + network.slice(1);
+  return `<section class="network-preview ${active ? "active" : ""}" data-preview="${network}" ${enabled ? "" : "hidden"}><div class="panel-title"><span class="avatar">${network === "instagram" ? "IG" : network === "tiktok" ? "TT" : "X"}</span><h3>${label}</h3></div>${formatEditor(network, selectedFormat)}<label>Texte ${label}<small><span data-count="${network}">${String(text).length}</span>/${limit}</small><textarea name="${network === "x" ? "x_text" : `${network}_text`}" data-text="${network}" rows="${rows}" maxlength="${limit}">${escapeHtml(text)}</textarea></label><div class="preview-post"><div class="preview-account"><span class="avatar">111</span><strong>sunmedia.111</strong></div>${panelMediaMarkup(network, p, selectedFormat)}<p>${escapeHtml(text).replace(/\n/g, "<br>")}</p></div><details class="platform-kit"><summary>Options avancées</summary>${advanced}</details></section>`;
+}
+
+function panelMediaMarkup(network, proposal, format) {
+  const media = platformMedia(proposal, network);
+  if (!media.length) return `<div class="text-only-preview">Publication sans média</div>`;
+  return `<div class="panel-media ${format === "carousel" ? "carousel-media" : ""}">${media.map(item => item.kind === "video" ? `<video src="${escapeHtml(item.url)}" controls preload="metadata"></video>` : `<img src="${escapeHtml(item.url)}" alt="">`).join("")}</div>`;
 }
 
 function advancedField(label, name, value, max, rows) {
@@ -695,11 +705,11 @@ function libraryStyles() {
 }
 
 function formatStyles() {
-  return `.format-card{background:#eef8fc;border-radius:14px;padding:14px;margin:0 0 14px}.format-card label{margin-top:10px!important}.format-card input[type=file]{background:#fff}.rejected-controls{display:grid;gap:8px;margin:10px 0}.rejected-controls form{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;padding:10px 14px;border-radius:14px}.rejected-controls button{margin:0}@media(max-width:600px){.rejected-controls form{align-items:flex-start;flex-direction:column}}`;
+  return `.previews{display:grid;gap:18px;background:transparent;padding:0}.preview-tabs{display:none}.network-preview,.network-preview.active{display:block;background:#f5f2eb;border:1px solid #12202f14;padding:18px}.network-preview[hidden]{display:none!important}.panel-title{display:flex;align-items:center;gap:10px;margin-bottom:14px}.panel-title h3{margin:0}.format-card{background:#eef8fc;border-radius:14px;padding:14px;margin:0 0 14px}.format-card label{margin-top:10px!important}.format-card input[type=file]{background:#fff}.preview-post{margin-top:16px;background:#fff;padding:14px;border-radius:16px}.panel-media{display:grid;grid-template-columns:1fr;gap:8px}.panel-media img,.panel-media video{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:12px}.carousel-media{grid-template-columns:repeat(2,minmax(0,1fr))}.text-only-preview{padding:18px;background:#f5f2eb;border-radius:12px;color:#12202f99;text-align:center}.rejected-controls{display:grid;gap:8px;margin:10px 0}.rejected-controls form{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;padding:10px 14px;border-radius:14px}.rejected-controls button{margin:0}@media(max-width:600px){.rejected-controls form{align-items:flex-start;flex-direction:column}.carousel-media{grid-template-columns:1fr}}`;
 }
 
 function mediaFormScripts() {
-  return `document.querySelectorAll('.edit-form').forEach(form=>form.enctype='multipart/form-data');`;
+  return `document.querySelectorAll('.edit-form').forEach(form=>{form.enctype='multipart/form-data';form.querySelectorAll('[data-network]').forEach(box=>{const panel=form.querySelector('[data-preview="'+box.dataset.network+'"]');const update=()=>panel.hidden=!box.checked;box.addEventListener('change',update);update()})});`;
 }
 
 function scripts() {
