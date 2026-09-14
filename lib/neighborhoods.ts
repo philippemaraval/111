@@ -4,8 +4,7 @@ import { AVAILABLE_NEIGHBORHOOD_SLUGS, isNeighborhoodAvailable, PRODUCT_PRICE_EU
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
 import { neighborhoodDescriptions } from "@/lib/neighborhood-descriptions";
 import {
-  hasPublishedProductImages,
-  laJolietteGallery
+  getPublishedProductGallery
 } from "@/lib/product-illustrations";
 import { createAdminSupabaseClient, createPublicSupabaseClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { parseCoordinates, parseSeoMetadata, parseStock, slugify } from "@/lib/utils";
@@ -36,10 +35,9 @@ function enrichNeighborhood(
 ): Neighborhood {
   const seo = parseSeoMetadata(row.seo_metadata);
   const slug = seo.slug ?? slugify(row.name);
-  const hasProductImages = hasPublishedProductImages(row.name);
-  const gallery = hasProductImages
-    ? laJolietteGallery
-    : seo.gallery ?? [
+  const publishedGallery = getPublishedProductGallery(row.name);
+  const gallery = publishedGallery
+    ?? seo.gallery ?? [
         { label: "Photo à plat", url: row.image_url },
         { label: "Porté mannequin", url: row.image_url }
       ];
@@ -51,7 +49,7 @@ function enrichNeighborhood(
     arrondissement: row.arrondissement,
     price: PRODUCT_PRICE_EUROS,
     stockBySize: parseStock(row.stock_by_size),
-    imageUrl: hasProductImages ? laJolietteGallery[0].url : row.image_url,
+    imageUrl: publishedGallery?.[0].url ?? row.image_url,
     descriptionHistory: neighborhoodDescriptions[slug] ?? row.description_history,
     coordinates: parseCoordinates(row.coordinates),
     isAvailable: isNeighborhoodAvailable(slug),

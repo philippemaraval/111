@@ -1,24 +1,32 @@
 import type { ProductGalleryImage } from "@/lib/types";
 
-export const laJolietteGallery: ProductGalleryImage[] = [
-  {
-    label: "À plat · dos",
-    url: "/illustrations/la-joliette-plat-dos.webp?v=webp-1"
-  },
-  {
-    label: "À plat · face",
-    url: "/illustrations/la-joliette-plat-face.webp?v=webp-1"
-  },
-  {
-    label: "Porté · face",
-    url: "/illustrations/la-joliette-porte-face.webp?v=webp-1"
-  },
-  {
-    label: "Porté · dos",
-    url: "/illustrations/la-joliette-porte-dos.webp?v=webp-1"
-  }
-];
+function galleryFor(slug: string): ProductGalleryImage[] {
+  return [
+    {
+      label: "À plat · dos",
+      url: `/illustrations/${slug}-plat-dos.webp?v=webp-2`
+    },
+    {
+      label: "À plat · face",
+      url: `/illustrations/${slug}-plat-face.webp?v=webp-2`
+    },
+    {
+      label: "Porté · face",
+      url: `/illustrations/${slug}-porte-face.webp?v=webp-2`
+    },
+    {
+      label: "Porté · dos",
+      url: `/illustrations/${slug}-porte-dos.webp?v=webp-2`
+    }
+  ];
+}
 
-export function hasPublishedProductImages(name: string) {
-  return name === "La Joliette";
+const publishedProductGalleries: Record<string, ProductGalleryImage[]> = {
+  "La Joliette": galleryFor("la-joliette"),
+  "Cinq-Avenues": galleryFor("cinq-avenues"),
+  "Notre-Dame-du-Mont": galleryFor("notre-dame-du-mont")
+};
+
+export function getPublishedProductGallery(name: string) {
+  return publishedProductGalleries[name];
 }

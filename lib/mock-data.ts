@@ -2,8 +2,7 @@ import neighborhoodCatalog from "@/lib/marseille-neighborhoods.json";
 import { getNeighborhoodCatalogStatus, isNeighborhoodAvailable, PRODUCT_PRICE_EUROS } from "@/lib/constants";
 import { neighborhoodDescriptions } from "@/lib/neighborhood-descriptions";
 import {
-  hasPublishedProductImages,
-  laJolietteGallery
+  getPublishedProductGallery
 } from "@/lib/product-illustrations";
 import type {
   Neighborhood,
@@ -52,11 +51,9 @@ function galleryFor(label: string): ProductGalleryImage[] {
 export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) => {
   const slug = item.slug;
   const status = getNeighborhoodCatalogStatus(slug);
-  const hasProductImages = hasPublishedProductImages(item.name);
+  const publishedGallery = getPublishedProductGallery(item.name);
   const isAvailable = isNeighborhoodAvailable(slug);
-  const gallery = hasProductImages
-    ? laJolietteGallery
-    : galleryFor(item.name);
+  const gallery = publishedGallery ?? galleryFor(item.name);
   const voteCount = 0;
   const salesCount = isAvailable ? 9 + (index % 5) * 3 : 0;
   const stockSeed = isAvailable ? 4 + (index % 3) * 2 : 0;
