@@ -1,0 +1,16 @@
+ALTER TABLE proposals ADD COLUMN variant_group_id TEXT;
+ALTER TABLE proposals ADD COLUMN variant_index INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE proposals ADD COLUMN creative_angle TEXT;
+ALTER TABLE proposals ADD COLUMN tone TEXT;
+ALTER TABLE proposals ADD COLUMN audience TEXT;
+ALTER TABLE proposals ADD COLUMN call_to_action TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_alt_text TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_carousel TEXT;
+ALTER TABLE proposals ADD COLUMN tiktok_script TEXT;
+ALTER TABLE proposals ADD COLUMN tiktok_overlay TEXT;
+ALTER TABLE proposals ADD COLUMN x_thread TEXT;
+ALTER TABLE generation_jobs ADD COLUMN variant_count INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE generation_jobs ADD COLUMN tone TEXT;
+ALTER TABLE generation_jobs ADD COLUMN audience TEXT;
+ALTER TABLE generation_jobs ADD COLUMN call_to_action TEXT;
+CREATE INDEX IF NOT EXISTS idx_proposals_variant_group ON proposals(variant_group_id, variant_index);
