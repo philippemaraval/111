@@ -14,6 +14,8 @@ La bibliothèque éditoriale permet d'ajouter, modifier, enrichir, archiver et r
 
 La génération permet aussi de choisir la longueur des textes, le nombre de hashtags et les hashtags récurrents. Les aperçus reprennent l'identité et la mise en page de chaque réseau et réagissent au format sélectionné.
 
+Les options avancées Instagram et TikTok distinguent la publication automatique de la finalisation mobile. Les mentions, identifications sur image, localisation, premier commentaire, partage dans le fil et vignette vidéo sont transmis lorsque l'API le permet. Les musiques, liens de Story, stickers, produits, collaborateurs et effets forcent une notification mobile et restent dans l'état « À finaliser » jusqu'à confirmation humaine.
+
 ## Secrets
 
 - `BUFFER_API_KEY`
@@ -42,5 +44,6 @@ Pour une base créée avec la première version, appliquer dans l'ordre et une s
 - `migrations/006_multivariants_platform_content.sql`
 - `migrations/007_platform_formats.sql`
 - `migrations/008_generation_style_controls.sql`
+- `migrations/009_advanced_social_options.sql`
 
 La première validation réelle doit toujours être effectuée par le propriétaire depuis le dashboard.

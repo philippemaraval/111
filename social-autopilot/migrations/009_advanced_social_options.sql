@@ -1,0 +1,17 @@
+ALTER TABLE proposals ADD COLUMN instagram_publish_mode TEXT NOT NULL DEFAULT 'automatic';
+ALTER TABLE proposals ADD COLUMN instagram_first_comment TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_location TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_link TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_share_to_feed INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE proposals ADD COLUMN instagram_user_tags TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_music TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_sticker_text TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_products TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_topics TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_other TEXT;
+ALTER TABLE proposals ADD COLUMN instagram_thumbnail_offset INTEGER;
+ALTER TABLE proposals ADD COLUMN tiktok_publish_mode TEXT NOT NULL DEFAULT 'automatic';
+ALTER TABLE proposals ADD COLUMN tiktok_mentions TEXT;
+ALTER TABLE proposals ADD COLUMN tiktok_music TEXT;
+ALTER TABLE proposals ADD COLUMN tiktok_effects TEXT;
+ALTER TABLE proposals ADD COLUMN tiktok_thumbnail_offset INTEGER;

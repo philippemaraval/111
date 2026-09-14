@@ -29,6 +29,8 @@ export default {
       if (reject && request.method === "POST") return actionResponse(request, await rejectProposal(env, reject[1]));
       const removeRejected = url.pathname.match(/^\/api\/proposals\/([^/]+)\/delete$/);
       if (removeRejected && request.method === "POST") return actionResponse(request, await deleteRejectedProposal(env, removeRejected[1]), "/?status=rejected");
+      const markPublished = url.pathname.match(/^\/api\/proposals\/([^/]+)\/mark-published$/);
+      if (markPublished && request.method === "POST") return actionResponse(request, await markMobileProposalPublished(env, markPublished[1]), "/?status=published");
       const save = url.pathname.match(/^\/api\/proposals\/([^/]+)\/save$/);
       if (save && request.method === "POST") return actionResponse(request, await saveProposal(request, env, save[1]));
       const image = url.pathname.match(/^\/api\/proposals\/([^/]+)\/image$/);
@@ -264,11 +266,11 @@ async function approveProposal(env, id) {
   };
   try {
     if (proposal.publish_instagram && !results.instagram) {
-      results.instagram = await createBufferPost(env, selected.instagram, proposal.instagram_text, platformMedia(proposal, "instagram"), proposal.proposed_publish_at, proposal.instagram_format || "post");
+      results.instagram = await createBufferPost(env, selected.instagram, proposal.instagram_text, platformMedia(proposal, "instagram"), proposal.proposed_publish_at, proposal.instagram_format || "post", proposal, "instagram");
       await saveBufferId(env, id, "buffer_instagram_id", results.instagram);
     }
     if (proposal.publish_tiktok && !results.tiktok) {
-      results.tiktok = await createBufferPost(env, selected.tiktok, proposal.tiktok_text, platformMedia(proposal, "tiktok"), proposal.proposed_publish_at, proposal.tiktok_format || "photo");
+      results.tiktok = await createBufferPost(env, selected.tiktok, proposal.tiktok_text, platformMedia(proposal, "tiktok"), proposal.proposed_publish_at, proposal.tiktok_format || "photo", proposal, "tiktok");
       await saveBufferId(env, id, "buffer_tiktok_id", results.tiktok);
     }
     if (proposal.publish_x && !results.twitter) {
@@ -281,10 +283,11 @@ async function approveProposal(env, id) {
     throw error;
   }
   const now = new Date().toISOString();
-  await env.DB.prepare(`UPDATE proposals SET status='scheduled',updated_at=?,approved_at=?,error=NULL,
+  const needsMobile = (proposal.publish_instagram && proposal.instagram_publish_mode === "notification") || (proposal.publish_tiktok && proposal.tiktok_publish_mode === "notification");
+  await env.DB.prepare(`UPDATE proposals SET status=?,updated_at=?,approved_at=?,error=NULL,
     buffer_instagram_id=?,buffer_tiktok_id=?,buffer_x_id=? WHERE id=?`)
-    .bind(now, now, results.instagram, results.tiktok, results.twitter, id).run();
-  return { ok: true, status: "scheduled", posts: results };
+    .bind(needsMobile ? "awaiting_mobile" : "scheduled", now, now, results.instagram, results.tiktok, results.twitter, id).run();
+  return { ok: true, status: needsMobile ? "awaiting_mobile" : "scheduled", posts: results };
 }
 
 async function saveAndApprove(request, env, id) {
@@ -323,7 +326,36 @@ async function saveProposal(request, env, id) {
   if (xFormat === "video" && !(xMedia[0] || proposal.x_media_url)) throw new Error("Ajoute une vidéo pour X");
   await env.DB.prepare(`UPDATE proposals SET instagram_text=?,tiktok_text=?,x_text=?,instagram_alt_text=?,instagram_carousel=?,tiktok_script=?,tiktok_overlay=?,x_thread=?,publish_instagram=?,publish_tiktok=?,publish_x=?,proposed_publish_at=?,instagram_format=?,instagram_media_urls=?,tiktok_format=?,tiktok_media_url=?,x_format=?,x_media_url=?,updated_at=?,error=NULL WHERE id=?`)
     .bind(instagram, tiktok, x, instagramAlt, instagramCarousel, tiktokScript, tiktokOverlay, xThread, publishInstagram, publishTiktok, publishX, publishAt, instagramFormat, instagramUrls.length ? JSON.stringify(instagramUrls) : null, tiktokFormat, tiktokMedia[0] || proposal.tiktok_media_url, xFormat, xMedia[0] || proposal.x_media_url, now, proposal.id).run();
+  const instagramNativeOptions = ["instagram_music", "instagram_sticker_text", "instagram_products", "instagram_topics", "instagram_other"].some(name => String(form.get(name) || "").trim()) || (instagramFormat === "story" && String(form.get("instagram_link") || "").trim());
+  const tiktokNativeOptions = ["tiktok_music", "tiktok_effects"].some(name => String(form.get(name) || "").trim());
+  const instagramMode = form.get("instagram_publish_mode") === "notification" || instagramNativeOptions ? "notification" : "automatic";
+  const tiktokMode = form.get("tiktok_publish_mode") === "notification" || tiktokNativeOptions ? "notification" : "automatic";
+  const instagramLink = optionalHttps(form.get("instagram_link"), "Le lien Instagram");
+  const thumbnailInstagram = optionalInteger(form.get("instagram_thumbnail_offset"), 0, 900000, "La vignette Instagram");
+  const thumbnailTiktok = optionalInteger(form.get("tiktok_thumbnail_offset"), 0, 600000, "La vignette TikTok");
+  const tags = parseInstagramTags(form.get("instagram_user_tags"));
+  await env.DB.prepare(`UPDATE proposals SET instagram_publish_mode=?,instagram_first_comment=?,instagram_location=?,instagram_link=?,instagram_share_to_feed=?,instagram_user_tags=?,instagram_music=?,instagram_sticker_text=?,instagram_products=?,instagram_topics=?,instagram_other=?,instagram_thumbnail_offset=?,tiktok_publish_mode=?,tiktok_mentions=?,tiktok_music=?,tiktok_effects=?,tiktok_thumbnail_offset=? WHERE id=?`)
+    .bind(instagramMode, limitedText(form.get("instagram_first_comment"), 2196) || null, limitedText(form.get("instagram_location"), 150) || null, instagramLink, form.has("instagram_share_to_feed") ? 1 : 0, tags.length ? JSON.stringify(tags) : null, limitedText(form.get("instagram_music"), 160) || null, limitedText(form.get("instagram_sticker_text"), 300) || null, limitedText(form.get("instagram_products"), 300) || null, limitedText(form.get("instagram_topics"), 300) || null, limitedText(form.get("instagram_other"), 500) || null, thumbnailInstagram, tiktokMode, limitedText(form.get("tiktok_mentions"), 300) || null, limitedText(form.get("tiktok_music"), 160) || null, limitedText(form.get("tiktok_effects"), 300) || null, thumbnailTiktok, proposal.id).run();
   return { ok: true, status: "saved" };
+}
+
+function optionalHttps(value, label) {
+  const text = limitedText(value, 500);
+  if (text && !/^https:\/\//.test(text)) throw new Error(`${label} doit utiliser HTTPS`);
+  return text || null;
+}
+
+function optionalInteger(value, min, max, label) {
+  if (value === null || String(value).trim() === "") return null;
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < min || number > max) throw new Error(`${label} est invalide`);
+  return number;
+}
+
+export function parseInstagramTags(value) {
+  const lines = String(value || "").split(/\n|,/).map(item => item.trim()).filter(Boolean);
+  if (lines.length > 20) throw new Error("Instagram accepte au maximum 20 identifications");
+  return lines.map(item => { const [rawHandle, rawX = "0.5", rawY = "0.5"] = item.split(/\s*;\s*/); const handle = rawHandle.replace(/^@/, ""); const x = Number(rawX); const y = Number(rawY); if (!/^[A-Za-z0-9._]+$/.test(handle) || !Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 1 || y < 0 || y > 1) throw new Error("Identification Instagram invalide : utilise compte;x;y"); return { handle, x, y }; });
 }
 
 function allowedFormat(value, choices, fallback) {
@@ -473,14 +505,43 @@ async function deleteRejectedProposal(env, id) {
   return { ok: true, status: "deleted" };
 }
 
-async function createBufferPost(env, channel, text, media, dueAt, format) {
-  const metadata = bufferPostMetadata(channel.service, text, format);
-  const assets = media.map(item => `{ ${item.kind}: { url: ${gqlString(item.url)} } }`).join(",");
-  const query = `mutation CreateScheduledPost { createPost(input: { text: ${gqlString(text)}, channelId: ${gqlString(channel.id)}, schedulingType: automatic, mode: customScheduled, dueAt: ${gqlString(dueAt)}, assets: [${assets}] ${metadata} }) { ... on PostActionSuccess { post { id text dueAt } } ... on MutationError { message } } }`;
+async function markMobileProposalPublished(env, id) {
+  const now = new Date().toISOString();
+  const result = await env.DB.prepare("UPDATE proposals SET status='published',published_at=?,updated_at=?,error=NULL WHERE id=? AND status='awaiting_mobile'").bind(now, now, id).run();
+  if (!result.meta.changes) throw new Error("Publication mobile introuvable ou déjà finalisée");
+  return { ok: true, status: "published" };
+}
+
+async function createBufferPost(env, channel, text, media, dueAt, format, proposal = {}, network = channel.service) {
+  const schedulingType = proposal[`${network}_publish_mode`] === "notification" ? "notification" : "automatic";
+  const finalText = network === "tiktok" && proposal.tiktok_mentions ? `${text}\n\n${proposal.tiktok_mentions}`.slice(0, 2200) : text;
+  const metadata = advancedBufferMetadata(channel.service, finalText, format, proposal, schedulingType);
+  const tags = network === "instagram" ? parseStoredTags(proposal.instagram_user_tags) : [];
+  const thumbnail = network === "instagram" ? proposal.instagram_thumbnail_offset : network === "tiktok" ? proposal.tiktok_thumbnail_offset : null;
+  const assets = media.map((item, index) => item.kind === "video" ? `{ video: { url: ${gqlString(item.url)} ${thumbnail != null ? `metadata: { thumbnailOffset: ${Number(thumbnail)} }` : ""} } }` : `{ image: { url: ${gqlString(item.url)} ${index === 0 && (tags.length || proposal.instagram_alt_text) ? `metadata: { altText: ${gqlString(proposal.instagram_alt_text || "Visuel 111")}${tags.length ? `, userTags: [${tags.map(tag => `{ handle: ${gqlString(tag.handle)}, x: ${tag.x}, y: ${tag.y} }`).join(",")}]` : ""} }` : ""} } }`).join(",");
+  const query = `mutation CreateScheduledPost { createPost(input: { text: ${gqlString(finalText)}, channelId: ${gqlString(channel.id)}, schedulingType: ${schedulingType}, mode: customScheduled, dueAt: ${gqlString(dueAt)}, assets: [${assets}] ${metadata} }) { ... on PostActionSuccess { post { id text dueAt } } ... on MutationError { message } } }`;
   const data = await buffer(env, query);
   if (data.createPost?.message) throw new Error(`Buffer : ${data.createPost.message}`);
   if (!data.createPost?.post?.id) throw new Error("Buffer n'a pas retourné d'identifiant de publication");
   return data.createPost.post.id;
+}
+
+function parseStoredTags(value) {
+  try { const tags = JSON.parse(value || "[]"); return Array.isArray(tags) ? tags : []; } catch { return []; }
+}
+
+function advancedBufferMetadata(service, text, format, proposal, schedulingType) {
+  if (service !== "instagram") return bufferPostMetadata(service, text, format);
+  const fields = [`type: ${format}`, `shouldShareToFeed: ${proposal.instagram_share_to_feed !== 0}`];
+  if (proposal.instagram_first_comment && format !== "story" && schedulingType === "automatic") fields.push(`firstComment: ${gqlString(proposal.instagram_first_comment)}`);
+  if (proposal.instagram_location && format !== "story" && schedulingType === "automatic") fields.push(`geolocation: { text: ${gqlString(proposal.instagram_location)} }`);
+  if (proposal.instagram_link && format === "post" && schedulingType === "automatic") fields.push(`link: ${gqlString(proposal.instagram_link)}`);
+  if (schedulingType === "notification") {
+    const other = [proposal.instagram_link && `Lien : ${proposal.instagram_link}`, proposal.instagram_other].filter(Boolean).join(" · ");
+    const stickers = [["music", proposal.instagram_music], ["text", proposal.instagram_sticker_text], ["products", proposal.instagram_products], ["topics", proposal.instagram_topics], ["other", other]].filter(([, value]) => value).map(([key, value]) => `${key}: ${gqlString(value)}`);
+    if (stickers.length) fields.push(`stickerFields: { ${stickers.join(",")} }`);
+  }
+  return `metadata: { instagram: { ${fields.join(",")} } }`;
 }
 
 async function buffer(env, query) {
@@ -503,7 +564,7 @@ async function dashboard(env, url) {
   if (view === "library") return libraryPage(env, url);
   if (view === "calendar") return calendarPage(env);
   await markPastScheduledPublished(env);
-  const allowedStatuses = new Set(["pending", "scheduled", "published", "rejected", "failed"]);
+  const allowedStatuses = new Set(["pending", "scheduled", "awaiting_mobile", "published", "rejected", "failed"]);
   const activeStatus = allowedStatuses.has(url.searchParams.get("status")) ? url.searchParams.get("status") : "pending";
   const proposals = activeStatus === "all"
     ? await env.DB.prepare("SELECT * FROM proposals ORDER BY created_at DESC LIMIT 50").all()
@@ -511,10 +572,11 @@ async function dashboard(env, url) {
   const job = await env.DB.prepare("SELECT status,error FROM generation_jobs ORDER BY created_at DESC LIMIT 1").first();
   const cards = proposals.results.map(proposalCard).join("");
   const rejectedControls = activeStatus === "rejected" ? `<section class="rejected-controls">${proposals.results.map(item => `<form method="post" action="/api/proposals/${item.id}/delete" onsubmit="return confirm('Supprimer définitivement cette publication refusée ?')"><span>${escapeHtml(item.neighborhood)} · ${formatParisDate(item.created_at)}</span><button class="danger">Supprimer</button></form>`).join("")}</section>` : "";
+  const mobileControls = activeStatus === "awaiting_mobile" ? `<section class="mobile-controls"><p class="notice">Buffer enverra une notification à l’heure prévue. Termine la publication dans Instagram ou TikTok, puis confirme-la ici.</p>${proposals.results.map(item => `<form method="post" action="/api/proposals/${item.id}/mark-published"><span>${escapeHtml(item.neighborhood)} · ${formatParisDate(item.proposed_publish_at)}</span><button class="approve">Marquer comme publiée</button></form>`).join("")}</section>` : "";
   const actionError = url.searchParams.get("action_error");
   const actionNotice = actionError ? `<p class="error">La programmation a échoué : ${escapeHtml(actionError)}. La proposition reste disponible dans « Erreurs » pour réessayer.</p>` : "";
   const jobNotice = job?.status === "running" || job?.status === "queued" ? "<p class=\"notice\" data-generation-pending>Génération en cours… Vérification automatique dans quelques secondes.</p>" : job?.status === "failed" ? `<strong class="error">Échec de génération : ${escapeHtml(job.error)}</strong>` : "";
-  return page(`${generationPanel()}${actionNotice}${jobNotice}<nav class="filters" aria-label="Filtrer les propositions">${statusFilter("all", "Toutes", activeStatus)}${statusFilter("pending", "À valider", activeStatus)}${statusFilter("scheduled", "Programmées", activeStatus)}${statusFilter("published", "Publiées", activeStatus)}${statusFilter("failed", "Erreurs", activeStatus)}${statusFilter("rejected", "Refusées", activeStatus)}</nav>${rejectedControls}<section class="cards">${cards || "<p class=\"empty\">Aucune proposition dans cette catégorie.</p>"}</section>`, "posts");
+  return page(`${generationPanel()}${actionNotice}${jobNotice}<nav class="filters" aria-label="Filtrer les propositions">${statusFilter("all", "Toutes", activeStatus)}${statusFilter("pending", "À valider", activeStatus)}${statusFilter("scheduled", "Programmées", activeStatus)}${statusFilter("awaiting_mobile", "À finaliser", activeStatus)}${statusFilter("published", "Publiées", activeStatus)}${statusFilter("failed", "Erreurs", activeStatus)}${statusFilter("rejected", "Refusées", activeStatus)}</nav>${rejectedControls}${mobileControls}<section class="cards">${cards || "<p class=\"empty\">Aucune proposition dans cette catégorie.</p>"}</section>`, "posts");
 }
 
 function page(content, view) {
@@ -620,10 +682,18 @@ function libraryItemInput(form) {
 
 function proposalCard(p) {
   const editable = p.status === "pending" || p.status === "failed";
-  let label = { pending: "À valider", failed: "Erreur", scheduled: "Programmée", published: "Publiée", rejected: "Refusée" }[p.status] || p.status;
+  let label = { pending: "À valider", failed: "Erreur", scheduled: "Programmée", awaiting_mobile: "À finaliser sur mobile", published: "Publiée", rejected: "Refusée" }[p.status] || p.status;
   if (p.variant_group_id) label += ` · Variante ${p.variant_index}`;
   const editFormId = `edit-${p.id}`;
-  return `<article class="proposal" data-proposal><div class="visual"><img src="${escapeHtml(p.media_url)}" alt="Visuel ${escapeHtml(p.neighborhood)}">${editable ? `<details><summary>Modifier l'image</summary><form class="image-form" method="post" enctype="multipart/form-data" action="/api/proposals/${p.id}/image"><label>Régénérer avec un prompt<textarea name="visual_prompt" rows="4">${escapeHtml(p.visual_prompt)}</textarea></label><button name="image_action" value="regenerate">Régénérer l'image</button><div class="or">ou</div><label>Choisir une autre image<input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label><button class="secondary" name="image_action" value="upload">Importer l'image</button></form></details>` : ""}</div><div class="editor"><div class="eyebrow"><span class="status status-${escapeHtml(p.status)}">${escapeHtml(label)}</span><span>Objectif : ${escapeHtml(p.objective || "engagement")}</span></div><h2>${escapeHtml(p.neighborhood)}</h2>${p.brief ? `<p class="brief"><strong>Consigne :</strong> ${escapeHtml(p.brief)}</p>` : ""}${p.error ? `<p class="error">${escapeHtml(p.error)}</p>` : ""}${editable ? `<form id="${editFormId}" class="edit-form" method="post" action="/api/proposals/${p.id}/save"><div class="settings"><fieldset><legend>Plateformes</legend>${platformToggle("publish_instagram", "Instagram", p.publish_instagram, "instagram")}${platformToggle("publish_tiktok", "TikTok", p.publish_tiktok, "tiktok")}${platformToggle("publish_x", "X", p.publish_x, "x")}</fieldset><label class="date-label">Date et heure (Paris)<input type="datetime-local" name="proposed_publish_at" value="${escapeHtml(toParisLocalInput(p.proposed_publish_at))}" required></label></div>${textEditor("instagram", "Instagram", p.instagram_text, 2200, 7)}${textEditor("tiktok", "TikTok", p.tiktok_text, 2200, 5)}${textEditor("x", "X", p.x_text, 280, 5)}<div class="previews"><div class="preview-tabs" role="tablist"><button type="button" class="preview-tab active" data-preview-tab="instagram">Instagram</button><button type="button" class="preview-tab" data-preview-tab="tiktok">TikTok</button><button type="button" class="preview-tab" data-preview-tab="x">X</button></div>${networkPreview("instagram", p, true)}${networkPreview("tiktok", p)}${networkPreview("x", p)}</div><div class="sticky-actions"><button>Enregistrer</button><button type="submit" class="approve" data-approve formaction="/api/proposals/${p.id}/approve">${p.status === "failed" ? "Enregistrer et réessayer" : "Valider & programmer"}</button></div></form><form class="reject-form" method="post" action="/api/proposals/${p.id}/reject"><button class="danger">Refuser</button></form>` : `<div class="history-copy"><p><strong>Publication prévue :</strong> ${formatParisDate(p.proposed_publish_at)}</p><p>${escapeHtml(p.instagram_text).replace(/\n/g, "<br>")}</p></div><form method="post" action="/api/proposals/${p.id}/duplicate"><button>Dupliquer et modifier</button></form>`}</div></article>`;
+  return `<article class="proposal" data-proposal><div class="visual"><img src="${escapeHtml(p.media_url)}" alt="Visuel ${escapeHtml(p.neighborhood)}">${editable ? `<details><summary>Modifier l'image</summary><form class="image-form" method="post" enctype="multipart/form-data" action="/api/proposals/${p.id}/image"><label>Régénérer avec un prompt<textarea name="visual_prompt" rows="4">${escapeHtml(p.visual_prompt)}</textarea></label><button name="image_action" value="regenerate">Régénérer l'image</button><div class="or">ou</div><label>Choisir une autre image<input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label><button class="secondary" name="image_action" value="upload">Importer l'image</button></form></details>` : ""}</div><div class="editor"><div class="eyebrow"><span class="status status-${escapeHtml(p.status)}">${escapeHtml(label)}</span><span>Objectif : ${escapeHtml(p.objective || "engagement")}</span></div><h2>${escapeHtml(p.neighborhood)}</h2>${p.brief ? `<p class="brief"><strong>Consigne :</strong> ${escapeHtml(p.brief)}</p>` : ""}${p.error ? `<p class="error">${escapeHtml(p.error)}</p>` : ""}${editable ? `<form id="${editFormId}" class="edit-form" method="post" action="/api/proposals/${p.id}/save"><div class="settings"><fieldset><legend>Plateformes</legend>${platformToggle("publish_instagram", "Instagram", p.publish_instagram, "instagram")}${platformToggle("publish_tiktok", "TikTok", p.publish_tiktok, "tiktok")}${platformToggle("publish_x", "X", p.publish_x, "x")}</fieldset><label class="date-label">Date et heure (Paris)<input type="datetime-local" name="proposed_publish_at" value="${escapeHtml(toParisLocalInput(p.proposed_publish_at))}" required></label></div>${textEditor("instagram", "Instagram", p.instagram_text, 2200, 7)}${textEditor("tiktok", "TikTok", p.tiktok_text, 2200, 5)}${textEditor("x", "X", p.x_text, 280, 5)}<div class="previews"><div class="preview-tabs" role="tablist"><button type="button" class="preview-tab active" data-preview-tab="instagram">Instagram</button><button type="button" class="preview-tab" data-preview-tab="tiktok">TikTok</button><button type="button" class="preview-tab" data-preview-tab="x">X</button></div>${networkPreview("instagram", p, true)}${networkPreview("tiktok", p)}${networkPreview("x", p)}</div><div class="sticky-actions"><button>Enregistrer</button><button type="submit" class="approve" data-approve formaction="/api/proposals/${p.id}/approve">${p.status === "failed" ? "Enregistrer et réessayer" : "Valider & programmer"}</button></div></form><form class="reject-form" method="post" action="/api/proposals/${p.id}/reject"><button class="danger">Refuser</button></form>` : `<div class="history-copy"><p><strong>Publication prévue :</strong> ${formatParisDate(p.proposed_publish_at)}</p><p>${escapeHtml(p.instagram_text).replace(/\n/g, "<br>")}</p>${mobileChecklist(p)}</div><form method="post" action="/api/proposals/${p.id}/duplicate"><button>Dupliquer et modifier</button></form>`}</div></article>`;
+}
+
+function mobileChecklist(p) {
+  if (p.status !== "awaiting_mobile") return "";
+  const instagram = [["Musique", p.instagram_music], ["Texte / sticker", p.instagram_sticker_text], ["Produits / collaborateurs", p.instagram_products], ["Sujets", p.instagram_topics], ["Lien", p.instagram_link], ["Autres", p.instagram_other]];
+  const tiktok = [["Mentions", p.tiktok_mentions], ["Musique / son", p.tiktok_music], ["Effets / stickers / sondage", p.tiktok_effects]];
+  const items = [...(p.publish_instagram ? instagram : []), ...(p.publish_tiktok ? tiktok : [])].filter(([, value]) => value);
+  return items.length ? `<div class="notice"><strong>À ajouter sur mobile :</strong><ul>${items.map(([label, value]) => `<li><strong>${escapeHtml(label)} :</strong> ${escapeHtml(value)}</li>`).join("")}</ul></div>` : "";
 }
 
 function formatEditor(network, selected) {
@@ -645,10 +715,24 @@ function networkPreview(network, p, active = false) {
   const limit = network === "x" ? 280 : 2200;
   const rows = network === "instagram" ? 7 : 5;
   const enabled = Boolean(p[`publish_${network}`]);
-  const advanced = network === "instagram" ? advancedField("Texte alternatif", "instagram_alt_text", p.instagram_alt_text, 500, 3) + advancedField("Idée de carrousel", "instagram_carousel", p.instagram_carousel, 1200, 5) : network === "tiktok" ? advancedField("Script vidéo", "tiktok_script", p.tiktok_script, 1600, 6) + advancedField("Texte à l'écran", "tiktok_overlay", p.tiktok_overlay, 500, 3) : advancedField("Mini-thread X", "x_thread", p.x_thread, 1200, 6);
+  const advanced = advancedOptionsStyle() + advancedSocialFields(network, p);
   const selectedFormat = p[`${network}_format`] || (network === "instagram" ? "post" : network === "tiktok" ? "photo" : "image");
   const label = network === "x" ? "X" : network[0].toUpperCase() + network.slice(1);
   return `<section class="network-preview network-${network} format-${selectedFormat} ${active ? "active" : ""}" data-preview="${network}" ${enabled ? "" : "hidden"}><div class="panel-title"><span class="network-mark">${network === "instagram" ? "◎" : network === "tiktok" ? "♪" : "𝕏"}</span><h3>${label}</h3></div>${formatEditor(network, selectedFormat)}<label>Texte ${label}<small><span data-count="${network}">${String(text).length}</span>/${limit}</small><textarea name="${network === "x" ? "x_text" : `${network}_text`}" data-text="${network}" rows="${rows}" maxlength="${limit}">${escapeHtml(text)}</textarea></label>${socialPostPreview(network, p, text, selectedFormat)}<details class="platform-kit"><summary>Options avancées</summary>${advanced}</details></section>`;
+}
+
+function advancedOptionsStyle() {
+  return `<style>.platform-kit input[type=url],.platform-kit input[type=number]{display:block;width:100%;margin-top:7px;padding:11px;border:1px solid #12202f26;border-radius:12px;font:inherit}.check-option{display:flex!important;align-items:center;gap:7px}.mobile-help{background:#ffd43b40;padding:10px;border-radius:10px;font-size:.78rem}.mobile-controls form{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;padding:10px 14px;border-radius:14px;margin:8px 0}</style>`;
+}
+
+function advancedSocialFields(network, p) {
+  if (network === "instagram") return `<label>Mode de publication<select name="instagram_publish_mode"><option value="automatic" ${p.instagram_publish_mode !== "notification" ? "selected" : ""}>Automatique</option><option value="notification" ${p.instagram_publish_mode === "notification" ? "selected" : ""}>À finaliser sur mobile</option></select></label><p class="mobile-help">Musique, liens de Story, stickers, produits et collaborateurs nécessitent la finalisation dans l’app Instagram.</p>${advancedField("Premier commentaire", "instagram_first_comment", p.instagram_first_comment, 2196, 3)}${advancedField("Localisation", "instagram_location", p.instagram_location, 150, 2)}<label>Lien Story / Shop Grid<input name="instagram_link" type="url" value="${escapeHtml(p.instagram_link || "")}" placeholder="https://…"></label><label class="check-option"><input type="checkbox" name="instagram_share_to_feed" ${p.instagram_share_to_feed !== 0 ? "checked" : ""}> Partager le Reel dans le fil</label>${advancedField("Comptes sur l’image (compte;x;y)", "instagram_user_tags", formatStoredTags(p.instagram_user_tags), 1000, 3)}${advancedField("Musique souhaitée", "instagram_music", p.instagram_music, 160, 2)}${advancedField("Texte ou sticker", "instagram_sticker_text", p.instagram_sticker_text, 300, 2)}${advancedField("Produits / collaborateurs", "instagram_products", p.instagram_products, 300, 2)}${advancedField("Sujets du Reel", "instagram_topics", p.instagram_topics, 300, 2)}${advancedField("Autres consignes mobiles", "instagram_other", p.instagram_other, 500, 3)}<label>Vignette vidéo (millisecondes)<input name="instagram_thumbnail_offset" type="number" min="0" max="900000" value="${p.instagram_thumbnail_offset ?? ""}"></label>${advancedField("Texte alternatif", "instagram_alt_text", p.instagram_alt_text, 500, 3)}${advancedField("Découpage du carrousel", "instagram_carousel", p.instagram_carousel, 1200, 5)}`;
+  if (network === "tiktok") return `<label>Mode de publication<select name="tiktok_publish_mode"><option value="automatic" ${p.tiktok_publish_mode !== "notification" ? "selected" : ""}>Automatique</option><option value="notification" ${p.tiktok_publish_mode === "notification" ? "selected" : ""}>À finaliser sur mobile</option></select></label><p class="mobile-help">Les sons tendance, effets, stickers et sondages doivent être ajoutés dans l’app TikTok.</p>${advancedField("Comptes à mentionner", "tiktok_mentions", p.tiktok_mentions, 300, 2)}${advancedField("Musique ou son souhaité", "tiktok_music", p.tiktok_music, 160, 2)}${advancedField("Effets, stickers ou sondage", "tiktok_effects", p.tiktok_effects, 300, 2)}<label>Vignette vidéo (millisecondes)<input name="tiktok_thumbnail_offset" type="number" min="0" max="600000" value="${p.tiktok_thumbnail_offset ?? ""}"></label>${advancedField("Script vidéo", "tiktok_script", p.tiktok_script, 1600, 6)}${advancedField("Texte à l'écran", "tiktok_overlay", p.tiktok_overlay, 500, 3)}`;
+  return advancedField("Mini-thread X", "x_thread", p.x_thread, 1200, 6);
+}
+
+function formatStoredTags(value) {
+  try { return JSON.parse(value || "[]").map(tag => `${tag.handle};${tag.x};${tag.y}`).join("\n"); } catch { return ""; }
 }
 
 function socialPostPreview(network, proposal, text, format) {

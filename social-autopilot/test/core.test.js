@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { bufferPostMetadata, gqlString, modelText, nextEditorialDate, parisLocalToUtc, parseJsonObject, selectChannels, toParisLocalInput } from "../src/core.js";
-import { cleanXText } from "../src/index.js";
+import { cleanXText, parseInstagramTags } from "../src/index.js";
 
 test("gqlString échappe le contenu utilisateur", () => {
   assert.equal(gqlString('Bonjour "Marseille"\n'), '"Bonjour \\"Marseille\\"\\n"');
@@ -16,6 +16,14 @@ test("bufferPostMetadata configure les publications image par plateforme", () =>
 
 test("cleanXText transforme les listes en texte naturel", () => {
   assert.equal(cleanXText("- Marseille\n- Ses quartiers\n- 111", "secours"), "Marseille Ses quartiers 111");
+});
+
+test("parseInstagramTags normalise et valide les identifications sur image", () => {
+  assert.deepEqual(parseInstagramTags("@marseille;0.25;0.75\n111;0.5;0.5"), [
+    { handle: "marseille", x: 0.25, y: 0.75 },
+    { handle: "111", x: 0.5, y: 0.5 },
+  ]);
+  assert.throws(() => parseInstagramTags("@marseille;2;0.5"), /Identification Instagram invalide/);
 });
 
 test("parseJsonObject accepte un bloc Markdown", () => {
