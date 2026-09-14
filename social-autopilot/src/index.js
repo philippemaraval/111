@@ -27,6 +27,8 @@ export default {
       if (approve && request.method === "POST") return actionResponse(request, await saveAndApprove(request, env, approve[1]));
       const reject = url.pathname.match(/^\/api\/proposals\/([^/]+)\/reject$/);
       if (reject && request.method === "POST") return actionResponse(request, await rejectProposal(env, reject[1]));
+      const removeRejected = url.pathname.match(/^\/api\/proposals\/([^/]+)\/delete$/);
+      if (removeRejected && request.method === "POST") return actionResponse(request, await deleteRejectedProposal(env, removeRejected[1]), "/?status=rejected");
       const save = url.pathname.match(/^\/api\/proposals\/([^/]+)\/save$/);
       if (save && request.method === "POST") return actionResponse(request, await saveProposal(request, env, save[1]));
       const image = url.pathname.match(/^\/api\/proposals\/([^/]+)\/image$/);
@@ -56,17 +58,28 @@ export default {
     }
   },
 
-  async scheduled(_event, env, ctx) {
-    ctx.waitUntil(queueScheduledGeneration(env));
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(event.cron === "*/15 * * * *" ? syncPublicationLifecycle(env) : queueScheduledGeneration(env));
   },
 };
 
 async function queueScheduledGeneration(env) {
-  await syncBufferStatuses(env);
+  await syncPublicationLifecycle(env);
   const pending = await env.DB.prepare("SELECT id FROM proposals WHERE status='pending' LIMIT 1").first();
   if (pending) return;
   const job = await queueGeneration(env, {});
   if (job.created) await runGenerationJob(env, job.id);
+}
+
+async function syncPublicationLifecycle(env) {
+  try { await syncBufferStatuses(env); } catch (error) { console.error("Synchronisation Buffer indisponible", error); }
+  return markPastScheduledPublished(env);
+}
+
+async function markPastScheduledPublished(env, now = new Date()) {
+  const timestamp = now.toISOString();
+  const result = await env.DB.prepare("UPDATE proposals SET status='published',published_at=COALESCE(published_at,proposed_publish_at),updated_at=?,error=NULL WHERE status='scheduled' AND proposed_publish_at<=?").bind(timestamp, timestamp).run();
+  return { ok: true, published: result.meta.changes };
 }
 
 async function queueGeneration(env, options = {}) {
@@ -444,6 +457,12 @@ async function rejectProposal(env, id) {
   return { ok: true, status: "rejected" };
 }
 
+async function deleteRejectedProposal(env, id) {
+  const result = await env.DB.prepare("DELETE FROM proposals WHERE id=? AND status='rejected'").bind(id).run();
+  if (!result.meta.changes) throw new Error("Publication refusée introuvable");
+  return { ok: true, status: "deleted" };
+}
+
 async function createBufferPost(env, channel, text, media, dueAt, format) {
   const metadata = bufferPostMetadata(channel.service, text, format);
   const assets = media.map(item => `{ ${item.kind}: { url: ${gqlString(item.url)} } }`).join(",");
@@ -473,17 +492,19 @@ async function dashboard(env, url) {
   if (view === "engagements") return engagementsPage(env);
   if (view === "library") return libraryPage(env, url);
   if (view === "calendar") return calendarPage(env);
+  await markPastScheduledPublished(env);
   const allowedStatuses = new Set(["pending", "scheduled", "published", "rejected", "failed"]);
-  const activeStatus = allowedStatuses.has(url.searchParams.get("status")) ? url.searchParams.get("status") : "all";
+  const activeStatus = allowedStatuses.has(url.searchParams.get("status")) ? url.searchParams.get("status") : "pending";
   const proposals = activeStatus === "all"
     ? await env.DB.prepare("SELECT * FROM proposals ORDER BY created_at DESC LIMIT 50").all()
     : await env.DB.prepare("SELECT * FROM proposals WHERE status=? ORDER BY created_at DESC LIMIT 50").bind(activeStatus).all();
   const job = await env.DB.prepare("SELECT status,error FROM generation_jobs ORDER BY created_at DESC LIMIT 1").first();
   const cards = proposals.results.map(proposalCard).join("");
+  const rejectedControls = activeStatus === "rejected" ? `<section class="rejected-controls">${proposals.results.map(item => `<form method="post" action="/api/proposals/${item.id}/delete" onsubmit="return confirm('Supprimer définitivement cette publication refusée ?')"><span>${escapeHtml(item.neighborhood)} · ${formatParisDate(item.created_at)}</span><button class="danger">Supprimer</button></form>`).join("")}</section>` : "";
   const actionError = url.searchParams.get("action_error");
   const actionNotice = actionError ? `<p class="error">La programmation a échoué : ${escapeHtml(actionError)}. La proposition reste disponible dans « Erreurs » pour réessayer.</p>` : "";
   const jobNotice = job?.status === "running" || job?.status === "queued" ? "<p class=\"notice\" data-generation-pending>Génération en cours… Vérification automatique dans quelques secondes.</p>" : job?.status === "failed" ? `<strong class="error">Échec de génération : ${escapeHtml(job.error)}</strong>` : "";
-  return page(`${generationPanel()}${actionNotice}${jobNotice}<nav class="filters" aria-label="Filtrer les propositions">${statusFilter("all", "Toutes", activeStatus)}${statusFilter("pending", "À valider", activeStatus)}${statusFilter("scheduled", "Programmées", activeStatus)}${statusFilter("published", "Publiées", activeStatus)}${statusFilter("failed", "Erreurs", activeStatus)}${statusFilter("rejected", "Refusées", activeStatus)}</nav><section class="cards">${cards || "<p class=\"empty\">Aucune proposition dans cette catégorie.</p>"}</section>`, "posts");
+  return page(`${generationPanel()}${actionNotice}${jobNotice}<nav class="filters" aria-label="Filtrer les propositions">${statusFilter("all", "Toutes", activeStatus)}${statusFilter("pending", "À valider", activeStatus)}${statusFilter("scheduled", "Programmées", activeStatus)}${statusFilter("published", "Publiées", activeStatus)}${statusFilter("failed", "Erreurs", activeStatus)}${statusFilter("rejected", "Refusées", activeStatus)}</nav>${rejectedControls}<section class="cards">${cards || "<p class=\"empty\">Aucune proposition dans cette catégorie.</p>"}</section>`, "posts");
 }
 
 function page(content, view) {
@@ -674,7 +695,7 @@ function libraryStyles() {
 }
 
 function formatStyles() {
-  return `.format-card{background:#eef8fc;border-radius:14px;padding:14px;margin:0 0 14px}.format-card label{margin-top:10px!important}.format-card input[type=file]{background:#fff}`;
+  return `.format-card{background:#eef8fc;border-radius:14px;padding:14px;margin:0 0 14px}.format-card label{margin-top:10px!important}.format-card input[type=file]{background:#fff}.rejected-controls{display:grid;gap:8px;margin:10px 0}.rejected-controls form{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;padding:10px 14px;border-radius:14px}.rejected-controls button{margin:0}@media(max-width:600px){.rejected-controls form{align-items:flex-start;flex-direction:column}}`;
 }
 
 function mediaFormScripts() {
