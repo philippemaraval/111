@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, RotateCcw, Save, XCircle } from "lucide-react";
+import { ChevronDown, Download, Map as MapIcon, RotateCcw, Save, XCircle } from "lucide-react";
 
 import { SIZE_ORDER } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
@@ -22,9 +22,13 @@ type InventoryState = Record<
   {
     price: number;
     isAvailable: boolean;
+    catalogStatus: "available" | "project" | "idea";
+    savedCatalogStatus: "available" | "project" | "idea";
     releaseDate: string;
     stockBySize: Record<string, number>;
     status: "idle" | "saving" | "saved" | "error";
+    notificationStatus: "idle" | "sending" | "sent" | "error";
+    notificationResult: string;
   }
 >;
 
@@ -86,9 +90,13 @@ export function AdminDashboard({
         {
           price: item.price,
           isAvailable: item.isAvailable,
+          catalogStatus: item.catalogStatus,
+          savedCatalogStatus: item.catalogStatus,
           releaseDate: item.releaseDate ?? "",
           stockBySize: { ...item.stockBySize },
-          status: "idle"
+          status: "idle",
+          notificationStatus: "idle",
+          notificationResult: ""
         }
       ])
     )
@@ -101,6 +109,26 @@ export function AdminDashboard({
   const availableCount = useMemo(
     () => neighborhoods.filter((item) => inventory[item.id]?.isAvailable).length,
     [inventory, neighborhoods]
+  );
+  const neighborhoodsByArrondissement = useMemo(
+    () => Array.from({ length: 16 }, (_, index) => {
+      const arrondissement = index + 1;
+      return {
+        arrondissement,
+        neighborhoods: neighborhoods
+          .filter((item) => item.arrondissement === arrondissement)
+          .sort((a, b) => a.name.localeCompare(b.name, "fr"))
+      };
+    }),
+    [neighborhoods]
+  );
+  const sortedVotes = useMemo(
+    () => [...votes].sort((a, b) => b.totalVotes - a.totalVotes || a.neighborhoodName.localeCompare(b.neighborhoodName, "fr")),
+    [votes]
+  );
+  const votesByNeighborhood = useMemo(
+    () => new Map(votes.map((item) => [item.neighborhoodId, item.totalVotes])),
+    [votes]
   );
 
   async function saveNeighborhood(neighborhoodId: string) {
@@ -119,7 +147,8 @@ export function AdminDashboard({
         },
         body: JSON.stringify({
           price: payload.price,
-          isAvailable: payload.isAvailable,
+          isAvailable: payload.catalogStatus === "available",
+          catalogStatus: payload.catalogStatus,
           releaseDate: payload.releaseDate || null,
           stockBySize: payload.stockBySize
         })
@@ -131,13 +160,27 @@ export function AdminDashboard({
 
       setInventory((current) => ({
         ...current,
-        [neighborhoodId]: { ...current[neighborhoodId], status: "saved" }
+        [neighborhoodId]: { ...current[neighborhoodId], status: "saved", savedCatalogStatus: current[neighborhoodId].catalogStatus }
       }));
     } catch {
       setInventory((current) => ({
         ...current,
         [neighborhoodId]: { ...current[neighborhoodId], status: "error" }
       }));
+    }
+  }
+
+  async function notifyNeighborhoodVoters(neighborhoodId: string, neighborhoodName: string) {
+    const voterCount = votesByNeighborhood.get(neighborhoodId) ?? 0;
+    if (!window.confirm(`Envoyer l’annonce de disponibilité de ${neighborhoodName} aux ${voterCount} votant(s) ?`)) return;
+    setInventory((current) => ({ ...current, [neighborhoodId]: { ...current[neighborhoodId], notificationStatus: "sending", notificationResult: "" } }));
+    try {
+      const response = await fetch(`/api/admin/neighborhoods/${neighborhoodId}/notify`, { method: "POST" });
+      const result = await response.json() as { queued?: number; sent?: number; failed?: number; error?: string };
+      if (!response.ok) throw new Error(result.error ?? "notification_failed");
+      setInventory((current) => ({ ...current, [neighborhoodId]: { ...current[neighborhoodId], notificationStatus: "sent", notificationResult: `${result.queued ?? 0} notification(s) ajoutée(s), ${result.sent ?? 0} envoyée(s)` } }));
+    } catch {
+      setInventory((current) => ({ ...current, [neighborhoodId]: { ...current[neighborhoodId], notificationStatus: "error", notificationResult: "Envoi impossible" } }));
     }
   }
 
@@ -217,35 +260,44 @@ export function AdminDashboard({
         )}
       </section>
 
-      <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
-        <div className="mb-5 flex items-end justify-between gap-4">
+      <details className="group rounded-[24px] border border-navy/10 bg-white shadow-soft">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-5 p-5 sm:p-7 [&::-webkit-details-marker]:hidden">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-sea">Stocks & activations</p>
-            <h2 className="text-3xl font-black tracking-tight text-navy">Gestion du catalogue</h2>
+            <p className="text-xs uppercase tracking-[0.24em] text-sea">Stocks, carte & activations</p>
+            <h2 className="mt-1 text-3xl font-black tracking-tight text-navy">Gestion du catalogue</h2>
+            <p className="mt-2 text-sm text-navy/55">{neighborhoods.length} quartiers · {availableCount} disponibles</p>
           </div>
-          <p className="max-w-xl text-sm text-navy/60">
-            Mise à jour des stocks par taille, prix, date de sortie et activation publique d’un quartier.
-          </p>
-        </div>
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-sand text-navy transition group-open:rotate-180"><ChevronDown className="h-5 w-5" /></span>
+        </summary>
 
-        <div className="space-y-4">
-          {neighborhoods.map((item) => {
-            const state = inventory[item.id];
-
-            return (
-              <div key={item.id} className="rounded-[28px] border border-navy/10 p-4">
-                <div className="grid gap-4 lg:grid-cols-[1.2fr_1.4fr_auto]">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-sea">
-                      {item.arrondissement}e arrondissement
-                    </p>
-                    <h3 className="mt-2 text-2xl font-semibold text-navy">{item.name}</h3>
-                    <p className="mt-2 text-sm text-navy/60">
-                      Prix affiché: {formatCurrency(state.price)}
-                    </p>
-                  </div>
-
-                  <div className="grid gap-3 md:grid-cols-3">
+        <div className="space-y-3 border-t border-navy/10 p-4 sm:p-7">
+          {neighborhoodsByArrondissement.map(({ arrondissement, neighborhoods: arrondissementNeighborhoods }) => (
+            <details key={arrondissement} className="group/arrondissement overflow-hidden rounded-[22px] border border-navy/10 bg-foam/40">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 [&::-webkit-details-marker]:hidden">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 min-w-9 place-items-center rounded-full bg-navy px-2 text-sm font-black text-white">{arrondissement}{arrondissement === 1 ? "er" : "e"}</span>
+                  <div><h3 className="font-black text-navy">{arrondissement === 1 ? "Premier" : `${arrondissement}e`} arrondissement</h3><p className="text-xs text-navy/50">{arrondissementNeighborhoods.length} quartiers</p></div>
+                </div>
+                <ChevronDown className="h-5 w-5 text-sea transition group-open/arrondissement:rotate-180" />
+              </summary>
+              <div className="space-y-2 border-t border-navy/10 p-3 sm:p-4">
+                {arrondissementNeighborhoods.map((item) => {
+                  const state = inventory[item.id];
+                  const statusLabel = state.catalogStatus === "available" ? "Disponible" : state.catalogStatus === "project" ? "En projet" : "À imaginer";
+                  return (
+                    <details key={item.id} className="group/quartier rounded-[18px] border border-navy/10 bg-white">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 [&::-webkit-details-marker]:hidden">
+                        <div className="min-w-0"><h4 className="truncate text-lg font-black text-navy">{item.name}</h4><p className="mt-1 text-xs text-navy/50">{formatCurrency(state.price)} · {Object.values(state.stockBySize).reduce((sum, stock) => sum + stock, 0)} en stock</p></div>
+                        <div className="flex items-center gap-3"><span className={`hidden rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider sm:inline ${state.catalogStatus === "available" ? "bg-sea/10 text-sea" : state.catalogStatus === "project" ? "bg-ochre/15 text-ochre" : "bg-navy/5 text-navy/50"}`}>{statusLabel}</span><ChevronDown className="h-4 w-4 text-navy/45 transition group-open/quartier:rotate-180" /></div>
+                      </summary>
+                      <div className="grid gap-5 border-t border-navy/10 p-4 lg:grid-cols-[1fr_auto]">
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <label className="space-y-2 sm:col-span-2 lg:col-span-3">
+                      <span className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-sea"><MapIcon className="h-3.5 w-3.5" /> Statut sur la carte</span>
+                      <select value={state.catalogStatus} onChange={(event) => setInventory((current) => ({ ...current, [item.id]: { ...current[item.id], catalogStatus: event.target.value as "available" | "project" | "idea", isAvailable: event.target.value === "available" } }))} className="w-full rounded-2xl border border-navy/10 bg-foam px-3 py-3 text-sm font-bold text-navy outline-none">
+                        <option value="available">Disponible</option><option value="project">En projet</option><option value="idea">À imaginer</option>
+                      </select>
+                    </label>
                     <label className="space-y-2">
                       <span className="text-xs uppercase tracking-[0.18em] text-sea">Prix</span>
                       <input
@@ -282,23 +334,6 @@ export function AdminDashboard({
                       />
                     </label>
 
-                    <label className="flex items-center gap-3 rounded-2xl border border-navy/10 bg-foam px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={state.isAvailable}
-                        onChange={(event) =>
-                          setInventory((current) => ({
-                            ...current,
-                            [item.id]: {
-                              ...current[item.id],
-                              isAvailable: event.target.checked
-                            }
-                          }))
-                        }
-                      />
-                      <span className="text-sm font-medium text-navy">Actif publiquement</span>
-                    </label>
-
                     {SIZE_ORDER.map((size) => (
                       <label key={size} className="space-y-2">
                         <span className="text-xs uppercase tracking-[0.18em] text-sea">{size}</span>
@@ -321,9 +356,8 @@ export function AdminDashboard({
                         />
                       </label>
                     ))}
-                  </div>
-
-                  <div className="flex flex-col justify-between gap-3">
+                        </div>
+                  <div className="flex flex-col items-stretch justify-end gap-3 lg:min-w-40">
                     <button
                       type="button"
                       onClick={() => saveNeighborhood(item.id)}
@@ -337,42 +371,35 @@ export function AdminDashboard({
                       {state.status === "saved" && "Enregistré"}
                       {state.status === "error" && "Erreur"}
                     </p>
+                    {state.catalogStatus === "available" && state.savedCatalogStatus === "available" && (
+                      <><button type="button" disabled={state.notificationStatus === "sending" || (votesByNeighborhood.get(item.id) ?? 0) === 0} onClick={() => void notifyNeighborhoodVoters(item.id, item.name)} className="rounded-full border border-sea/25 bg-sea/10 px-4 py-3 text-xs font-bold text-sea disabled:cursor-not-allowed disabled:opacity-40">{state.notificationStatus === "sending" ? "Envoi…" : `Prévenir les votants (${votesByNeighborhood.get(item.id) ?? 0})`}</button>{state.notificationResult && <p role="status" className={`max-w-48 text-xs ${state.notificationStatus === "error" ? "text-terracotta" : "text-olive"}`}>{state.notificationResult}</p>}</>
+                    )}
                   </div>
-                </div>
+                      </div>
+                    </details>
+                  );
+                })}
               </div>
-            );
-          })}
+            </details>
+          ))}
         </div>
-      </section>
+      </details>
 
-      <section className="rounded-[24px] border border-navy/10 bg-white p-5 shadow-soft sm:p-7">
-        <div className="mb-5 flex items-end justify-between gap-4">
+      <details className="group rounded-[24px] border border-navy/10 bg-white shadow-soft">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-5 p-5 sm:p-7 [&::-webkit-details-marker]:hidden">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-sea">Votes email</p>
-            <h2 className="text-3xl font-black tracking-tight text-navy">Demandes de la communauté</h2>
+            <h2 className="mt-1 text-3xl font-black tracking-tight text-navy">Demandes de la communauté</h2>
+            <p className="mt-2 text-sm text-navy/55">{totalVotes} votes enregistrés</p>
+          </div>
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-sand text-navy transition group-open:rotate-180"><ChevronDown className="h-5 w-5" /></span>
+        </summary>
+        <div className="space-y-2 border-t border-navy/10 p-4 sm:p-7">
+          <div className="divide-y divide-navy/10 overflow-hidden rounded-[18px] border border-navy/10 bg-sand/25">
+            {sortedVotes.map((vote, index) => <div key={vote.neighborhoodId} className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 px-4 py-3"><span className="text-center text-xs font-black text-navy/35">{index + 1}</span><div><span className="font-bold text-navy">{vote.neighborhoodName}</span><span className="ml-2 text-xs text-navy/40">{vote.arrondissement}{vote.arrondissement === 1 ? "er" : "e"}</span></div><span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-sea">{vote.totalVotes} vote{vote.totalVotes === 1 ? "" : "s"}</span></div>)}
           </div>
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {votes
-            .sort((a, b) => b.totalVotes - a.totalVotes)
-            .map((vote) => (
-              <div key={vote.neighborhoodId} className="rounded-[28px] border border-navy/10 bg-sand/35 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-sea">
-                  {vote.arrondissement}e arrondissement
-                </p>
-                <h3 className="mt-2 text-2xl font-semibold text-navy">
-                  {vote.neighborhoodName}
-                </h3>
-                <p className="mt-2 text-sm text-navy/70">{vote.totalVotes} votes enregistrés</p>
-                <div className="mt-4 rounded-[22px] bg-white/75 p-3 text-sm text-navy/65">
-                  {vote.emails.slice(0, 5).join(", ") || "Aucun email"}
-                  {vote.emails.length > 5 ? "..." : ""}
-                </div>
-              </div>
-            ))}
-        </div>
-      </section>
+      </details>
     </div>
   );
 }

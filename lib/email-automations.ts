@@ -67,3 +67,33 @@ export function reviewRequestJob(input: { orderId: string; orderNumber: string; 
     body: `Votre commande 111 est arrivée. Vous pouvez partager votre avis vérifié ici :\n\n${process.env.NEXT_PUBLIC_SITE_URL ?? "https://111.sunmedia.workers.dev"}/avis\n\nRéférence : ${input.orderNumber}`,
     dedupe_key: `review:${input.orderId}` };
 }
+
+export function neighborhoodAvailableJob(input: { voteId: string; neighborhoodId: string; neighborhoodName: string; slug: string; email: string }): EmailJobInsert {
+  return { kind: "stock_back", recipient: input.email,
+    subject: `Le t-shirt 111 ${input.neighborhoodName} est disponible`,
+    body: `Bonne nouvelle : le t-shirt 111 ${input.neighborhoodName}, pour lequel vous aviez voté, est maintenant disponible.\n\n${process.env.NEXT_PUBLIC_SITE_URL ?? "https://111.sunmedia.workers.dev"}/quartier/${input.slug}`,
+    dedupe_key: `neighborhood-available:${input.neighborhoodId}:${input.voteId}` };
+}
+
+export async function notifyNeighborhoodVoters(neighborhoodId: string) {
+  const supabase = createAdminSupabaseClient();
+  if (!supabase) throw new Error("Supabase admin configuration is missing");
+  const [{ data: neighborhood, error: neighborhoodError }, { data: votes, error: votesError }] = await Promise.all([
+    supabase.from("neighborhoods").select("name, seo_metadata, is_available").eq("id", neighborhoodId).single(),
+    supabase.from("votes").select("id, email").eq("neighborhood_id", neighborhoodId)
+  ]);
+  if (neighborhoodError || !neighborhood || votesError) throw new Error("Unable to load neighborhood voters");
+  if (!neighborhood.is_available) throw new Error("Neighborhood is not available");
+  const slug = parseNeighborhoodSlug(neighborhood.name, neighborhood.seo_metadata);
+  const jobs = (votes ?? []).map((vote) => neighborhoodAvailableJob({ voteId: vote.id, neighborhoodId, neighborhoodName: neighborhood.name, slug, email: vote.email }));
+  if (!jobs.length) return { configured: Boolean(process.env.EMAIL_AUTOMATION_WEBHOOK_URL && process.env.EMAIL_AUTOMATION_TOKEN), queued: 0, sent: 0, failed: 0 };
+  const { data: inserted, error } = await supabase.from("email_jobs").upsert(jobs, { onConflict: "dedupe_key", ignoreDuplicates: true }).select("id");
+  if (error) throw new Error(error.message);
+  const delivery = await dispatchPendingEmailJobs(Math.min(100, Math.max(20, jobs.length)));
+  return { ...delivery, queued: inserted?.length ?? 0 };
+}
+
+function parseNeighborhoodSlug(name: string, seoMetadata: unknown) {
+  if (seoMetadata && typeof seoMetadata === "object" && "slug" in seoMetadata && typeof seoMetadata.slug === "string") return seoMetadata.slug;
+  return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}

@@ -19,6 +19,7 @@ export type SeoMetadata = {
   keywords?: string[];
   image?: string;
   gallery?: ProductGalleryImage[];
+  catalogStatus?: "available" | "project" | "idea";
 };
 
 export type Json =
@@ -61,6 +62,7 @@ export type Neighborhood = {
   descriptionHistory: string;
   coordinates: Coordinates;
   isAvailable: boolean;
+  catalogStatus: "available" | "project" | "idea";
   releaseDate: string | null;
   seo: SeoMetadata;
   voteCount: number;
@@ -75,6 +77,7 @@ export type SearchIndexItem = {
   slug: string;
   arrondissement: number;
   isAvailable: boolean;
+  catalogStatus: "available" | "project" | "idea";
 };
 
 export type VoteRow = {

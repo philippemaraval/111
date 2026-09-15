@@ -74,6 +74,7 @@ export const mockNeighborhoods: Neighborhood[] = definitions.map((item, index) =
     descriptionHistory: neighborhoodDescriptions[slug] ?? item.vibe,
     coordinates: item.coordinates,
     isAvailable,
+    catalogStatus: status,
     releaseDate: isAvailable ? "2026-05-15" : status === "project" ? "2026-06-20" : null,
     seo: {
       slug,
@@ -100,7 +101,8 @@ export const mockSearchIndex: SearchIndexItem[] = mockNeighborhoods.map((item) =
   name: item.name,
   slug: item.slug,
   arrondissement: item.arrondissement,
-  isAvailable: item.isAvailable
+  isAvailable: item.isAvailable,
+  catalogStatus: item.catalogStatus
 }));
 
 export const mockVotes: VoteRow[] = [];

@@ -2,7 +2,7 @@ import { assertAdmin, bufferPostMetadata, gqlString, modelText, nextEditorialDat
 
 const NEIGHBORHOODS = ["La Joliette", "Notre-Dame-du-Mont", "Sainte-Anne", "Cinq-Avenues"];
 
-export default {
+const worker = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/health") return json({ ok: true, service: "111-social-autopilot" });
@@ -64,6 +64,8 @@ export default {
     ctx.waitUntil(event.cron === "*/15 * * * *" ? syncPublicationLifecycle(env) : queueScheduledGeneration(env));
   },
 };
+
+export default worker;
 
 async function queueScheduledGeneration(env) {
   await syncPublicationLifecycle(env);

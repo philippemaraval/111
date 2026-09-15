@@ -8,6 +8,7 @@ import { updateNeighborhoodRecord } from "@/lib/neighborhoods";
 const updateSchema = z.object({
   price: z.number().nonnegative(),
   isAvailable: z.boolean(),
+  catalogStatus: z.enum(["available", "project", "idea"]),
   releaseDate: z.string().nullable(),
   stockBySize: z.object({
     S: z.number().int().nonnegative(),
@@ -37,6 +38,7 @@ export async function PATCH(request: Request, { params }: RouteProps) {
     const result = await updateNeighborhoodRecord(id, {
       price: payload.price,
       is_available: payload.isAvailable,
+      catalogStatus: payload.catalogStatus,
       release_date: payload.releaseDate,
       stock_by_size: payload.stockBySize
     });

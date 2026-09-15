@@ -12,7 +12,6 @@ import {
   Search
 } from "lucide-react";
 
-import { getNeighborhoodCatalogStatus } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Neighborhood } from "@/lib/types";
 
@@ -181,10 +180,10 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   );
 
   const selectedFeature = features.find((feature) => feature.properties.slug === selectedSlug) ?? features[0];
-  const selectedStatus = selectedFeature ? getNeighborhoodCatalogStatus(selectedFeature.properties.slug) : "idea";
   const selectedProduct = selectedFeature
     ? productsByMapSlug.get(selectedFeature.properties.slug)
     : undefined;
+  const selectedStatus = selectedProduct?.catalogStatus ?? "idea";
   const hoveredFeature = features.find((feature) => feature.properties.slug === hoveredSlug);
   const viewBox = isFocused && selectedFeature ? focusedViewBox(selectedFeature) : `0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`;
 
@@ -245,7 +244,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
           <svg viewBox={viewBox} preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full p-5 sm:p-8" role="img" aria-label="Carte interactive des 111 quartiers de Marseille">
             <g>
               {features.map((feature) => {
-                const status = getNeighborhoodCatalogStatus(feature.properties.slug);
+                const status = productsByMapSlug.get(feature.properties.slug)?.catalogStatus ?? "idea";
                 const selected = selectedFeature?.properties.slug === feature.properties.slug;
                 const hovered = hoveredSlug === feature.properties.slug;
                 const inActiveArrondissement = activeArrondissement === null || activeArrondissement === feature.properties.arrondissement;

@@ -1,6 +1,6 @@
 import { cache } from "react";
 
-import { AVAILABLE_NEIGHBORHOOD_SLUGS, isNeighborhoodAvailable, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
+import { AVAILABLE_NEIGHBORHOOD_SLUGS, getNeighborhoodCatalogStatus, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
 import { neighborhoodDescriptions } from "@/lib/neighborhood-descriptions";
 import {
@@ -36,6 +36,7 @@ function enrichNeighborhood(
   const seo = parseSeoMetadata(row.seo_metadata);
   const slug = seo.slug ?? slugify(row.name);
   const publishedGallery = getPublishedProductGallery(row.name);
+  const catalogStatus = seo.catalogStatus ?? getNeighborhoodCatalogStatus(slug);
   const gallery = publishedGallery
     ?? seo.gallery ?? [
         { label: "Photo à plat", url: row.image_url },
@@ -52,7 +53,8 @@ function enrichNeighborhood(
     imageUrl: publishedGallery?.[0].url ?? row.image_url,
     descriptionHistory: neighborhoodDescriptions[slug] ?? row.description_history,
     coordinates: parseCoordinates(row.coordinates),
-    isAvailable: isNeighborhoodAvailable(slug),
+    isAvailable: catalogStatus === "available",
+    catalogStatus,
     releaseDate: row.release_date,
     seo,
     voteCount: metrics?.vote_count ?? 0,
@@ -217,7 +219,8 @@ export const getNeighborhoodSearchIndex = cache(async (): Promise<SearchIndexIte
       name: row.name,
       slug: seo.slug ?? slugify(row.name),
       arrondissement: row.arrondissement,
-      isAvailable: isNeighborhoodAvailable(seo.slug ?? slugify(row.name))
+      isAvailable: (seo.catalogStatus ?? getNeighborhoodCatalogStatus(seo.slug ?? slugify(row.name))) === "available",
+      catalogStatus: seo.catalogStatus ?? getNeighborhoodCatalogStatus(seo.slug ?? slugify(row.name))
     };
   });
 });
@@ -384,6 +387,7 @@ export async function updateNeighborhoodRecord(
   updates: Partial<{
     price: number;
     is_available: boolean;
+    catalogStatus: "available" | "project" | "idea";
     stock_by_size: Record<string, number>;
     release_date: string | null;
   }>
@@ -401,9 +405,14 @@ export async function updateNeighborhoodRecord(
   const { data: previous } = await supabase.from("neighborhoods")
     .select("name, seo_metadata, stock_by_size").eq("id", neighborhoodId).single();
 
+  const { catalogStatus, ...remainingUpdates } = updates;
+  const databaseUpdates: Partial<NeighborhoodRow> = remainingUpdates;
+  if (catalogStatus && previous) {
+    databaseUpdates.seo_metadata = { ...parseSeoMetadata(previous.seo_metadata), catalogStatus };
+  }
   const { error } = await supabase
     .from("neighborhoods")
-    .update(updates)
+    .update(databaseUpdates)
     .eq("id", neighborhoodId);
 
   if (error) {
