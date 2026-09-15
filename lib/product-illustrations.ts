@@ -4,19 +4,19 @@ function galleryFor(slug: string): ProductGalleryImage[] {
   return [
     {
       label: "À plat · dos",
-      url: `/illustrations/${slug}-plat-dos.webp?v=webp-2`
+      url: `/illustrations/${slug}-plat-dos.webp?v=webp-3`
     },
     {
       label: "À plat · face",
-      url: `/illustrations/${slug}-plat-face.webp?v=webp-2`
+      url: `/illustrations/${slug}-plat-face.webp?v=webp-3`
     },
     {
       label: "Porté · face",
-      url: `/illustrations/${slug}-porte-face.webp?v=webp-2`
+      url: `/illustrations/${slug}-porte-face.webp?v=webp-3`
     },
     {
       label: "Porté · dos",
-      url: `/illustrations/${slug}-porte-dos.webp?v=webp-2`
+      url: `/illustrations/${slug}-porte-dos.webp?v=webp-3`
     }
   ];
 }

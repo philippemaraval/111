@@ -17,10 +17,10 @@ test("published neighborhood galleries expose four optimized product views", () 
     assert.deepEqual(
       gallery?.map((image) => image.url),
       [
-        `/illustrations/${slug}-plat-dos.webp?v=webp-2`,
-        `/illustrations/${slug}-plat-face.webp?v=webp-2`,
-        `/illustrations/${slug}-porte-face.webp?v=webp-2`,
-        `/illustrations/${slug}-porte-dos.webp?v=webp-2`
+        `/illustrations/${slug}-plat-dos.webp?v=webp-3`,
+        `/illustrations/${slug}-plat-face.webp?v=webp-3`,
+        `/illustrations/${slug}-porte-face.webp?v=webp-3`,
+        `/illustrations/${slug}-porte-dos.webp?v=webp-3`
       ]
     );
   }
