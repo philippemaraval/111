@@ -1,8 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/utils";
 import { getSiteUrl } from "@/lib/utils";
 
@@ -18,11 +18,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ sent: true });
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return NextResponse.json({ error: "Service indisponible." }, { status: 503 });
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return NextResponse.json({ error: "Service indisponible." }, { status: 503 });
 
-  const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data.email,
     options: { emailRedirectTo: `${getSiteUrl()}/auth/callback?next=/admin` }
