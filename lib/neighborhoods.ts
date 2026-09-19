@@ -1,6 +1,6 @@
 import { cache } from "react";
 
-import { AVAILABLE_NEIGHBORHOOD_SLUGS, getNeighborhoodCatalogStatus, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
+import { AVAILABLE_NEIGHBORHOOD_SLUGS, getNeighborhoodCatalogStatus, isCatalogStatusVotable, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
 import { mockNeighborhoods, mockSearchIndex, mockVoteSummaries, mockVotes } from "@/lib/mock-data";
 import { neighborhoodDescriptions } from "@/lib/neighborhood-descriptions";
 import {
@@ -247,6 +247,24 @@ export async function recordVote(email: string, neighborhoodId: string, newslett
 
   if (!supabase) {
     throw new Error("Supabase admin configuration is missing");
+  }
+
+  const { data: neighborhoodRow, error: neighborhoodError } = await supabase
+    .from("neighborhoods")
+    .select("name, seo_metadata")
+    .eq("id", neighborhoodId)
+    .maybeSingle();
+
+  if (neighborhoodError || !neighborhoodRow) {
+    throw new Error("NEIGHBORHOOD_NOT_FOUND");
+  }
+
+  const neighborhoodSeo = parseSeoMetadata(neighborhoodRow.seo_metadata);
+  const neighborhoodSlug = neighborhoodSeo.slug ?? slugify(neighborhoodRow.name);
+  const catalogStatus = neighborhoodSeo.catalogStatus ?? getNeighborhoodCatalogStatus(neighborhoodSlug);
+
+  if (!isCatalogStatusVotable(catalogStatus)) {
+    throw new Error("VOTE_CLOSED");
   }
 
   const { error } = await supabase.from("votes").insert({

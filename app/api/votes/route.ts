@@ -33,6 +33,20 @@ export async function POST(request: Request) {
       );
     }
 
+    if (error instanceof Error && error.message === "VOTE_CLOSED") {
+      return NextResponse.json(
+        { error: "Les votes sont fermés pour ce quartier." },
+        { status: 409 }
+      );
+    }
+
+    if (error instanceof Error && error.message === "NEIGHBORHOOD_NOT_FOUND") {
+      return NextResponse.json(
+        { error: "Quartier introuvable." },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Vote registration failed" },
       { status: 500 }

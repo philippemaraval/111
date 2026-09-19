@@ -36,7 +36,7 @@ export default async function HomePage() {
             <h2 className="mt-3 max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-navy sm:text-6xl">Les quartiers prennent la lumière.</h2>
           </div>
           <Link href="#carte" className="focus-ring inline-flex items-center gap-2 self-start rounded-full border border-navy/15 px-5 py-3 text-sm font-bold hover:border-sea hover:text-sea">
-            Tous les quartiers <ArrowRight className="h-4 w-4" />
+            À toi de choisir <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <div className={`grid gap-6 ${featured.length === 1 ? "max-w-xl" : "md:grid-cols-2 xl:grid-cols-3"}`}>
@@ -44,27 +44,14 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <LazyInteractiveMap neighborhoods={neighborhoods} />
+
       <section className="bg-navy px-4 py-16 text-white sm:px-6 lg:py-20">
         <div className="mx-auto flex max-w-[1360px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div><p className="text-xs font-bold uppercase tracking-[0.24em] text-sun">Nouveaux packs</p><h2 className="mt-3 max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em] sm:text-6xl">3, 4 ou 5 quartiers. À toi de choisir — ou pas.</h2><p className="mt-5 max-w-2xl leading-7 text-white/60">Compose ton assortiment dès 65 €, ou tente le pack surprise de trois quartiers différents à 60 €.</p></div>
+          <div><p className="text-xs font-bold uppercase tracking-[0.24em] text-sun">Nouveaux packs</p><h2 className="mt-3 max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em] sm:text-6xl">Plus de quartiers. Moins cher.</h2><p className="mt-5 max-w-2xl leading-7 text-white/60">Compose ton pack de 3, 4 ou 5 tee‑shirts. Économise jusqu’à <span className="whitespace-nowrap">30 €</span>, avec des prix à partir de <span className="whitespace-nowrap">19 € le tee‑shirt</span>.</p></div>
           <Link href="/packs" className="focus-ring inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-sun px-6 py-4 text-sm font-bold text-navy hover:bg-white">Découvrir les packs <ArrowRight className="h-4 w-4" /></Link>
         </div>
       </section>
-
-      <section id="histoire" className="bg-sun px-4 py-16 sm:px-6 lg:py-24">
-        <div className="mx-auto grid max-w-[1360px] gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-          <div className="max-w-md">
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-navy/55">Pourquoi 111 ?</p>
-            <h2 className="mt-3 text-4xl font-black uppercase leading-none tracking-[-0.045em] text-navy sm:text-6xl">Une ville.<br />111 façons de l’aimer.</h2>
-          </div>
-          <div className="grid gap-6 text-navy/75 sm:grid-cols-2">
-            <p className="text-lg leading-8">Marseille ne se résume pas à une carte postale. Elle se raconte dans ses rues, ses places, ses habitudes et ses voix.</p>
-            <p className="text-lg leading-8">111 transforme cette mémoire locale en images à porter. Un projet imaginé à Marseille, nourri par ses habitants et produit en séries courtes.</p>
-          </div>
-        </div>
-      </section>
-
-      <LazyInteractiveMap neighborhoods={neighborhoods} />
     </div>
   );
 }

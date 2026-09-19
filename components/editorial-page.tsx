@@ -9,7 +9,7 @@ export function EditorialPage({
   children
 }: {
   eyebrow: string;
-  title: string;
+  title: ReactNode;
   intro: string;
   children: ReactNode;
 }) {

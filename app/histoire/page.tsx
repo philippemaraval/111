@@ -20,7 +20,7 @@ export default function BrandStoryPage() {
   return (
     <EditorialPage
       eyebrow="L’histoire de la marque"
-      title="Une ville. 111 façons de l’aimer."
+      title={<><span className="block">Une ville.</span><span className="block whitespace-nowrap text-[1.7rem] sm:text-[2.9rem] lg:text-[4.5rem]">111 façons de l’aimer.</span></>}
       intro="111 est née d’une idée simple : Marseille ne se résume pas à une carte postale. Elle se raconte quartier par quartier, avec celles et ceux qui y vivent."
     >
       <EditorialSection kicker="Le point de départ" title="Pourquoi 111 ?">

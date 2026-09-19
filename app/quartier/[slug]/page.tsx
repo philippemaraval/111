@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Heart, MapPin, PencilRuler, Shirt } from "lucide-react";
 
 import { MiniMap } from "@/components/product/mini-map";
+import { CommunityNeighborhoodPage } from "@/components/product/community-neighborhood-page";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 import { ProductImage } from "@/components/product-image";
 import { getNeighborhoodBySlug, listNeighborhoods, listPublishedReviews } from "@/lib/neighborhoods";
@@ -22,8 +23,13 @@ export async function generateMetadata({ params }: NeighborhoodPageProps): Promi
   const { slug } = await params;
   const neighborhood = await getNeighborhoodBySlug(slug);
   if (!neighborhood) return { title: "Quartier introuvable | 111" };
+  const statusTitle = neighborhood.catalogStatus === "project"
+    ? `${neighborhood.name} — T-shirt en préparation | 111`
+    : neighborhood.catalogStatus === "idea"
+      ? `Vote pour ${neighborhood.name} | 111 Marseille`
+      : `${neighborhood.name} — T-shirt 111`;
   return {
-    title: neighborhood.seo.title ?? `${neighborhood.name} — T-shirt 111`,
+    title: neighborhood.seo.title ?? statusTitle,
     description: neighborhood.seo.description ?? neighborhood.descriptionHistory,
     keywords: neighborhood.seo.keywords,
     alternates: { canonical: `/quartier/${neighborhood.slug}` },
@@ -35,6 +41,27 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
   const { slug } = await params;
   const neighborhood = await getNeighborhoodBySlug(slug);
   if (!neighborhood) notFound();
+
+  if (neighborhood.catalogStatus !== "available") {
+    const allNeighborhoods = await listNeighborhoods({ sort: "name" });
+    const votable = allNeighborhoods.filter((item) => item.catalogStatus === "idea");
+    const ranked = [...votable].sort((a, b) => b.voteCount - a.voteCount || a.name.localeCompare(b.name, "fr"));
+    const rankIndex = ranked.findIndex((item) => item.id === neighborhood.id);
+    const rank = neighborhood.voteCount > 0 && rankIndex >= 0 ? rankIndex + 1 : null;
+    const projected = votable
+      .map((item) => item.id === neighborhood.id ? { ...item, voteCount: item.voteCount + 1 } : item)
+      .sort((a, b) => b.voteCount - a.voteCount || a.name.localeCompare(b.name, "fr"));
+    const nextRankIndex = projected.findIndex((item) => item.id === neighborhood.id);
+
+    return (
+      <CommunityNeighborhoodPage
+        neighborhood={neighborhood}
+        rank={rank}
+        nextRank={nextRankIndex >= 0 ? nextRankIndex + 1 : null}
+      />
+    );
+  }
+
   const [sameArea, reviews] = await Promise.all([
     listNeighborhoods({ arrondissement: neighborhood.arrondissement, sort: "popular" }),
     listPublishedReviews(neighborhood.id)
@@ -123,7 +150,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
         <div className="mx-auto grid max-w-[1360px] gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
             <p className="section-kicker">Sur la carte</p>
-            <h2 className="mt-3 text-4xl font-black uppercase leading-none tracking-[-0.04em]">Un quartier,<br />un point d’ancrage.</h2>
+            <h2 className="mt-3 text-4xl font-black uppercase leading-none tracking-[-0.04em]">Un quartier, un point d’ancrage.</h2>
             <p className="mt-5 max-w-md leading-7 text-navy/60"><MapPin className="mr-2 inline h-5 w-5 text-terracotta" />{neighborhood.name}, dans le {neighborhood.arrondissement}<sup>e</sup> arrondissement de Marseille.</p>
           </div>
           <MiniMap coordinates={neighborhood.coordinates} neighborhoodSlug={neighborhood.slug} />

@@ -16,6 +16,8 @@ body {
   @apply bg-foam text-navy font-body;
   background: #ffffff;
   -webkit-font-smoothing: antialiased;
+  hyphens: none;
+  text-wrap: pretty;
 }
 
 body::before {
@@ -24,6 +26,12 @@ body::before {
 
 a {
   @apply transition-colors;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 ::selection {

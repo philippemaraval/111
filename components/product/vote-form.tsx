@@ -2,20 +2,25 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, Share2 } from "lucide-react";
 
 export function VoteForm({
   neighborhoodId,
   neighborhoodName,
-  voteCount
+  voteCount,
+  rank,
+  nextRank
 }: {
   neighborhoodId: string;
   neighborhoodName: string;
   voteCount: number;
+  rank?: number | null;
+  nextRank?: number | null;
 }) {
   const [email, setEmail] = useState("");
   const [newsletterConsent, setNewsletterConsent] = useState(false);
   const [state, setState] = useState<"idle" | "loading" | "success" | "duplicate" | "error">("idle");
+  const [shared, setShared] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setState("loading");
@@ -27,12 +32,24 @@ export function VoteForm({
     } catch { setState("error"); }
   }
 
+  async function shareVote() {
+    const url = window.location.href;
+    const title = `Fais gagner ${neighborhoodName} sur 111 Marseille`;
+    if (navigator.share) await navigator.share({ title, url });
+    else await navigator.clipboard.writeText(url);
+    setShared(true);
+    window.setTimeout(() => setShared(false), 1800);
+  }
+
+  const displayedVoteCount = voteCount + (state === "success" ? 1 : 0);
+  const displayedRank = state === "success" ? nextRank : rank;
+
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl bg-sand p-5 sm:p-6">
       <div className="flex items-center justify-between gap-4">
         <Heart className="h-6 w-6 text-terracotta" />
         <p className="rounded-full bg-white px-3 py-2 text-xs font-bold text-navy">
-          {voteCount} {voteCount > 1 ? "votes" : "vote"}
+          {displayedVoteCount} {displayedVoteCount > 1 ? "votes" : "vote"}
         </p>
       </div>
       <h2 className="mt-5 text-2xl font-black tracking-tight">Fais entrer {neighborhoodName} dans la collection.</h2>
@@ -45,7 +62,17 @@ export function VoteForm({
         <span>J’accepte de recevoir occasionnellement les nouvelles de 111 par e-mail. Je pourrai me désinscrire à tout moment.</span>
       </label>
       <button type="submit" disabled={state === "loading"} className="focus-ring mt-3 w-full rounded-full bg-terracotta px-5 py-3.5 text-sm font-bold text-white hover:bg-navy">{state === "loading" ? "Vote en cours…" : "Je vote pour ce quartier"}</button>
-      {state === "success" && <p className="mt-3 text-sm font-semibold text-olive">Merci ! Ton vote est enregistré.</p>}
+      {state === "success" && (
+        <div className="mt-4 rounded-xl bg-white p-4">
+          <p className="text-sm font-bold text-olive">Ton vote est enregistré.</p>
+          <p className="mt-1 text-sm leading-6 text-navy/65">
+            {neighborhoodName} passe à {displayedVoteCount} vote{displayedVoteCount > 1 ? "s" : ""}{displayedRank ? ` et occupe la ${displayedRank}${displayedRank === 1 ? "re" : "e"} place.` : "."}
+          </p>
+          <button type="button" onClick={() => void shareVote()} className="focus-ring mt-3 inline-flex items-center gap-2 rounded-full border border-navy/10 px-4 py-2 text-xs font-bold hover:border-sea hover:text-sea">
+            <Share2 className="h-4 w-4" /> {shared ? "Lien copié" : "Faire voter mes voisins"}
+          </button>
+        </div>
+      )}
       {state === "duplicate" && <p className="mt-3 text-sm font-semibold text-sea">Ton vote était déjà enregistré.</p>}
       {state === "error" && <p className="mt-3 text-sm font-semibold text-terracotta">Une erreur est survenue. Réessaie dans un instant.</p>}
     </form>

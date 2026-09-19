@@ -17,14 +17,14 @@ export function HeroSection() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="#carte" className="focus-ring inline-flex items-center gap-3 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-navy hover:bg-sun">
-                Explorer les quartiers <ArrowDownRight className="h-4 w-4" />
+                Voter pour mon quartier <ArrowDownRight className="h-4 w-4" />
               </Link>
               <Link href="#collection" className="focus-ring rounded-full border border-white/40 px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10">
                 Voir la collection
               </Link>
             </div>
           </div>
-          <p className="text-sm font-medium text-white/70">Marseille · 43°17′N 5°22′E</p>
+          <p className="text-sm font-medium text-white/70">43.2840° N, 5.3711° E</p>
         </div>
 
         <div className="relative min-h-[520px] overflow-hidden bg-[#f3f3f3] lg:min-h-0">

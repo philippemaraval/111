@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -9,7 +9,8 @@ import {
   MapPin,
   Maximize2,
   RotateCcw,
-  Search
+  Search,
+  Trophy
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -149,6 +150,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const [activeArrondissement, setActiveArrondissement] = useState<number | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const mapPanel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -179,6 +181,16 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
     [mapData]
   );
 
+  const voteRanking = useMemo(
+    () => neighborhoods
+      .filter((item) => item.catalogStatus === "idea" && item.voteCount > 0)
+      .sort((a, b) => b.voteCount - a.voteCount || a.name.localeCompare(b.name, "fr")),
+    [neighborhoods]
+  );
+  const availableCount = neighborhoods.filter((item) => item.catalogStatus === "available").length;
+  const projectCount = neighborhoods.filter((item) => item.catalogStatus === "project").length;
+  const votableCount = neighborhoods.filter((item) => item.catalogStatus === "idea").length;
+
   const selectedFeature = features.find((feature) => feature.properties.slug === selectedSlug) ?? features[0];
   const selectedProduct = selectedFeature
     ? productsByMapSlug.get(selectedFeature.properties.slug)
@@ -192,13 +204,18 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
     setIsFocused(focus);
   }
 
+  function selectFromRanking(product: Neighborhood) {
+    selectFeature(mapSlugForProduct(product));
+    mapPanel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <section className="mx-auto max-w-[1440px] px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
       <div className="mb-9 grid gap-7 lg:grid-cols-[1fr_0.65fr] lg:items-end">
         <div className="max-w-3xl">
-          <p className="section-kicker">La vraie carte des 111</p>
-          <h2 className="mt-3 text-4xl font-black uppercase leading-[0.95] tracking-[-0.045em] sm:text-6xl">Choisis ton quartier.</h2>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-navy/60">Les contours officiels de Marseille, du nord au sud. Clique sur la carte ou cherche directement ton quartier.</p>
+          <p className="section-kicker">À toi de choisir</p>
+          <h2 className="mt-3 text-4xl font-black uppercase leading-[0.95] tracking-[-0.045em] sm:text-6xl">Vote. Partage. Mets-nous la pression.</h2>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-navy/60">Tu ne dessines pas le tee‑shirt : tu votes pour le quartier que tu veux voir rejoindre la collection. Plus il monte, plus notre équipe devra accélérer.</p>
         </div>
         <label className="relative block">
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-navy/55">Rechercher parmi les 111 quartiers</span>
@@ -217,6 +234,57 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
         </label>
       </div>
 
+      <div className="mb-8 grid gap-3 sm:grid-cols-3">
+        <Link href="#collection" className="focus-ring rounded-2xl bg-sea p-5 text-white shadow-soft transition hover:-translate-y-0.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-white/65">Acheter maintenant</p>
+          <p className="mt-2 text-xl font-black">{availableCount} tee‑shirts disponibles</p>
+          <p className="mt-2 text-sm text-white/70">Le vote est fermé : ils sont dans la collection.</p>
+        </Link>
+        <div className="rounded-2xl bg-ochre p-5 text-navy shadow-soft">
+          <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-navy/55">Demande entendue</p>
+          <p className="mt-2 text-xl font-black">{projectCount} quartiers en projet</p>
+          <p className="mt-2 text-sm text-navy/65">Le vote est fermé : leur tee‑shirt est dans les cartons.</p>
+        </div>
+        <div className="rounded-2xl border border-navy/10 bg-white p-5 shadow-soft">
+          <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-sea">À toi de jouer</p>
+          <p className="mt-2 text-xl font-black">{votableCount} quartiers à départager</p>
+          <p className="mt-2 text-sm text-navy/55">Un vote par personne et par quartier.</p>
+        </div>
+      </div>
+
+      <section id="classement" className="mb-8 scroll-mt-32 overflow-hidden rounded-[28px] bg-sand" aria-labelledby="ranking-title">
+        <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
+          <div className="bg-sun p-7 sm:p-9">
+            <Trophy className="h-7 w-7 text-navy" />
+            <p className="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-navy/55">Classement en direct</p>
+            <h3 id="ranking-title" className="mt-3 text-4xl font-black uppercase leading-[0.92] tracking-[-0.045em] text-navy">Quels quartiers mettent le plus de pression&nbsp;?</h3>
+            <p className="mt-5 leading-7 text-navy/65">Seuls les quartiers encore ouverts au vote sont classés. Dès qu’un tee‑shirt passe en projet, il sort de la compétition.</p>
+          </div>
+          <div className="p-4 sm:p-6">
+            {voteRanking.length > 0 ? (
+              <ol className="max-h-[430px] space-y-2 overflow-y-auto pr-1">
+                {voteRanking.map((item, index) => (
+                  <li key={item.id}>
+                    <button type="button" onClick={() => selectFromRanking(item)} className="focus-ring group flex w-full items-center gap-4 rounded-2xl bg-white px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-soft sm:px-5">
+                      <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-black", index === 0 ? "bg-sun text-navy" : "bg-navy text-white")}>{index + 1}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-black text-navy group-hover:text-sea">{item.name}</span>
+                        <span className="text-xs text-navy/45">{item.arrondissement}<sup>e</sup> arrondissement</span>
+                      </span>
+                      <span className="shrink-0 text-right"><strong className="block text-lg text-navy">{item.voteCount}</strong><span className="text-[10px] font-bold uppercase tracking-[0.12em] text-navy/40">votes</span></span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <div className="grid min-h-56 place-items-center rounded-2xl border border-dashed border-navy/15 bg-white p-8 text-center">
+                <div><p className="text-xl font-black">Le classement attend son premier vote.</p><p className="mt-2 max-w-md text-sm leading-6 text-navy/55">Choisis un quartier sur la carte : le premier soutien suffit pour le faire apparaître ici.</p></div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       <div className="mb-6 flex gap-2 overflow-x-auto pb-2" aria-label="Filtrer par arrondissement">
         <button type="button" onClick={() => setActiveArrondissement(null)} className={cn("focus-ring shrink-0 rounded-full px-4 py-2 text-xs font-bold", activeArrondissement === null ? "bg-navy text-white" : "border border-navy/10 hover:border-sea")}>Toute la ville</button>
         {Array.from({ length: 16 }, (_, index) => index + 1).map((item) => (
@@ -224,8 +292,8 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
         ))}
       </div>
 
-      <div className="grid overflow-hidden rounded-[28px] bg-[#dff4fc] shadow-soft lg:grid-cols-[1.12fr_0.88fr]">
-        <div className="relative min-h-[620px] overflow-hidden sm:min-h-[760px]">
+      <div ref={mapPanel} className="grid scroll-mt-28 overflow-hidden rounded-[28px] bg-[#dff4fc] shadow-soft lg:grid-cols-[1.12fr_0.88fr]">
+        <div className="relative min-h-[500px] overflow-hidden sm:min-h-[680px]">
           {!mapData && !loadError && (
             <div className="absolute inset-0 z-20 grid place-items-center bg-[#dff4fc]"><div className="text-center"><LoaderCircle className="mx-auto h-7 w-7 animate-spin text-sea" /><p className="mt-3 text-xs font-bold uppercase tracking-[0.15em] text-navy/45">Chargement des quartiers</p></div></div>
           )}
@@ -302,7 +370,11 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                 {selectedProduct?.slug === "le-panier" && <p className="mt-2 text-sm font-semibold text-white/45">Quartier officiel Hôtel de Ville</p>}
                 <p className="mt-7 max-w-lg text-base leading-8 text-white/65">
                   {selectedProduct
-                    ? selectedProduct.descriptionHistory
+                    ? selectedStatus === "project"
+                      ? `Le tee‑shirt ${selectedProduct.name} est déjà en préparation. Les votes sont donc fermés pendant que l’équipe travaille à sa sortie.`
+                      : selectedStatus === "available"
+                        ? `${selectedProduct.name} a déjà son tee‑shirt : il est disponible dans la collection.`
+                        : selectedProduct.descriptionHistory
                     : selectedStatus === "project"
                       ? `${formatOfficialName(selectedFeature)} fait partie des prochaines éditions 111. Le projet est identifié et sa fiche rejoindra bientôt les votes de la communauté.`
                     : `${formatOfficialName(selectedFeature)} fait partie des 111 quartiers officiels de Marseille. Son histoire et son premier t-shirt restent encore à imaginer avec les habitants.`}
@@ -313,7 +385,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                 {selectedProduct ? (
                   <>
                     <div className="mb-5 flex items-center justify-between gap-3 text-sm text-white/70">
-                      <span className="flex items-center gap-2"><Heart className="h-4 w-4 text-terracotta" /> <strong className="text-white">{selectedProduct.voteCount}</strong> soutiens</span>
+                      <span className="flex items-center gap-2"><Heart className="h-4 w-4 text-terracotta" /> <strong className="text-white">{selectedProduct.voteCount}</strong> {selectedStatus === "idea" ? "votes" : "soutiens historiques"}</span>
                       <span className={cn(
                         "rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]",
                         selectedStatus === "available"
@@ -330,7 +402,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                       </span>
                     </div>
                     <Link href={`/quartier/${selectedProduct.slug}`} className="focus-ring flex w-full items-center justify-between rounded-full bg-white px-6 py-4 text-sm font-bold text-navy hover:bg-sun">
-                      {selectedStatus === "available" ? "Découvrir le t-shirt" : "Découvrir et voter"}<ArrowUpRight className="h-5 w-5" />
+                      {selectedStatus === "available" ? "Découvrir le tee‑shirt" : selectedStatus === "project" ? "Suivre sa préparation" : "Voir sa place et voter"}<ArrowUpRight className="h-5 w-5" />
                     </Link>
                   </>
                 ) : selectedStatus === "project" ? (

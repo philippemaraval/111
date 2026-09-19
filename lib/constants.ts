@@ -48,6 +48,10 @@ export function isNeighborhoodAvailable(slug: string) {
   return getNeighborhoodCatalogStatus(slug) === "available";
 }
 
+export function isCatalogStatusVotable(status: NeighborhoodCatalogStatus) {
+  return status === "idea";
+}
+
 export const ARRONDISSEMENTS = Array.from({ length: 16 }, (_, index) => ({
   value: index + 1,
   label: `${index + 1}${index === 0 ? "er" : "e"} arrondissement`

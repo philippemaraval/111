@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Check, Gift, Package, ShoppingBag } from "lucide-react";
 
 import { useCart } from "@/contexts/cart-context";
-import { MYSTERY_PACK_PRICE_EUROS, PACK_PRICES_EUROS, SIZE_ORDER } from "@/lib/constants";
+import { MYSTERY_PACK_PRICE_EUROS, PACK_PRICES_EUROS, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
 import type { CartSelection, Neighborhood, Size } from "@/lib/types";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -76,7 +76,7 @@ export function PackBuilder({ neighborhoods }: { neighborhoods: Neighborhood[] }
     addItem({
       id: `${mystery ? "mystery" : `pack-${packSize}`}-${Date.now()}`,
       kind: mystery ? "mystery-pack" : "pack",
-      name: mystery ? "Pack surprise · 3 quartiers" : `Pack au choix · ${packSize} tee-shirts`,
+      name: mystery ? "Pack surprise · 3 quartiers" : `Pack au choix · ${packSize} tee‑shirts`,
       quantity: 1,
       unitPrice: price,
       imageUrl: chosen[0]?.imageUrl ?? "/favicon-96x96.png",
@@ -90,21 +90,21 @@ export function PackBuilder({ neighborhoods }: { neighborhoods: Neighborhood[] }
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
         {([3, 4, 5] as const).map((size) => (
           <button key={size} type="button" onClick={() => chooseSize(size)} className={cn("focus-ring rounded-[24px] border p-6 text-left transition", !mystery && packSize === size ? "border-sea bg-sea text-white" : "border-navy/10 bg-white hover:border-sea")}>
-            <Package className="h-6 w-6" />
-            <span className="mt-5 block text-2xl font-black">{size} tee-shirts</span>
-            <span className={cn("mt-1 block text-sm", !mystery && packSize === size ? "text-white/70" : "text-navy/50")}>Au choix · {formatCurrency(PACK_PRICES_EUROS[size])}</span>
+            <div className="flex items-center justify-between gap-3"><Package className="h-6 w-6" /><span className={cn("rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]", !mystery && packSize === size ? "bg-white/15 text-white" : "bg-olive/10 text-olive")}>-{formatCurrency(size * PRODUCT_PRICE_EUROS - PACK_PRICES_EUROS[size])}</span></div>
+            <span className="mt-5 block text-2xl font-black">{size} tee‑shirts</span>
+            <span className={cn("mt-1 block text-sm", !mystery && packSize === size ? "text-white/70" : "text-navy/50")}>{formatCurrency(PACK_PRICES_EUROS[size] / size)} par tee‑shirt · {formatCurrency(PACK_PRICES_EUROS[size])} au total</span>
           </button>
         ))}
         <button type="button" onClick={chooseMystery} className={cn("focus-ring rounded-[24px] border p-6 text-left transition sm:col-span-2 lg:col-span-1", mystery ? "border-terracotta bg-terracotta text-white" : "border-navy/10 bg-white hover:border-terracotta")}>
           <Gift className="h-6 w-6" />
           <span className="mt-5 block text-2xl font-black">Pack surprise</span>
-          <span className={cn("mt-1 block text-sm", mystery ? "text-white/70" : "text-navy/50")}>3 quartiers différents · {formatCurrency(MYSTERY_PACK_PRICE_EUROS)}</span>
+          <span className={cn("mt-1 block text-sm", mystery ? "text-white/70" : "text-navy/50")}>{formatCurrency(MYSTERY_PACK_PRICE_EUROS / 3)} par tee‑shirt · économie de {formatCurrency(3 * PRODUCT_PRICE_EUROS - MYSTERY_PACK_PRICE_EUROS)}</span>
         </button>
       </div>
 
       <div className="rounded-[28px] bg-sand p-5 sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div><p className="section-kicker">Compose ton pack</p><h2 className="mt-2 text-3xl font-black">{mystery ? "Choisis seulement les tailles." : "Un quartier et une taille par tee-shirt."}</h2></div>
+          <div><p className="section-kicker">Compose ton pack</p><h2 className="mt-2 text-3xl font-black">{mystery ? "Choisis seulement les tailles." : "Un quartier et une taille par tee‑shirt."}</h2></div>
           <p className="text-3xl font-black text-sea">{formatCurrency(mystery ? MYSTERY_PACK_PRICE_EUROS : PACK_PRICES_EUROS[packSize])}</p>
         </div>
         {mystery && <p className="mt-4 rounded-xl bg-white/70 p-4 text-sm leading-6 text-navy/60">Les trois quartiers, tous différents, seront attribués automatiquement selon les stocks disponibles.</p>}
