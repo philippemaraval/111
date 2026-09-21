@@ -12,10 +12,12 @@ import {
   Maximize2,
   RotateCcw,
   Search,
-  Trophy
+  Trophy,
+  X
 } from "lucide-react";
 
 import { isCatalogStatusVotable } from "@/lib/constants";
+import { VoteForm } from "@/components/product/vote-form";
 import { cn } from "@/lib/utils";
 import type { Neighborhood } from "@/lib/types";
 
@@ -150,6 +152,9 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   const [mapData, setMapData] = useState<MapCollection | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isVoteOpen, setIsVoteOpen] = useState(false);
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const [activeArrondissement, setActiveArrondissement] = useState<number | null>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -169,6 +174,20 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
       });
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!isVoteOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsVoteOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isVoteOpen]);
 
   const productsByMapSlug = useMemo(
     () => new Map(neighborhoods.map((product) => [mapSlugForProduct(product), product])),
@@ -195,17 +214,37 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   const projectCount = neighborhoods.filter((item) => item.catalogStatus === "project").length;
   const votableCount = neighborhoods.filter((item) => item.catalogStatus === "idea").length;
 
-  const selectedFeature = features.find((feature) => feature.properties.slug === selectedSlug) ?? features[0];
+  const selectedFeature = features.find((feature) => feature.properties.slug === selectedSlug);
   const selectedProduct = selectedFeature
     ? productsByMapSlug.get(selectedFeature.properties.slug)
     : undefined;
   const selectedStatus = selectedProduct?.catalogStatus ?? "idea";
   const hoveredFeature = features.find((feature) => feature.properties.slug === hoveredSlug);
   const viewBox = isFocused && selectedFeature ? focusedViewBox(selectedFeature) : `0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`;
+  const normalizedSearch = searchQuery.trim().toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const searchResults = features
+    .filter((feature) => {
+      if (!normalizedSearch) return true;
+      const name = formatOfficialName(feature).toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return name.includes(normalizedSearch) || `${feature.properties.arrondissement}e`.startsWith(normalizedSearch);
+    })
+    .slice(0, 8);
+  const selectedRankIndex = selectedProduct ? voteRanking.findIndex((item) => item.id === selectedProduct.id) : -1;
+  const selectedRank = selectedRankIndex >= 0 ? selectedRankIndex + 1 : null;
+  const projectedRanking = selectedProduct && isCatalogStatusVotable(selectedStatus)
+    ? neighborhoods
+        .filter((item) => item.catalogStatus === "idea")
+        .map((item) => item.id === selectedProduct.id ? { ...item, voteCount: item.voteCount + 1 } : item)
+        .sort((a, b) => b.voteCount - a.voteCount || a.name.localeCompare(b.name, "fr"))
+    : [];
+  const projectedRankIndex = selectedProduct ? projectedRanking.findIndex((item) => item.id === selectedProduct.id) : -1;
 
   function selectFeature(slug: string, focus = true) {
     setSelectedSlug(slug);
     setIsFocused(focus);
+    setIsVoteOpen(false);
+    const feature = features.find((item) => item.properties.slug === slug);
+    if (feature) setSearchQuery(formatOfficialName(feature));
   }
 
   function selectFromRanking(product: Neighborhood) {
@@ -224,21 +263,46 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
             <span className="hidden md:inline">Tu ne dessines pas le tee‑shirt : tu votes pour le quartier que tu veux voir rejoindre la collection. Plus il monte, plus notre équipe devra accélérer.</span>
           </p>
         </div>
-        <label className="relative block">
-          <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-navy/55">Rechercher parmi les 111 quartiers</span>
+        <div className="relative">
+          <label htmlFor="neighborhood-search" className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-navy/55">Trouve ton quartier</label>
           <Search className="pointer-events-none absolute bottom-3.5 left-4 h-5 w-5 text-sea" />
-          <select
-            value={selectedFeature?.properties.slug ?? ""}
-            onChange={(event) => selectFeature(event.target.value)}
-            className="focus-ring w-full appearance-none rounded-full border border-navy/15 bg-white py-3.5 pl-12 pr-10 text-sm font-bold shadow-soft"
-          >
-            {features.map((feature) => (
-              <option key={feature.properties.slug} value={feature.properties.slug}>
-                {feature.properties.arrondissement}e · {formatOfficialName(feature)}
-              </option>
-            ))}
-          </select>
-        </label>
+          <input
+            id="neighborhood-search"
+            type="search"
+            role="combobox"
+            value={searchQuery}
+            placeholder="Ex. Endoume, Saint-Loup…"
+            autoComplete="off"
+            aria-autocomplete="list"
+            aria-controls="neighborhood-search-results"
+            aria-expanded={isSearchOpen}
+            onFocus={() => setIsSearchOpen(true)}
+            onChange={(event) => { setSearchQuery(event.target.value); setIsSearchOpen(true); }}
+            onBlur={() => window.setTimeout(() => setIsSearchOpen(false), 120)}
+            className="focus-ring w-full rounded-full border border-navy/15 bg-white py-3.5 pl-12 pr-5 text-sm font-bold shadow-soft"
+          />
+          {isSearchOpen && (
+            <ul id="neighborhood-search-results" className="absolute inset-x-0 top-full z-30 mt-2 max-h-72 overflow-y-auto rounded-2xl border border-navy/10 bg-white p-2 shadow-card" role="listbox">
+              {searchResults.map((feature) => (
+                <li key={feature.properties.slug}>
+                  <button type="button" role="option" aria-selected={selectedSlug === feature.properties.slug} onMouseDown={(event) => event.preventDefault()} onClick={() => { selectFeature(feature.properties.slug); setIsSearchOpen(false); }} className="focus-ring flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-bold hover:bg-sand">
+                    <span>{formatOfficialName(feature)}</span>
+                    <span className="text-xs font-normal text-navy/45">{feature.properties.arrondissement}<sup>e</sup></span>
+                  </button>
+                </li>
+              ))}
+              {searchResults.length === 0 && <li className="px-3 py-4 text-sm text-navy/55">Aucun quartier trouvé.</li>}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-5 flex items-center justify-center gap-2 text-[11px] font-bold text-navy/55 sm:mb-7 sm:gap-3 sm:text-xs">
+        <span className="rounded-full bg-navy px-2.5 py-1.5 text-white">1</span><span>Trouve</span>
+        <span className="h-px w-5 bg-navy/15 sm:w-10" />
+        <span className="rounded-full bg-navy px-2.5 py-1.5 text-white">2</span><span>Sélectionne</span>
+        <span className="h-px w-5 bg-navy/15 sm:w-10" />
+        <span className="rounded-full bg-terracotta px-2.5 py-1.5 text-white">3</span><span>Vote</span>
       </div>
 
       <div className="mb-5 flex items-center justify-between gap-2 rounded-2xl border border-navy/10 bg-white px-4 py-3 text-center shadow-soft md:hidden">
@@ -307,7 +371,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
         ))}
       </div>
 
-      <div ref={mapPanel} className="grid scroll-mt-28 overflow-hidden rounded-[28px] bg-[#dff4fc] shadow-soft lg:grid-cols-[1.12fr_0.88fr]">
+      <div ref={mapPanel} className="relative grid scroll-mt-28 overflow-hidden rounded-[28px] bg-[#dff4fc] shadow-soft lg:grid-cols-[1.12fr_0.88fr]">
         <div data-testid="neighborhood-map" className="relative min-h-[380px] overflow-hidden md:min-h-[680px]">
           {!mapData && !loadError && (
             <div className="absolute inset-0 z-20 grid place-items-center bg-[#dff4fc]"><div className="text-center"><LoaderCircle className="mx-auto h-7 w-7 animate-spin text-sea" /><p className="mt-3 text-xs font-bold uppercase tracking-[0.15em] text-navy/45">Chargement des quartiers</p></div></div>
@@ -371,8 +435,8 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
           </div>
         </div>
 
-        <div data-testid="neighborhood-summary" className="flex min-h-0 flex-col justify-between gap-6 bg-navy p-5 text-white md:min-h-[560px] md:p-10 lg:p-12" aria-live="polite">
-          {selectedFeature && (
+        <div data-testid="neighborhood-summary" className="relative flex min-h-0 flex-col justify-between gap-6 bg-navy p-5 text-white md:min-h-[560px] md:p-10 lg:p-12" aria-live="polite">
+          {selectedFeature ? (
             <>
               <div>
                 <div className="flex items-center justify-between gap-4">
@@ -418,9 +482,20 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                             : "Votes ouverts"}
                       </span>
                     </div>
-                    <Link href={`/quartier/${selectedProduct.slug}`} className="focus-ring flex w-full items-center justify-between rounded-full bg-white px-6 py-4 text-sm font-bold text-navy hover:bg-sun">
-                      {selectedStatus === "available" ? "Découvrir le tee‑shirt" : selectedStatus === "project" ? "Suivre sa préparation" : "Voir sa place et voter"}<ArrowUpRight className="h-5 w-5" />
-                    </Link>
+                    {isCatalogStatusVotable(selectedStatus) ? (
+                      <div className="space-y-3">
+                        <button type="button" onClick={() => setIsVoteOpen(true)} className="focus-ring flex w-full items-center justify-between rounded-full bg-terracotta px-6 py-4 text-sm font-bold text-white hover:bg-white hover:text-navy">
+                          Voter pour {selectedProduct.name}<Heart className="h-5 w-5" />
+                        </button>
+                        <Link href={`/quartier/${selectedProduct.slug}`} className="focus-ring flex w-full items-center justify-center gap-2 rounded-full border border-white/20 px-5 py-3 text-xs font-bold text-white/75 hover:border-sun hover:text-sun">
+                          Découvrir son histoire <ArrowUpRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    ) : (
+                      <Link href={`/quartier/${selectedProduct.slug}`} className="focus-ring flex w-full items-center justify-between rounded-full bg-white px-6 py-4 text-sm font-bold text-navy hover:bg-sun">
+                        {selectedStatus === "available" ? "Découvrir le tee‑shirt" : "Suivre sa préparation"}<ArrowUpRight className="h-5 w-5" />
+                      </Link>
+                    )}
                   </>
                 ) : selectedStatus === "project" ? (
                   <div className="rounded-2xl border border-ochre/25 bg-ochre/10 p-5">
@@ -436,6 +511,32 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                 )}
               </div>
             </>
+          ) : (
+            <div className="my-auto text-center">
+              <MapPin className="mx-auto h-9 w-9 text-sun" />
+              <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-sea">Première étape</p>
+              <h3 className="mx-auto mt-3 max-w-md text-3xl font-black uppercase leading-none tracking-[-0.04em] sm:text-5xl">Choisis ton quartier.</h3>
+              <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-white/60 sm:text-base sm:leading-7">Recherche son nom ou touche directement la carte. Tu pourras voter ici, sans changer de page.</p>
+            </div>
+          )}
+
+          {isVoteOpen && selectedProduct && isCatalogStatusVotable(selectedStatus) && (
+            <div className="fixed inset-0 z-50 flex items-end bg-navy/55 p-2 backdrop-blur-sm lg:absolute lg:items-center lg:bg-navy lg:p-5 lg:backdrop-blur-none" role="dialog" aria-modal="true" aria-label={`Voter pour ${selectedProduct.name}`} onMouseDown={(event) => { if (event.target === event.currentTarget) setIsVoteOpen(false); }}>
+              <div className="max-h-[calc(100dvh-1rem)] w-full overflow-y-auto rounded-[24px] bg-white shadow-card lg:max-h-full">
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-navy/10 bg-white px-5 py-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-sea">Vote direct</p>
+                  <button type="button" onClick={() => setIsVoteOpen(false)} className="focus-ring grid h-9 w-9 place-items-center rounded-full bg-sand text-navy hover:bg-sun" aria-label="Fermer le formulaire de vote"><X className="h-4 w-4" /></button>
+                </div>
+                <VoteForm
+                  compact
+                  neighborhoodId={selectedProduct.id}
+                  neighborhoodName={selectedProduct.name}
+                  voteCount={selectedProduct.voteCount}
+                  rank={selectedRank}
+                  nextRank={projectedRankIndex >= 0 ? projectedRankIndex + 1 : null}
+                />
+              </div>
+            </div>
           )}
         </div>
       </div>

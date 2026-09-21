@@ -36,3 +36,21 @@ test("mobile homepage shows the full collection in a horizontal carousel", async
   const summary = await page.getByTestId("neighborhood-summary").boundingBox();
   expect(summary?.height).toBeLessThan(400);
 });
+
+test("mobile visitors can open the vote form without leaving the map", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const search = page.getByRole("combobox", { name: "Trouve ton quartier" });
+  await search.fill("Endoume");
+  await page.getByRole("option", { name: /Endoume/ }).click();
+
+  await expect(page.getByTestId("neighborhood-summary").getByRole("heading", { name: "Endoume" })).toBeVisible();
+  await page.getByRole("button", { name: "Voter pour Endoume" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Voter pour Endoume" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("textbox", { name: "Ton e-mail" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Voter pour Endoume" })).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
+});

@@ -9,13 +9,15 @@ export function VoteForm({
   neighborhoodName,
   voteCount,
   rank,
-  nextRank
+  nextRank,
+  compact = false
 }: {
   neighborhoodId: string;
   neighborhoodName: string;
   voteCount: number;
   rank?: number | null;
   nextRank?: number | null;
+  compact?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [newsletterConsent, setNewsletterConsent] = useState(false);
@@ -45,23 +47,26 @@ export function VoteForm({
   const displayedRank = state === "success" ? nextRank : rank;
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-2xl bg-sand p-5 sm:p-6">
+    <form onSubmit={handleSubmit} className={`rounded-2xl p-5 text-navy sm:p-6 ${compact ? "bg-white" : "bg-sand"}`}>
       <div className="flex items-center justify-between gap-4">
         <Heart className="h-6 w-6 text-terracotta" />
-        <p className="rounded-full bg-white px-3 py-2 text-xs font-bold text-navy">
+        <p className={`rounded-full px-3 py-2 text-xs font-bold text-navy ${compact ? "bg-sand" : "bg-white"}`}>
           {displayedVoteCount} {displayedVoteCount > 1 ? "votes" : "vote"}
         </p>
       </div>
-      <h2 className="mt-5 text-2xl font-black tracking-tight">Fais entrer {neighborhoodName} dans la collection.</h2>
-      <p className="mt-2 text-sm leading-6 text-navy/60">Ton vote nous aide à choisir le prochain quartier. Tu seras prévenu en premier s’il est lancé.</p>
-      <label className="mt-5 block text-xs font-bold uppercase tracking-[0.15em]" htmlFor="vote-email">Ton adresse e-mail</label>
-      <input id="vote-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="vous@exemple.fr" className="focus-ring mt-2 w-full rounded-xl border border-navy/10 bg-white px-4 py-3 text-sm" />
-      <p className="mt-2 text-xs leading-5 text-navy/50">Ton adresse sert à enregistrer le vote et à te prévenir si ce quartier est lancé. Elle ne t’inscrit pas automatiquement à la newsletter. <Link href="/confidentialite" className="font-bold underline underline-offset-2 hover:text-sea">En savoir plus</Link>.</p>
-      <label className="mt-4 flex items-start gap-3 text-xs leading-5 text-navy/65">
-        <input type="checkbox" checked={newsletterConsent} onChange={(event) => setNewsletterConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-sea" />
-        <span>J’accepte de recevoir occasionnellement les nouvelles de 111 par e-mail. Je pourrai me désinscrire à tout moment.</span>
-      </label>
-      <button type="submit" disabled={state === "loading"} className="focus-ring mt-3 w-full rounded-full bg-terracotta px-5 py-3.5 text-sm font-bold text-white hover:bg-navy">{state === "loading" ? "Vote en cours…" : "Je vote pour ce quartier"}</button>
+      <h2 className="mt-5 text-2xl font-black tracking-tight">Vote pour {neighborhoodName}.</h2>
+      <p className="mt-2 text-sm leading-6 text-navy/60">Un e-mail suffit. Tu seras prévenu en priorité si son tee‑shirt rejoint la collection.</p>
+      <label className="mt-5 block text-xs font-bold uppercase tracking-[0.15em]" htmlFor={`vote-email-${neighborhoodId}`}>Ton e-mail</label>
+      <input id={`vote-email-${neighborhoodId}`} type="email" inputMode="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="vous@exemple.fr" className="focus-ring mt-2 w-full rounded-xl border border-navy/10 bg-white px-4 py-3 text-sm" />
+      <p className="mt-2 text-xs leading-5 text-navy/50">Utilisé uniquement pour valider ce vote et t’avertir du lancement. <Link href="/confidentialite" className="font-bold underline underline-offset-2 hover:text-sea">Confidentialité</Link>.</p>
+      <details className="mt-4 rounded-xl border border-navy/10 bg-white/70 px-4 py-3 text-xs text-navy/65">
+        <summary className="cursor-pointer font-bold text-navy">Recevoir aussi les nouvelles de 111 <span className="font-normal text-navy/45">(facultatif)</span></summary>
+        <label className="mt-3 flex items-start gap-3 leading-5">
+          <input type="checkbox" checked={newsletterConsent} onChange={(event) => setNewsletterConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-sea" />
+          <span>J’accepte de recevoir occasionnellement les nouvelles de 111 par e-mail. Je pourrai me désinscrire à tout moment.</span>
+        </label>
+      </details>
+      <button type="submit" disabled={state === "loading"} className="focus-ring mt-4 w-full rounded-full bg-terracotta px-5 py-3.5 text-sm font-bold text-white hover:bg-navy disabled:cursor-wait disabled:opacity-70">{state === "loading" ? "Vote en cours…" : `Voter pour ${neighborhoodName}`}</button>
       {state === "success" && (
         <div className="mt-4 rounded-xl bg-white p-4">
           <p className="text-sm font-bold text-olive">Ton vote est enregistré.</p>
@@ -73,8 +78,8 @@ export function VoteForm({
           </button>
         </div>
       )}
-      {state === "duplicate" && <p className="mt-3 text-sm font-semibold text-sea">Ton vote était déjà enregistré.</p>}
-      {state === "error" && <p className="mt-3 text-sm font-semibold text-terracotta">Une erreur est survenue. Réessaie dans un instant.</p>}
+      {state === "duplicate" && <p role="status" className="mt-3 text-sm font-semibold text-sea">Ton vote était déjà enregistré.</p>}
+      {state === "error" && <p role="alert" className="mt-3 text-sm font-semibold text-terracotta">Une erreur est survenue. Réessaie dans un instant.</p>}
     </form>
   );
 }
