@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { Check, Gift, Package, ShoppingBag } from "lucide-react";
 
 import { useCart } from "@/contexts/cart-context";
-import { MYSTERY_PACK_PRICE_EUROS, PACK_PRICES_EUROS, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
+import { MYSTERY_PACK_PRICES_EUROS, PACK_PRICES_EUROS, PRODUCT_PRICE_EUROS, SIZE_ORDER } from "@/lib/constants";
+import type { MysteryPackSize } from "@/lib/constants";
 import type { CartSelection, Neighborhood, Size } from "@/lib/types";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ type PackSize = 3 | 4 | 5;
 export function PackBuilder({ neighborhoods }: { neighborhoods: Neighborhood[] }) {
   const { addItem } = useCart();
   const [packSize, setPackSize] = useState<PackSize>(3);
+  const [mysteryPackSize, setMysteryPackSize] = useState<MysteryPackSize>(1);
   const [mystery, setMystery] = useState(false);
   const [selections, setSelections] = useState<Array<{ neighborhoodId: string; size: Size }>>(
     Array.from({ length: 3 }, () => ({ neighborhoodId: "", size: "M" as Size }))
@@ -40,8 +42,13 @@ export function PackBuilder({ neighborhoods }: { neighborhoods: Neighborhood[] }
 
   function chooseMystery() {
     setMystery(true);
-    setPackSize(3);
-    setSelections((current) => Array.from({ length: 3 }, (_, index) => ({ neighborhoodId: "", size: current[index]?.size ?? "M" })));
+    setSelections((current) => Array.from({ length: mysteryPackSize }, (_, index) => ({ neighborhoodId: "", size: current[index]?.size ?? "M" })));
+    setAdded(false);
+  }
+
+  function chooseMysterySize(size: MysteryPackSize) {
+    setMysteryPackSize(size);
+    setSelections((current) => Array.from({ length: size }, (_, index) => ({ neighborhoodId: "", size: current[index]?.size ?? "M" })));
     setAdded(false);
   }
 
@@ -72,11 +79,12 @@ export function PackBuilder({ neighborhoods }: { neighborhoods: Neighborhood[] }
           };
         });
 
-    const price = mystery ? MYSTERY_PACK_PRICE_EUROS : PACK_PRICES_EUROS[packSize];
+    const price = mystery ? MYSTERY_PACK_PRICES_EUROS[mysteryPackSize] : PACK_PRICES_EUROS[packSize];
+    const mysteryLabel = `${mysteryPackSize} tee‑shirt${mysteryPackSize > 1 ? "s" : ""}`;
     addItem({
       id: `${mystery ? "mystery" : `pack-${packSize}`}-${Date.now()}`,
       kind: mystery ? "mystery-pack" : "pack",
-      name: mystery ? "Pack surprise · 3 quartiers" : `Pack au choix · ${packSize} tee‑shirts`,
+      name: mystery ? `Pack surprise · ${mysteryLabel}` : `Pack au choix · ${packSize} tee‑shirts`,
       quantity: 1,
       unitPrice: price,
       imageUrl: chosen[0]?.imageUrl ?? "/favicon-96x96.png",
@@ -98,16 +106,30 @@ export function PackBuilder({ neighborhoods }: { neighborhoods: Neighborhood[] }
         <button type="button" onClick={chooseMystery} className={cn("focus-ring rounded-[24px] border p-6 text-left transition sm:col-span-2 lg:col-span-1", mystery ? "border-terracotta bg-terracotta text-white" : "border-navy/10 bg-white hover:border-terracotta")}>
           <Gift className="h-6 w-6" />
           <span className="mt-5 block text-2xl font-black">Pack surprise</span>
-          <span className={cn("mt-1 block text-sm", mystery ? "text-white/70" : "text-navy/50")}>{formatCurrency(MYSTERY_PACK_PRICE_EUROS / 3)} par tee‑shirt · économie de {formatCurrency(3 * PRODUCT_PRICE_EUROS - MYSTERY_PACK_PRICE_EUROS)}</span>
+          <span className={cn("mt-1 block text-sm", mystery ? "text-white/70" : "text-navy/50")}>De 1 à 3 tee‑shirts · à partir de {formatCurrency(MYSTERY_PACK_PRICES_EUROS[1])}</span>
         </button>
       </div>
 
       <div className="rounded-[28px] bg-sand p-5 sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div><p className="section-kicker">Compose ton pack</p><h2 className="mt-2 text-3xl font-black">{mystery ? "Choisis seulement les tailles." : "Un quartier et une taille par tee‑shirt."}</h2></div>
-          <p className="text-3xl font-black text-sea">{formatCurrency(mystery ? MYSTERY_PACK_PRICE_EUROS : PACK_PRICES_EUROS[packSize])}</p>
+          <p className="text-3xl font-black text-sea">{formatCurrency(mystery ? MYSTERY_PACK_PRICES_EUROS[mysteryPackSize] : PACK_PRICES_EUROS[packSize])}</p>
         </div>
-        {mystery && <p className="mt-4 rounded-xl bg-white/70 p-4 text-sm leading-6 text-navy/60">Les trois quartiers, tous différents, seront attribués automatiquement selon les stocks disponibles.</p>}
+        {mystery && (
+          <div className="mt-5 space-y-4 rounded-xl bg-white/70 p-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-navy/45">Nombre de tee‑shirts</p>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {([1, 2, 3] as const).map((size) => (
+                  <button key={size} type="button" onClick={() => chooseMysterySize(size)} aria-pressed={mysteryPackSize === size} className={cn("focus-ring rounded-xl border px-3 py-3 text-sm font-black transition", mysteryPackSize === size ? "border-terracotta bg-terracotta text-white" : "border-navy/10 bg-white text-navy hover:border-terracotta")}>
+                    {size} · {formatCurrency(MYSTERY_PACK_PRICES_EUROS[size])}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-sm leading-6 text-navy/60">{mysteryPackSize === 1 ? "Le quartier" : "Les quartiers, tous différents,"} {mysteryPackSize === 1 ? "sera attribué" : "seront attribués"} automatiquement selon les stocks disponibles.</p>
+          </div>
+        )}
         <div className="mt-7 space-y-3">
           {selections.map((selection, index) => (
             <div key={index} className="grid gap-3 rounded-2xl bg-white p-4 sm:grid-cols-[auto_1fr_0.65fr] sm:items-center">

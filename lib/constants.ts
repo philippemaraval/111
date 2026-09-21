@@ -7,7 +7,19 @@ export const PACK_PRICES_EUROS = {
   5: 95
 } as const;
 
-export const MYSTERY_PACK_PRICE_EUROS = 60;
+export const MYSTERY_PACK_PRICES_EUROS = {
+  1: 20,
+  2: 35,
+  3: 45
+} as const;
+
+export type MysteryPackSize = keyof typeof MYSTERY_PACK_PRICES_EUROS;
+
+export function getMysteryPackPrice(count: number) {
+  return count === 1 || count === 2 || count === 3
+    ? MYSTERY_PACK_PRICES_EUROS[count]
+    : null;
+}
 
 export const AVAILABLE_NEIGHBORHOOD_SLUGS = [
   "la-joliette",

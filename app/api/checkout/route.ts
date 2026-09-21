@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { MYSTERY_PACK_PRICE_EUROS, PACK_PRICES_EUROS, PRODUCT_PRICE_EUROS } from "@/lib/constants";
+import { getMysteryPackPrice, PACK_PRICES_EUROS, PRODUCT_PRICE_EUROS } from "@/lib/constants";
 import { listNeighborhoods } from "@/lib/neighborhoods";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { getStripeClient, hasStripeEnv } from "@/lib/stripe";
@@ -85,12 +85,14 @@ function resolveItems(items: InputItem[], neighborhoods: Neighborhood[]): Resolv
     }
     if (item.quantity !== 1) throw new Error("invalid_pack_quantity");
     if (item.kind === "mystery-pack") {
-      if (item.selections.length !== 3) throw new Error("invalid_pack");
+      const count = item.selections.length;
+      const unitPrice = getMysteryPackPrice(count);
+      if (unitPrice === null) throw new Error("invalid_pack");
       const sizes = item.selections.map((selection) => selection.size);
       const assigned = assignMysteryNeighborhoods(available, sizes);
       if (!assigned) throw new Error("stock_unavailable");
-      return { kind: item.kind, name: "Pack surprise · 3 quartiers", quantity: 1,
-        unitPrice: MYSTERY_PACK_PRICE_EUROS,
+      return { kind: item.kind, name: `Pack surprise · ${count} tee-shirt${count > 1 ? "s" : ""}`, quantity: 1,
+        unitPrice,
         selections: assigned.map((neighborhood, index) => ({ neighborhood, size: sizes[index] })) };
     }
     const count = item.selections.length;

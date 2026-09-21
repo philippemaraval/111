@@ -5,7 +5,7 @@ import { listNeighborhoods } from "@/lib/neighborhoods";
 
 export const metadata: Metadata = {
   title: "Packs de tee-shirts — 111 Marseille",
-  description: "Composez un pack de tee-shirts de quartiers marseillais ou laissez-nous choisir trois quartiers surprise."
+  description: "Composez un pack de tee-shirts de quartiers marseillais ou choisissez de un à trois tee-shirts surprise."
 };
 
 export const revalidate = 300;
