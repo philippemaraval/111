@@ -19,7 +19,7 @@ export default async function HomePage() {
       <section className="mx-auto grid max-w-[1440px] grid-cols-1 border-b border-navy/10 px-4 py-10 sm:grid-cols-3 sm:px-6 lg:px-10">
         {[
           { icon: PencilRuler, title: "Dessiné ici", text: "Chaque visuel part d’une histoire et d’un lieu marseillais." },
-          { icon: Sparkles, title: "En série courte", text: "Des pièces choisies avec soin, sans collection inutile." },
+          { icon: Sparkles, title: "En série courte", text: "Des pièces bien faites, pensées pour durer." },
           { icon: MapPin, title: "Par et pour Marseille", text: "La communauté vote pour faire vivre les prochains quartiers." }
         ].map((item) => (
           <div key={item.title} className="flex gap-4 border-navy/10 py-5 first:pt-0 last:pb-0 sm:border-l sm:px-7 sm:py-0 sm:first:border-0 sm:first:pl-0">

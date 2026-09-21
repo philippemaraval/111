@@ -51,7 +51,7 @@ export function Footer() {
           </div>
         </div>
       </div>
-      <div className="mx-auto grid max-w-[1440px] gap-6 border-t border-white/10 px-5 py-6 sm:grid-cols-[1fr_auto] sm:items-center lg:px-10">
+      <div className="mx-auto grid max-w-[1440px] gap-6 border-t border-white/10 px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-6 sm:grid-cols-[1fr_auto] sm:items-center sm:py-6 lg:px-10">
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/40">
           <p>© 2026 — 111 Marseille</p>
           <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-sea" /> Imaginé à Marseille</p>
