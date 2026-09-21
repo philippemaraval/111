@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, Heart, MapPin, PencilRuler, Shirt } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, MapPin, PencilRuler, Shirt } from "lucide-react";
 
 import { MiniMap } from "@/components/product/mini-map";
 import { CommunityNeighborhoodPage } from "@/components/product/community-neighborhood-page";
@@ -9,7 +9,7 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 import { getNeighborhoodBySlug, listNeighborhoods, listPublishedReviews } from "@/lib/neighborhoods";
 import { getSiteUrl } from "@/lib/utils";
-import { AVAILABLE_NEIGHBORHOOD_SLUGS } from "@/lib/constants";
+import { AVAILABLE_NEIGHBORHOOD_SLUGS, isCatalogStatusVotable } from "@/lib/constants";
 
 export const revalidate = 300;
 
@@ -126,11 +126,10 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
           </div>
           <div>
             <p className="max-w-3xl text-xl leading-9 text-navy/70">{neighborhood.descriptionHistory}</p>
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
               {[
                 { icon: PencilRuler, label: "Imaginé", value: "À Marseille" },
-                { icon: Shirt, label: "Production", value: "En série courte" },
-                { icon: Heart, label: "La communauté", value: `${neighborhood.voteCount} soutiens` }
+                { icon: Shirt, label: "Production", value: "En série courte" }
               ].map((item) => (
                 <div key={item.label} className="rounded-2xl bg-sand p-5"><item.icon className="h-5 w-5 text-sea" /><p className="mt-5 text-[10px] font-bold uppercase tracking-[0.18em] text-navy/45">{item.label}</p><p className="mt-1 font-bold">{item.value}</p></div>
               ))}
@@ -157,7 +156,10 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
             {related.map((item) => (
               <Link key={item.id} href={`/quartier/${item.slug}`} className="focus-ring group flex min-h-44 flex-col justify-between rounded-2xl border border-navy/10 p-6 transition hover:-translate-y-1 hover:border-sea hover:shadow-soft">
                 <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-sea">{item.arrondissement}<sup>e</sup> arrondissement</p><h3 className="mt-2 text-2xl font-black">{item.name}</h3></div>
-                <div className="flex items-center justify-between text-sm text-navy/50"><span>{item.voteCount} soutiens</span><ArrowUpRight className="h-5 w-5 transition group-hover:text-sea" /></div>
+                <div className="flex items-center justify-between text-sm text-navy/50">
+                  <span>{isCatalogStatusVotable(item.catalogStatus) ? `${item.voteCount} soutien${item.voteCount === 1 ? "" : "s"}` : item.catalogStatus === "project" ? "En projet" : "Disponible"}</span>
+                  <ArrowUpRight className="h-5 w-5 transition group-hover:text-sea" />
+                </div>
               </Link>
             ))}
           </div>

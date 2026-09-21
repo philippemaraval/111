@@ -15,6 +15,7 @@ import {
   Trophy
 } from "lucide-react";
 
+import { isCatalogStatusVotable } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Neighborhood } from "@/lib/types";
 
@@ -398,8 +399,10 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
               <div>
                 {selectedProduct ? (
                   <>
-                    <div className="mb-5 flex items-center justify-between gap-3 text-sm text-white/70">
-                      <span className="flex items-center gap-2"><Heart className="h-4 w-4 text-terracotta" /> <strong className="text-white">{selectedProduct.voteCount}</strong> {selectedStatus === "idea" ? "votes" : "soutiens historiques"}</span>
+                    <div className={`mb-5 flex items-center gap-3 text-sm text-white/70 ${isCatalogStatusVotable(selectedStatus) ? "justify-between" : "justify-end"}`}>
+                      {isCatalogStatusVotable(selectedStatus) && (
+                        <span className="flex items-center gap-2"><Heart className="h-4 w-4 text-terracotta" /> <strong className="text-white">{selectedProduct.voteCount}</strong> votes</span>
+                      )}
                       <span className={cn(
                         "rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]",
                         selectedStatus === "available"
