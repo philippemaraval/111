@@ -3,7 +3,7 @@ import { ArrowRight, MapPin, PencilRuler, Sparkles } from "lucide-react";
 
 import { HeroSection } from "@/components/home/hero-section";
 import { LazyInteractiveMap } from "@/components/home/lazy-interactive-map";
-import { NeighborhoodCard } from "@/components/home/neighborhood-card";
+import { FeaturedCollection } from "@/components/home/featured-collection";
 import { EditionContents } from "@/components/edition-contents";
 import { listNeighborhoods } from "@/lib/neighborhoods";
 
@@ -30,8 +30,8 @@ export default async function HomePage() {
         ))}
       </section>
 
-      <section id="collection" className="mx-auto max-w-[1440px] scroll-mt-32 px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
-        <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <section id="collection" className="mx-auto max-w-[1440px] scroll-mt-32 px-4 py-12 sm:px-6 md:py-20 lg:px-10 lg:py-28">
+        <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between md:mb-10">
           <div>
             <p className="section-kicker">La première collection</p>
             <h2 className="mt-3 max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-navy sm:text-6xl">Les quartiers prennent la lumière.</h2>
@@ -40,9 +40,7 @@ export default async function HomePage() {
             À toi de choisir <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className={`grid gap-6 ${featured.length === 1 ? "max-w-xl" : "md:grid-cols-2 xl:grid-cols-3"}`}>
-          {featured.map((item) => <NeighborhoodCard key={item.id} neighborhood={item} />)}
-        </div>
+        <FeaturedCollection neighborhoods={featured} />
       </section>
 
       <EditionContents />

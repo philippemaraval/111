@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
+  ChevronDown,
+  ChevronUp,
   Heart,
   LoaderCircle,
   MapPin,
@@ -150,6 +152,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const [activeArrondissement, setActiveArrondissement] = useState<number | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [isRankingExpanded, setIsRankingExpanded] = useState(false);
   const mapPanel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -210,12 +213,15 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
   }
 
   return (
-    <section className="mx-auto max-w-[1440px] px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
-      <div className="mb-9 grid gap-7 lg:grid-cols-[1fr_0.65fr] lg:items-end">
+    <section className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-20 lg:px-10 lg:py-28">
+      <div className="mb-6 grid gap-5 sm:mb-9 sm:gap-7 lg:grid-cols-[1fr_0.65fr] lg:items-end">
         <div className="max-w-3xl">
           <p className="section-kicker">À toi de choisir</p>
-          <h2 className="mt-3 text-4xl font-black uppercase leading-[0.95] tracking-[-0.045em] sm:text-6xl">Vote. Partage. Mets-nous la pression.</h2>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-navy/60">Tu ne dessines pas le tee‑shirt : tu votes pour le quartier que tu veux voir rejoindre la collection. Plus il monte, plus notre équipe devra accélérer.</p>
+          <h2 className="mt-3 text-3xl font-black uppercase leading-[0.95] tracking-[-0.045em] md:text-6xl">Vote. Partage. Mets-nous la pression.</h2>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-navy/60 md:mt-5 md:text-base md:leading-7">
+            <span className="md:hidden">Vote pour le quartier que tu veux voir rejoindre la collection.</span>
+            <span className="hidden md:inline">Tu ne dessines pas le tee‑shirt : tu votes pour le quartier que tu veux voir rejoindre la collection. Plus il monte, plus notre équipe devra accélérer.</span>
+          </p>
         </div>
         <label className="relative block">
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-navy/55">Rechercher parmi les 111 quartiers</span>
@@ -234,7 +240,15 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
         </label>
       </div>
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-3">
+      <div className="mb-5 flex items-center justify-between gap-2 rounded-2xl border border-navy/10 bg-white px-4 py-3 text-center shadow-soft md:hidden">
+        <p><strong className="block text-lg text-sea">{availableCount}</strong><span className="text-[10px] font-bold uppercase tracking-[0.08em] text-navy/45">disponibles</span></p>
+        <span className="h-8 w-px bg-navy/10" />
+        <p><strong className="block text-lg text-ochre">{projectCount}</strong><span className="text-[10px] font-bold uppercase tracking-[0.08em] text-navy/45">en projet</span></p>
+        <span className="h-8 w-px bg-navy/10" />
+        <p><strong className="block text-lg text-navy">{votableCount}</strong><span className="text-[10px] font-bold uppercase tracking-[0.08em] text-navy/45">à départager</span></p>
+      </div>
+
+      <div className="mb-8 hidden gap-3 md:grid md:grid-cols-3">
         <Link href="#collection" className="focus-ring rounded-2xl bg-sea p-5 text-white shadow-soft transition hover:-translate-y-0.5">
           <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-white/65">Acheter maintenant</p>
           <p className="mt-2 text-xl font-black">{availableCount} tee‑shirts disponibles</p>
@@ -252,7 +266,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
         </div>
       </div>
 
-      <section id="classement" className="mb-8 scroll-mt-32 overflow-hidden rounded-[28px] bg-sand" aria-labelledby="ranking-title">
+      <section id="classement" className="mb-8 hidden scroll-mt-32 overflow-hidden rounded-[28px] bg-sand md:block" aria-labelledby="ranking-title">
         <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
           <div className="bg-sun p-7 sm:p-9">
             <Trophy className="h-7 w-7 text-navy" />
@@ -285,7 +299,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
         </div>
       </section>
 
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2" aria-label="Filtrer par arrondissement">
+      <div className="mb-6 hidden gap-2 overflow-x-auto pb-2 md:flex" aria-label="Filtrer par arrondissement">
         <button type="button" onClick={() => setActiveArrondissement(null)} className={cn("focus-ring shrink-0 rounded-full px-4 py-2 text-xs font-bold", activeArrondissement === null ? "bg-navy text-white" : "border border-navy/10 hover:border-sea")}>Toute la ville</button>
         {Array.from({ length: 16 }, (_, index) => index + 1).map((item) => (
           <button key={item} type="button" onClick={() => setActiveArrondissement(item)} className={cn("focus-ring shrink-0 rounded-full px-4 py-2 text-xs font-bold", activeArrondissement === item ? "bg-sea text-white" : "border border-navy/10 hover:border-sea")}>{item}<sup>e</sup></button>
@@ -293,7 +307,7 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
       </div>
 
       <div ref={mapPanel} className="grid scroll-mt-28 overflow-hidden rounded-[28px] bg-[#dff4fc] shadow-soft lg:grid-cols-[1.12fr_0.88fr]">
-        <div className="relative min-h-[500px] overflow-hidden sm:min-h-[680px]">
+        <div data-testid="neighborhood-map" className="relative min-h-[380px] overflow-hidden md:min-h-[680px]">
           {!mapData && !loadError && (
             <div className="absolute inset-0 z-20 grid place-items-center bg-[#dff4fc]"><div className="text-center"><LoaderCircle className="mx-auto h-7 w-7 animate-spin text-sea" /><p className="mt-3 text-xs font-bold uppercase tracking-[0.15em] text-navy/45">Chargement des quartiers</p></div></div>
           )}
@@ -349,14 +363,14 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
             </g>
           </svg>
 
-          <div className="absolute bottom-5 left-5 right-5 flex flex-wrap gap-3 rounded-2xl bg-white/95 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.1em] shadow-soft sm:right-auto">
+          <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 rounded-2xl bg-white/95 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.08em] shadow-soft sm:bottom-5 sm:left-5 sm:right-auto sm:gap-3 sm:px-4 sm:py-3 sm:text-[10px] sm:tracking-[0.1em]">
             <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full bg-sea" /> Disponible</span>
             <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full bg-ochre" /> En projet</span>
             <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full border border-navy/20 bg-white" /> À imaginer</span>
           </div>
         </div>
 
-        <div className="flex min-h-[560px] flex-col justify-between bg-navy p-7 text-white sm:p-10 lg:p-12" aria-live="polite">
+        <div data-testid="neighborhood-summary" className="flex min-h-0 flex-col justify-between gap-6 bg-navy p-5 text-white md:min-h-[560px] md:p-10 lg:p-12" aria-live="polite">
           {selectedFeature && (
             <>
               <div>
@@ -364,11 +378,11 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-sea">{selectedFeature.properties.arrondissement}<sup>e</sup> arrondissement</p>
                   <MapPin className="h-6 w-6 text-sun" />
                 </div>
-                <h3 className="mt-5 text-4xl font-black uppercase leading-none tracking-[-0.05em] sm:text-6xl">
+                <h3 className="mt-3 text-3xl font-black uppercase leading-none tracking-[-0.05em] sm:mt-5 sm:text-6xl">
                   {selectedProduct?.slug === "le-panier" ? "Le Panier" : formatOfficialName(selectedFeature)}
                 </h3>
                 {selectedProduct?.slug === "le-panier" && <p className="mt-2 text-sm font-semibold text-white/45">Quartier officiel Hôtel de Ville</p>}
-                <p className="mt-7 max-w-lg text-base leading-8 text-white/65">
+                <p className="mt-7 hidden max-w-lg text-base leading-8 text-white/65 md:block">
                   {selectedProduct
                     ? selectedStatus === "project"
                       ? `Le tee‑shirt ${selectedProduct.name} est déjà en préparation. Les votes sont donc fermés pendant que l’équipe travaille à sa sortie.`
@@ -422,6 +436,48 @@ export function InteractiveMap({ neighborhoods }: { neighborhoods: Neighborhood[
           )}
         </div>
       </div>
+
+      <section className="mt-6 overflow-hidden rounded-[24px] bg-sand md:hidden" aria-labelledby="mobile-ranking-title">
+        <div className="bg-sun px-5 py-5">
+          <div className="flex items-center gap-3">
+            <Trophy className="h-5 w-5 shrink-0 text-navy" />
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-navy/50">Classement en direct</p>
+              <h3 id="mobile-ranking-title" className="mt-1 text-xl font-black uppercase leading-tight tracking-[-0.03em] text-navy">Les quartiers en tête</h3>
+            </div>
+          </div>
+        </div>
+        <div className="p-3">
+          {voteRanking.length > 0 ? (
+            <>
+              <ol className="space-y-2">
+                {(isRankingExpanded ? voteRanking : voteRanking.slice(0, 3)).map((item, index) => (
+                  <li key={item.id}>
+                    <button type="button" onClick={() => selectFromRanking(item)} className="focus-ring flex w-full items-center gap-3 rounded-2xl bg-white px-3 py-3 text-left">
+                      <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-black", index === 0 ? "bg-sun text-navy" : "bg-navy text-white")}>{index + 1}</span>
+                      <span className="min-w-0 flex-1 truncate font-black text-navy">{item.name}</span>
+                      <span className="shrink-0 text-sm font-black text-navy">{item.voteCount} <span className="text-[9px] uppercase tracking-[0.08em] text-navy/40">votes</span></span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              {voteRanking.length > 3 && (
+                <button
+                  type="button"
+                  className="focus-ring mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-navy/15 px-4 py-3 text-xs font-bold text-navy"
+                  aria-expanded={isRankingExpanded}
+                  onClick={() => setIsRankingExpanded((current) => !current)}
+                >
+                  {isRankingExpanded ? "Réduire le classement" : "Voir le classement complet"}
+                  {isRankingExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              )}
+            </>
+          ) : (
+            <p className="rounded-2xl bg-white p-5 text-center text-sm text-navy/55">Le classement attend son premier vote.</p>
+          )}
+        </div>
+      </section>
     </section>
   );
 }
