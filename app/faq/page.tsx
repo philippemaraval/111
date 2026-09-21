@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 const questions = [
   ["Pourquoi la marque s’appelle-t-elle 111 ?", "Marseille compte officiellement 111 quartiers. La collection a vocation à les raconter un par un, à travers des visuels inspirés de leur histoire, de leur géographie et de leur quotidien."],
   ["Quel est le prix d’un t-shirt ?", "Tous les t-shirts 111 sont proposés au même prix : 25 €, quel que soit le quartier disponible."],
+  ["Que contient une édition de quartier ?", "Chaque tee-shirt est accompagné d’un sticker 111 rond de 5 cm, d’un sticker du quartier de 7,5 cm reprenant le logo poitrine et d’une carte cartonnée. Cette carte présente l’identité du quartier, les monuments représentés sur le dessin et les raisons de leur sélection."],
   ["Quels quartiers sont déjà disponibles ?", "La Joliette, Notre-Dame-du-Mont, Sainte-Anne, Cinq-Avenues et Mazargues constituent la collection actuellement disponible."],
   ["Comment fonctionne le vote ?", "Chaque quartier non disponible possède son propre compteur. Un vote par adresse e-mail et par quartier est enregistré ; le classement nous aide à décider quels visuels développer ensuite."],
   ["Voter m’oblige-t-il à acheter ?", "Non. Le vote est gratuit et sans obligation d’achat. Il sert uniquement à mesurer l’intérêt pour une future édition et à vous prévenir si elle voit le jour."],

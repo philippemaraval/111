@@ -4,6 +4,7 @@ import { ArrowRight, MapPin, PencilRuler, Sparkles } from "lucide-react";
 import { HeroSection } from "@/components/home/hero-section";
 import { LazyInteractiveMap } from "@/components/home/lazy-interactive-map";
 import { NeighborhoodCard } from "@/components/home/neighborhood-card";
+import { EditionContents } from "@/components/edition-contents";
 import { listNeighborhoods } from "@/lib/neighborhoods";
 
 export const revalidate = 300;
@@ -43,6 +44,8 @@ export default async function HomePage() {
           {featured.map((item) => <NeighborhoodCard key={item.id} neighborhood={item} />)}
         </div>
       </section>
+
+      <EditionContents />
 
       <LazyInteractiveMap neighborhoods={neighborhoods} />
 

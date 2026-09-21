@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, ChevronDown, ShoppingBag, Sparkles } from "lucide-react";
+import { BookOpenText, Check, ChevronDown, CircleDot, Shirt, ShoppingBag, Sparkles, Sticker } from "lucide-react";
 
 import { VoteForm } from "@/components/product/vote-form";
 import { ProductActions } from "@/components/product/product-actions";
@@ -53,6 +53,16 @@ export function ProductPurchasePanel({ neighborhood }: { neighborhood: Neighborh
 
       {neighborhood.isAvailable ? (
         <div className="mt-8">
+          <div className="mb-7 rounded-2xl bg-sand p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-sea">Ton édition de quartier</p>
+            <p className="mt-2 text-sm leading-6 text-navy/60">Inclus avec chaque tee‑shirt :</p>
+            <ul className="mt-4 grid gap-3 text-sm font-bold sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <li className="flex items-center gap-2"><Shirt className="h-4 w-4 text-sea" aria-hidden="true" /> 1 tee‑shirt 111</li>
+              <li className="flex items-center gap-2"><CircleDot className="h-4 w-4 text-sea" aria-hidden="true" /> 1 sticker 111 · 5 cm</li>
+              <li className="flex items-center gap-2"><Sticker className="h-4 w-4 text-sea" aria-hidden="true" /> 1 sticker quartier · 7,5 cm</li>
+              <li className="flex items-center gap-2"><BookOpenText className="h-4 w-4 text-sea" aria-hidden="true" /> 1 carte du quartier</li>
+            </ul>
+          </div>
           <div className="flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-[0.16em]">Choisir une taille</p><Link href="/guide-des-tailles" className="focus-ring rounded text-xs font-semibold text-navy/50 underline underline-offset-4 hover:text-sea">Guide des tailles</Link></div>
           <div className="mt-3 grid grid-cols-4 gap-2">
             {SIZE_ORDER.map((size) => {
