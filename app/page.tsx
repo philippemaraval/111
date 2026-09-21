@@ -11,7 +11,7 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const neighborhoods = await listNeighborhoods({ sort: "popular" });
-  const featured = neighborhoods.filter((item) => item.isAvailable).slice(0, 5);
+  const featured = neighborhoods.filter((item) => item.isAvailable);
 
   return (
     <div className="pb-16">

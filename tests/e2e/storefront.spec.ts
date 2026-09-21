@@ -19,15 +19,17 @@ test("SEO endpoints are valid", async ({ request }) => {
   expect(await sitemap.text()).toContain("/quartier/");
 });
 
-test("mobile homepage keeps collection and voting sections compact", async ({ page }) => {
+test("mobile homepage shows the full collection in a horizontal carousel", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await expect(page.locator("#collection article:visible")).toHaveCount(3);
-  await page.getByRole("button", { name: "Découvrir le reste de la collection" }).click();
   await expect(page.locator("#collection article:visible")).toHaveCount(5);
-  await page.getByRole("button", { name: "Réduire la collection" }).click();
-  await expect(page.locator("#collection article:visible")).toHaveCount(3);
+  await expect(page.getByRole("button", { name: "Découvrir le reste de la collection" })).toHaveCount(0);
+  const collection = page.getByTestId("featured-collection");
+  await expect(collection).toHaveCSS("overflow-x", "auto");
+  expect(await collection.evaluate((element) => element.scrollWidth > element.clientWidth)).toBeTruthy();
+  const edition = await page.getByTestId("edition-contents").boundingBox();
+  expect(edition?.height).toBeLessThan(650);
 
   await expect(page.getByTestId("neighborhood-map")).toHaveCSS("min-height", "380px");
   await expect(page.getByRole("heading", { name: "Les quartiers en tête" })).toBeVisible();
