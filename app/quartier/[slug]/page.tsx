@@ -5,8 +5,8 @@ import { ArrowLeft, ArrowUpRight, Heart, MapPin, PencilRuler, Shirt } from "luci
 
 import { MiniMap } from "@/components/product/mini-map";
 import { CommunityNeighborhoodPage } from "@/components/product/community-neighborhood-page";
+import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
-import { ProductImage } from "@/components/product-image";
 import { getNeighborhoodBySlug, listNeighborhoods, listPublishedReviews } from "@/lib/neighborhoods";
 import { getSiteUrl } from "@/lib/utils";
 import { AVAILABLE_NEIGHBORHOOD_SLUGS } from "@/lib/constants";
@@ -112,14 +112,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
       </div>
 
       <section className="mx-auto grid max-w-[1440px] gap-7 px-4 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-10">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {neighborhood.gallery.map((image, index) => (
-            <div key={`${image.label}-${index}`} className="group relative overflow-hidden rounded-[20px] bg-[#f2f2f2]">
-              <ProductImage priority={index === 0} src={image.url} sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 29vw" alt={`${neighborhood.name}, ${image.label}`} className="aspect-[4/5] w-full object-contain transition duration-700 group-hover:scale-[1.015]" />
-              <span className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.15em] text-navy">{image.label}</span>
-            </div>
-          ))}
-        </div>
+        <ProductGallery images={neighborhood.gallery} neighborhoodName={neighborhood.name} />
         <div className="lg:pl-5"><ProductPurchasePanel neighborhood={neighborhood} /></div>
       </section>
 
