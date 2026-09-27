@@ -15,10 +15,10 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
   const configurationMissing = !hasSupabaseEnv();
 
   return (
-    <div className="mx-auto grid min-h-[70vh] max-w-[1200px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-12">
+    <div className="mx-auto grid grid-cols-1 [overflow-wrap:anywhere] min-h-[70vh] max-w-[1200px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-12">
       <div className="rounded-[24px] bg-sea p-8 text-white shadow-card lg:p-10">
         <p className="text-xs font-bold uppercase tracking-[0.26em] text-sun">Espace 111</p>
-        <h1 className="mt-4 text-5xl font-black uppercase leading-[0.95] tracking-[-0.04em]">Gérer la collection et les votes.</h1>
+        <h1 className="mt-4 text-4xl sm:text-5xl font-black uppercase leading-[0.95] tracking-[-0.04em]">Gérer la collection et les votes.</h1>
         <p className="mt-4 max-w-xl text-sm leading-7 text-white/72">
           L’espace de gestion des quartiers, des stocks et des envies de la communauté.
         </p>

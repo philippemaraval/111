@@ -24,7 +24,7 @@ export function EditorialPage({
               <ArrowLeft className="h-4 w-4" /> Retour à l’accueil
             </Link>
             <p className="mt-12 text-xs font-bold uppercase tracking-[0.24em] text-sun">{eyebrow}</p>
-            <h1 className="mt-4 text-5xl font-black uppercase leading-[0.9] tracking-[-0.055em] sm:text-7xl lg:text-8xl">{title}</h1>
+            <h1 className="mt-4 text-[clamp(2rem,8.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.055em] sm:text-7xl lg:text-8xl">{title}</h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl">{intro}</p>
           </div>
         </div>
@@ -48,12 +48,12 @@ export function EditorialSection({
 }) {
   return (
     <section className="border-t border-navy/10 py-12 first:border-0 first:pt-0 sm:py-16">
-      <div className="grid gap-7 lg:grid-cols-[0.72fr_1.28fr] lg:gap-14">
+      <div className="grid min-w-0 grid-cols-1 gap-7 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:gap-14">
         <div>
           {kicker && <p className="section-kicker">{kicker}</p>}
           <h2 className="mt-3 text-3xl font-black uppercase leading-none tracking-[-0.04em] sm:text-4xl">{title}</h2>
         </div>
-        <div className="space-y-5 text-base leading-8 text-navy/65">{children}</div>
+        <div className="min-w-0 space-y-5 [overflow-wrap:anywhere] text-base leading-8 text-navy/65">{children}</div>
       </div>
     </section>
   );

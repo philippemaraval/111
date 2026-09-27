@@ -25,8 +25,8 @@ export default function ContactPage() {
         <div className="rounded-3xl bg-sand p-6 sm:p-8">
           <Mail className="h-7 w-7 text-sea" />
           <p className="mt-5 text-sm font-bold uppercase tracking-[0.16em] text-navy/45">Adresse e-mail</p>
-          <a href={`mailto:${CONTACT_EMAIL}`} className="focus-ring mt-2 inline-block rounded text-2xl font-black text-navy hover:text-sea sm:text-3xl">{CONTACT_EMAIL}</a>
-          <p className="mt-4 flex items-center gap-2 text-sm text-navy/55"><Clock3 className="h-4 w-4" /> Réponse habituelle sous deux jours ouvrés.</p>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="focus-ring mt-2 inline-block max-w-full rounded [overflow-wrap:anywhere] text-xl font-black text-navy hover:text-sea sm:text-3xl">{CONTACT_EMAIL.split("@")[0]}<wbr />@{CONTACT_EMAIL.split("@")[1]}</a>
+          <p className="mt-4 flex items-center gap-2 text-sm text-navy/55"><Clock3 className="h-4 w-4 shrink-0" /> Réponse habituelle sous deux jours ouvrés.</p>
         </div>
       </EditorialSection>
 

@@ -21,9 +21,9 @@ export function CommunityNeighborhoodPage({ neighborhood, rank, nextRank }: Comm
         </Link>
       </div>
 
-      <section className="mx-auto grid max-w-[1180px] gap-6 px-4 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-10">
+      <section className="mx-auto grid grid-cols-1 max-w-[1180px] gap-6 px-4 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-10">
         <div className={`flex min-h-[460px] flex-col justify-between overflow-hidden rounded-[28px] p-7 sm:p-10 lg:p-12 ${isProject ? "bg-ochre text-navy" : "bg-navy text-white"}`}>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <p className={`text-xs font-bold uppercase tracking-[0.2em] ${isProject ? "text-navy/60" : "text-sea"}`}>
               111 · {neighborhood.arrondissement}<sup>e</sup> arrondissement
             </p>
@@ -36,7 +36,7 @@ export function CommunityNeighborhoodPage({ neighborhood, rank, nextRank }: Comm
             <p className={`text-sm font-bold uppercase tracking-[0.2em] ${isProject ? "text-navy/55" : "text-white/45"}`}>
               {isProject ? "Demande entendue" : rank ? `${rank}${rank === 1 ? "er" : "e"} du classement` : "À faire entrer au classement"}
             </p>
-            <h1 className="mt-4 max-w-3xl text-5xl font-black uppercase leading-[0.88] tracking-[-0.055em] sm:text-7xl">{neighborhood.name}</h1>
+            <h1 className="mt-4 max-w-3xl [overflow-wrap:anywhere] text-[clamp(2rem,8.5vw,3rem)] font-black uppercase leading-[0.88] tracking-[-0.055em] sm:text-7xl">{neighborhood.name}</h1>
             <p className={`mt-7 max-w-2xl text-lg leading-8 ${isProject ? "text-navy/70" : "text-white/65"}`}>
               {isProject
                 ? "Le tee‑shirt de ce quartier est déjà dans les cartons. Les votes sont fermés : notre équipe travaille maintenant à sa sortie."
