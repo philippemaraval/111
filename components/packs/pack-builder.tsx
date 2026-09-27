@@ -127,7 +127,7 @@ export function PackBuilder({ neighborhoods }: { neighborhoods: Neighborhood[] }
                 ))}
               </div>
             </div>
-            <p className="text-sm leading-6 text-navy/60">{mysteryPackSize === 1 ? "Le quartier" : "Les quartiers, tous différents,"} {mysteryPackSize === 1 ? "sera attribué" : "seront attribués"} automatiquement selon les stocks disponibles.</p>
+            <p className="text-sm leading-6 text-navy/60">{mysteryPackSize === 1 ? "Le quartier" : "Les quartiers, tous différents,"} {mysteryPackSize === 1 ? "sera attribué" : "seront attribués"} automatiquement.</p>
           </div>
         )}
         <div className="mt-7 space-y-3">
